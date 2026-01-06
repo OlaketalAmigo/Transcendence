@@ -1,0 +1,49 @@
+volumes:
+  data:
+
+networks:
+  transcendence:
+  
+services:
+  database:
+    container_name: database
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    volumes:
+      - data:/var/lib/postgresql/data
+    env_file:
+      //
+    networks:
+      - transcendence
+    restart: always
+
+  backend:
+    container_name: backend
+    build: ./docker/backend
+    ports:
+      - "3001:3001"
+    depends_on:
+      - database
+    volumes:
+      //
+    env_file:
+      //
+    networks:
+      - transcendence
+    restart: always
+
+  frontend:
+    container_name: frontend
+    build: ./docker/frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      //
+    env_file:
+      //
+    networks:
+      - transcendence
+    restart: always
