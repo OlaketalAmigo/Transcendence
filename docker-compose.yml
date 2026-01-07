@@ -3,6 +3,7 @@ volumes:
 
 networks:
   transcendence:
+    driver: bridge
   
 services:
   database:
@@ -11,39 +12,39 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - data:/var/lib/postgresql/data
+      - data:/var/lib/postgresql/data/pg15/
     env_file:
-      //
+      - ../.env
     networks:
       - transcendence
     restart: always
 
   backend:
     container_name: backend
-    build: ./docker/backend
+    build: ./srcs/backend
     ports:
       - "3001:3001"
     depends_on:
       - database
-    volumes:
-      //
+    # volumes:
+    #   //
     env_file:
-      //
+      - ../.env
     networks:
       - transcendence
     restart: always
 
-  frontend:
-    container_name: frontend
-    build: ./docker/frontend
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-    volumes:
-      //
-    env_file:
-      //
-    networks:
-      - transcendence
-    restart: always
+  # frontend:
+  #   container_name: frontend
+  #   build: ./docker/frontend
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - backend
+  #   volumes:
+  #     //
+  #   env_file:
+  #     //
+  #   networks:
+  #     - transcendence
+  #   restart: always
