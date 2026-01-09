@@ -76,7 +76,7 @@ async function startServer()
 
 	await createTables();
 
-	app.get('/', (req, res) => res.send('Backend running'));
+	app.get('/api/', (req, res) => res.send('Backend running'));
 
 	app.listen(3001, () =>
 	{
