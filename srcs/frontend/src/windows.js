@@ -86,14 +86,27 @@ export class LoginWindow extends fenetre {
         this.body.style.gap = "8px";
     }
 
+    connexion(){
+        console.log("methode connexion lancée");
+    }
+
+    inscription(){
+        console.log("methode inscription lancée");
+    }
+
     bindEvents() {
         this.switch.onclick = () => this.toggleMode();
 
         this.submit.onclick = () => {
-            this.message.innerText =
-                this.mode === "login"
-                    ? "Tentative de connexion..."
-                    : "Tentative d'inscription...";
+            this.message.innerText = this.mode === "login"
+                                                    ? "Tentative de connexion..."
+                                                    : "Tentative d'inscription...";
+            if (this.mode === "login"){
+                this.connexion();
+            }
+            else {
+                this.inscription();
+            }
         };
     }
 
