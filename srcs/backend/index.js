@@ -47,6 +47,17 @@ async function createTables()
 				content TEXT,
 				created_at TIMESTAMP DEFAULT NOW()
 			);
+
+			CREATE TABLE IF NOT EXISTS friendship (
+				id_user1 INT NOT NULL,
+				id_user2 INT NOT NULL,
+				status VARCHAR(20) NOT NULL,
+				created_at TIMESTAMP DEFAULT NOW(),
+				CHECK (id_user1 < id_user2),
+				PRIMARY KEY (id_user1, id_user2),
+				FOREIGN KEY (id_user1) REFERENCES users(id) ON DELETE CASCADE,
+				FOREIGN KEY (id_user2) REFERENCES users(id) ON DELETE CASCADE
+			);
 		`);
 		console.log('Tables created!');
 	}
