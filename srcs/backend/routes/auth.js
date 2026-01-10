@@ -14,6 +14,7 @@ router.post('/register', async(req, res) =>
 
 router.post('/login', async(req, res) =>
 {
+	console.log("received login!");
 	const {username, password} = req.body;
 	const result = await authService.login(username, password);
 	res.status(result.status).json(result.data);
