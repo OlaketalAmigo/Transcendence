@@ -86,11 +86,29 @@ export class LoginWindow extends fenetre {
         this.body.style.gap = "8px";
     }
 
-    connexion(){
-        console.log("methode connexion lancée");
+    async connexion() {
+        const response = await fetch("/api/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: "nom",
+                password: "a"
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            console.log("OK", data);
+        } else {
+            console.error("ERROR", data);
+        }
     }
 
-    inscription(){
+
+    async inscription(){
         console.log("methode inscription lancée");
     }
 

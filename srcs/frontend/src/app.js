@@ -1,13 +1,10 @@
 import {Element, MenuElement} from "./element.js";
 import {Grid} from "./grid.js";
 import {fenetre, LoginWindow} from "./windows.js";
+
 function direBonjour() {
     alert("clicked !");
 }
-
-
-
-
 
 const menuElement = new Element("menu");
 const loginElement = new MenuElement("login");
