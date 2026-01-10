@@ -12,7 +12,7 @@ async function startServer()
 	await createTables();
 
 	app.use('/api/auth', authRouter);
-	app.get('/api/', (req, res) => res.send('Backend running'));
+	app.get('/api', (req, res) => res.send('Backend running'));
 
 	app.listen(3001, () =>
 	{
