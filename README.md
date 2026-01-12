@@ -3,6 +3,7 @@
 Exemple d'../.env fonctionnel:
 
 POSTGRES_PASSWORD=coucou
+JWT_SECRET=superlongsecretkeyatleast32characterspleasenevercommitthis
 POSTGRES_DB=database
 POSTGRES_HOST=database
 POSTGRES_USER=user
