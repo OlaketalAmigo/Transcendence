@@ -1,6 +1,7 @@
 import {Element, MenuElement} from "./element.js";
 import {Grid} from "./grid.js";
-import {fenetre, LoginWindow} from "./windows.js";
+import {fenetre} from "./windows.js";
+import {LoginWindow} from "./login.js";
 
 function direBonjour() {
     alert("clicked !");
