@@ -4,7 +4,7 @@ export class LoginWindow extends fenetre {
     constructor() {
         super(320, 240, "Connexion");
 
-        this.mode = "login"; // login | register
+        this.mode = "login";
 
         this.username = document.createElement("input");
         this.username.placeholder = "Username";
@@ -32,6 +32,19 @@ export class LoginWindow extends fenetre {
 
         this.applyStyles();
         this.bindEvents();
+
+        //  **** AJOUT FONCTION GITHUB ****
+        // Dans constructor() de LoginWindow
+        this.githubBtn = document.createElement("button");
+        this.githubBtn.innerText = "Se connecter avec GitHub";
+        this.githubBtn.style.backgroundColor = "#24292e";
+        this.githubBtn.style.color = "white";
+        this.githubBtn.onclick = () => {
+            window.location.href = "/api/auth/github";
+        };
+        this.body.appendChild(this.githubBtn);
+
+
 
         this.checkIfAlreadyLoggedIn(); //verifie si l'utilisateur est connecté au démarrage
     }
