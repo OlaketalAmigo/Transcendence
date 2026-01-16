@@ -4,13 +4,13 @@ const cors = require('cors');
 const {Server} = require('socket.io');
 const authRouter = require('./routes/auth');
 const chatRouter = require('./routes/global_chat');
-const {waitForDb, createTables} = require('./db');
+const {waitForDb, createTables, ensureOauthClient} = require('./db');
 const setupSocketIO = require('./services/socket');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server,
-{
+ {
 	cors:
 	{
 		origin: "*",
@@ -27,6 +27,13 @@ async function startServer()
 {
 	await waitForDb();
 	await createTables();
+
+	// Ensure GitHub OAuth client is registered in DB
+	try {
+		await ensureOauthClient('github', process.env.GITHUB_CLIENT_ID, process.env.GITHUB_CLIENT_SECRET, process.env.GITHUB_CALLBACK_URL || process.env.GITHUB_REDIRECT_URI);
+	} catch (e) {
+		console.warn('OAuth client might already exist or failed to register:', e.message);
+	}
 
 	app.use('/api/auth', authRouter);
 	app.use('/api/global_chat', chatRouter);

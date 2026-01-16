@@ -59,6 +59,16 @@ async function createTables()
 				FOREIGN KEY (id_user1) REFERENCES users(id) ON DELETE CASCADE,
 				FOREIGN KEY (id_user2) REFERENCES users(id) ON DELETE CASCADE
 			);
+			
+			CREATE TABLE IF NOT EXISTS oauth_clients (
+				id SERIAL PRIMARY KEY,
+				provider VARCHAR(50) NOT NULL,
+				client_id VARCHAR(200) NOT NULL,
+				client_secret TEXT,
+				redirect_uri VARCHAR(255),
+				created_at TIMESTAMP DEFAULT NOW(),
+				UNIQUE(provider, client_id)
+			);
 		`);
 		console.log('Tables created!');
 	}
@@ -73,9 +83,31 @@ async function query(text, params)
 	return (pool.query(text, params));
 }
 
-module.exports =
+async function ensureOauthClient(provider, client_id, client_secret, redirect_uri)
 {
+	try
+	{
+		const res = await pool.query(
+			`SELECT id FROM oauth_clients WHERE provider = $1 AND client_id = $2`, [provider, client_id]
+		);
+		if (res.rows.length > 0)
+			return res.rows[0];
+		const insert = await pool.query(
+			`INSERT INTO oauth_clients (provider, client_id, client_secret, redirect_uri) VALUES ($1, $2, $3, $4) RETURNING id`,
+			[provider, client_id, client_secret, redirect_uri]
+		);
+		return insert.rows[0];
+	}
+	catch (err)
+	{
+		console.error('Error ensuring oauth client:', err);
+		throw err;
+	}
+}
+
+module.exports = {
 	waitForDb,
 	createTables,
-	query
+	query,
+	ensureOauthClient
 };

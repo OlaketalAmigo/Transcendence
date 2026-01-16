@@ -40,11 +40,24 @@ export class LoginWindow extends fenetre {
         this.githubBtn.style.backgroundColor = "#24292e";
         this.githubBtn.style.color = "white";
         this.githubBtn.onclick = () => {
-            window.location.href = "/api/auth/github";
+            // Ouvre le OAuth GitHub dans une popup et reçoit le token via postMessage
+            const w = 600;
+            const h = 700;
+            const left = (screen.width - w) / 2;
+            const top = (screen.height - h) / 2;
+            const popup = window.open('/api/auth/github', 'githubOAuth', `width=${w},height=${h},left=${left},top=${top}`);
+            const listener = (ev) => {
+                if (ev.data && ev.data.token) {
+                    localStorage.setItem('auth_token', ev.data.token);
+                    this.message.innerText = 'Connexion GitHub réussie ! Bienvenue.';
+                    this.message.style.color = '#3cff01';
+                    window.removeEventListener('message', listener);
+                    if (popup) popup.close();
+                }
+            };
+            window.addEventListener('message', listener, {once: true});
         };
         this.body.appendChild(this.githubBtn);
-
-
 
         this.checkIfAlreadyLoggedIn(); //verifie si l'utilisateur est connecté au démarrage
     }
