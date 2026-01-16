@@ -1,4 +1,4 @@
-const {query} = require('../db');
+import {query} from '../db.js';
 
 async function saveMessage(userId, content)
 {
@@ -24,8 +24,4 @@ async function getRecentMessages(limit = 50)
 	return (result.rows.reverse());
 }
 
-module.exports = 
-{
-	saveMessage,
-	getRecentMessages
-};
+export default {saveMessage, getRecentMessages};

@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
+import chatService from '../services/global_chat.js';
+import authenticateToken from '../middleware/auth.js';
 const router = express.Router();
-const chatService = require('../services/global_chat');
-const authenticateToken = require('../middleware/auth');
 
 router.get('/messages', authenticateToken, async(req, res) =>
 {
@@ -17,4 +17,4 @@ router.get('/messages', authenticateToken, async(req, res) =>
 	}
 });
 
-module.exports = router;
+export default router;

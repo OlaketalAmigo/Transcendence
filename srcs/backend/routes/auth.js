@@ -1,10 +1,12 @@
-const express = require('express');
+import express from 'express';
+import authService from '../services/auth.js';
+import fetch from 'node-fetch';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import {query} from '../db.js';
+import crypto from 'crypto';
+
 const router = express.Router();
-const authService = require('../services/auth');
-const fetch = require('node-fetch');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const {query} = require('../db');
 
 router.post('/register', async(req, res) =>
 {
@@ -65,7 +67,6 @@ router.get('/github/callback', async (req, res) => {
     if (result.rows.length > 0) {
       userId = result.rows[0].id;
     } else {
-      const crypto = require('crypto');
       const randomPwd = crypto.randomBytes(16).toString('hex');
       const passwordHash = await bcrypt.hash(randomPwd, 10);
       await query(`INSERT INTO users (username, password_hash) VALUES ($1, $2)`, [ghUsername, passwordHash]);
@@ -84,4 +85,4 @@ router.get('/github/callback', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

@@ -1,5 +1,5 @@
-const jwt = require('jsonwebtoken');
-const chatService = require('./global_chat');
+import jwt from 'jsonwebtoken';
+import chatService from './global_chat.js';
 
 function setupSocketIO(io)
 {
@@ -44,4 +44,4 @@ function setupSocketIO(io)
 	});
 }
 
-module.exports = setupSocketIO;
+export default setupSocketIO;

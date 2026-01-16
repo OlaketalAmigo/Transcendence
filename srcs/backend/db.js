@@ -1,5 +1,5 @@
-require('dotenv').config();
-const { Pool } = require('pg');
+import 'dotenv/config';
+import { Pool } from 'pg';
 
 const pool = new Pool
 ({
@@ -105,7 +105,8 @@ async function ensureOauthClient(provider, client_id, client_secret, redirect_ur
 	}
 }
 
-module.exports = {
+export
+{
 	waitForDb,
 	createTables,
 	query,

@@ -1,11 +1,11 @@
-const express = require('express');
-const http = require('http');
-const cors = require('cors');
-const {Server} = require('socket.io');
-const authRouter = require('./routes/auth');
-const chatRouter = require('./routes/global_chat');
-const {waitForDb, createTables, ensureOauthClient} = require('./db');
-const setupSocketIO = require('./services/socket');
+import express from 'express';
+import http from 'http';
+import cors from 'cors';
+import {Server} from 'socket.io';
+import authRouter from './routes/auth.js';
+import chatRouter from './routes/global_chat.js';
+import {waitForDb, createTables, ensureOauthClient} from './db.js';
+import setupSocketIO from './services/socket.js';
 
 const app = express();
 const server = http.createServer(app);
