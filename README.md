@@ -24,3 +24,4 @@ Gestion de friendship dans POSTGRESQL:
 Ressource:
     https://www.postgresql.org/docs/
     https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps
+    https://docs.github.com/fr/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app
