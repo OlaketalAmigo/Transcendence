@@ -4,13 +4,14 @@ import cors from 'cors';
 import {Server} from 'socket.io';
 import authRouter from './routes/auth.js';
 import chatRouter from './routes/global_chat.js';
+import gameRoomRouter from './routes/game_room.js';
 import {waitForDb, createTables, ensureOauthClient} from './db.js';
 import setupSocketIO from './services/socket.js';
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server,
- {
+{
 	cors:
 	{
 		origin: "*",
@@ -37,6 +38,7 @@ async function startServer()
 
 	app.use('/api/auth', authRouter);
 	app.use('/api/global_chat', chatRouter);
+	app.use('/api/rooms', gameRoomRouter);
 	app.get('/api', (req, res) => res.send('Backend running'));
 
 	server.listen(3001, () =>

@@ -69,6 +69,44 @@ async function createTables()
 				created_at TIMESTAMP DEFAULT NOW(),
 				UNIQUE(provider, client_id)
 			);
+
+			CREATE TABLE IF NOT EXISTS game_rooms (
+				id SERIAL PRIMARY KEY,
+				name VARCHAR(100) NOT NULL,
+				status VARCHAR(20) DEFAULT 'waiting',
+				max_players INT DEFAULT 8,
+				current_round INT DEFAULT 0,
+				max_rounds INT DEFAULT 3,
+				round_duration INT DEFAULT 90,
+				created_at TIMESTAMP DEFAULT NOW(),
+				started_at TIMESTAMP,
+				ended_at TIMESTAMP
+			);
+
+			CREATE TABLE IF NOT EXISTS game_players (
+				id SERIAL PRIMARY KEY,
+				room_id INT REFERENCES game_rooms(id) ON DELETE CASCADE,
+				user_id INT REFERENCES users(id) ON DELETE CASCADE,
+				score INT DEFAULT 0,
+				is_drawing BOOLEAN DEFAULT FALSE,
+				joined_at TIMESTAMP DEFAULT NOW(),
+				UNIQUE(room_id, user_id)
+			);
+
+			CREATE TABLE IF NOT EXISTS words (
+				id SERIAL PRIMARY KEY,
+				word VARCHAR(50) NOT NULL UNIQUE
+			);
+
+			CREATE TABLE IF NOT EXISTS game_rounds (
+				id SERIAL PRIMARY KEY,
+				room_id INT REFERENCES game_rooms(id) ON DELETE CASCADE,
+				round_number INT NOT NULL,
+				word_id INT REFERENCES words(id),
+				drawer_id INT REFERENCES users(id),
+				started_at TIMESTAMP DEFAULT NOW(),
+				ended_at TIMESTAMP
+			);
 		`);
 		console.log('Tables created!');
 	}
