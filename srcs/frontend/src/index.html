@@ -1,23 +1,33 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>scribl.lidl_edition</title>
     <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
   </head>
-
   <body>
-    <h1>scribl.lidl_edition (GARE A VOS YEUX)</h1>
+    <h1>scribl.lidl_edition</h1>
 
-    <menu id="menu">
+    <!-- Menu principal -->
+    <nav id="menu" aria-label="Menu principal">
+      <button id="accueil" aria-label="Accueil">Accueil</button>
+      <button id="explorer" aria-label="Explorer">Explorer</button>
+      <button id="registered" aria-label="Enregistré">Enregistré</button>
+      <button id="login" aria-label="Login">Login</button>
+      <button id="global_chat" aria-label="Global chat">Global chat</button>
+    </nav>
 
-        <li><button id="accueil">Accueil</button></li>
-        <li><button id="explorer">Explorer</button></li>
-        <li><button id="registered">Enregistré</button></li>
-        <li><button id="login">Login</button></li>
-    </menu>
-    <button onclick="direBonjour()" style="position: absolute; top: 20%; left: 50%; z-index: 1;">Dont click !</button>
+    <button onclick="direBonjour()" style="position: absolute; top: 20%; left: 50%; z-index: 1;">
+      Ne cliquez pas !
+    </button>
+
+    <script type="module" src="app.js"></script>
   </body>
-  <script type= "module" src="app.js"></script>
+</html>
+</script>
+  
+</html></script>
   
 </html>

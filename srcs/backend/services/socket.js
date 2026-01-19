@@ -28,14 +28,22 @@ function setupSocketIO(io)
 		socket.join('general-chat');
 		socket.on('chat-message', async(data) =>
 		{
-			const message = await chatService.saveMessage(socket.user.userId, data.content);
-			io.to('general-chat').emit('chat-message',
+			try
 			{
-				id:message.id,
-				username: socket.user.username,
-				content: message.content,
-				created_at: message.created_at
-			});
+				const message = await chatService.saveMessage(socket.user.userId, data.content);
+				io.to('general-chat').emit('chat-message',
+				{
+					id:message.id,
+					username: socket.user.username,
+					content: message.content,
+					created_at: message.created_at
+				});
+			}
+			catch (err)
+			{
+				console.error('Error saving message:', err);
+				socket.emit('error', {message: 'Failed to send message'});
+			}
 		});
 		socket.on('disconnect', () =>
 		{
