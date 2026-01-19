@@ -34,7 +34,7 @@ async function listActiveRooms()
 		LEFT JOIN game_players p ON r.id = p.room_id
 		WHERE r.status = 'waiting'
 		GROUP BY r.id
-		ORDER BY r.created_at DESC`
+		ORDER BY player_count DESC, r.created_at DESC`
 	);
 	return (result.rows);
 }
