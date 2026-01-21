@@ -48,3 +48,11 @@ h1 {
   position: fixed;
   z-index: 3;
 }
+
+/* Message styling for system/info messages in windows */
+.system {
+  color: #333;
+}
+.system.error {
+  color: #ff4d4d;
+}

@@ -109,7 +109,10 @@ export class LoginWindow extends fenetre {
             }
         } 
         else {
-            console.error("ERROR", data);
+            // Afficher une erreur utilisateur plus visible
+            const errMsg = data && data.message ? data.message : "Échec de la connexion";
+            this.message.innerText = errMsg;
+            this.message.style.color = "#ff4d4d";
         }
     }
 
