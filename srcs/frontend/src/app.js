@@ -28,10 +28,19 @@ const global_chat = new GlobalChat();
 
 // Actions UI
 document.getElementById("login").addEventListener("click", () => {
-  loginWindow.show();
+  // Toggle login window visibility
+  if (loginWindow.main && loginWindow.main.style.display !== "none") {
+    loginWindow.hide();
+  } else {
+    loginWindow.show();
+  }
 });
 
 document.getElementById("global_chat").addEventListener("click", () => {
-    console.log("showing");
+  // Toggle global chat visibility
+  if (global_chat.main && global_chat.main.style.display !== "none") {
+    global_chat.hide();
+  } else {
     global_chat.show();
+  }
 });
