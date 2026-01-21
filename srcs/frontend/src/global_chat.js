@@ -143,13 +143,8 @@ export class GlobalChat extends fenetre {
             return;
         }
 
-        // Affichage immédiat dans l'interface pour feedback utilisateur
-        const div = document.createElement("div");
-        div.className = "chat-message";
-        div.innerHTML = `<strong>Moi:</strong> ${content}`;
-        this.output.appendChild(div);
-        this.output.scrollTop = this.output.scrollHeight;
-
+        // Pas d'affichage local duplicatif du message afin d'éviter les doublons
+        // Le serveur broadcasting le message avec le username du sender
         // Reset input
         this.input.value = "";
     }
@@ -194,14 +189,13 @@ export class GlobalChat extends fenetre {
             reconnectionDelay: 1000,
             transports: ["websocket", "polling"]
         };
-        // Optionnel: se connecter via un port alternatif si défini (ex: pour contourner le proxy)
-        const altPort = window.GLOBAL_CHAT_ALT_PORT;
-        if (altPort) {
-            const host = location.hostname || 'localhost';
-            this.socket = io(`http://${host}:${altPort}`, ioConfig);
-        } else {
-            this.socket = io(ioConfig);
-        }
+        // const altPort = window.GLOBAL_CHAT_ALT_PORT;
+        // if (altPort) {
+        //     const host = location.hostname || 'localhost';
+        //     this.socket = io(`http://${host}:${altPort}`, ioConfig);
+        // } else {
+        //     this.socket = io(ioConfig);
+        // }
 
         this.socket.on("connect", () => {
             console.log("→ SOCKET CONNECTÉ ! ID =", this.socket.id);
