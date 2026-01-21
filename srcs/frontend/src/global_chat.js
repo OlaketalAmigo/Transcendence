@@ -26,6 +26,7 @@ export class GlobalChat extends fenetre {
         this.applyEvents();
         // Connexion au chat global est déclenchée via des contrôles dédiés
         this.connected = false;
+        this.historyLoaded = false;
         this.createConnectControls();
     }
 
@@ -74,6 +75,32 @@ export class GlobalChat extends fenetre {
         }
         this.connected = false;
         await this.connect_sockio_global_chat();
+    }
+
+    // Charge les 50 derniers messages du chat global et les affiche
+    async loadRecentMessages() {
+        const token = localStorage.getItem("auth_token");
+        if (!token) return;
+        try {
+            const res = await fetch("/api/global_chat/messages", {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const messages = await res.json();
+                for (const m of messages) {
+                    const div = document.createElement("div");
+                    div.className = "chat-message";
+                    div.innerHTML = `<strong>${m.username}:</strong> ${m.content}`;
+                    this.output.appendChild(div);
+                }
+                this.output.scrollTop = this.output.scrollHeight;
+            } else {
+                this.output.innerHTML += '<div class="system error">Impossible de récupérer les messages du chat</div>';
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        this.historyLoaded = true;
     }
 
     applyStyles() {
@@ -162,6 +189,12 @@ export class GlobalChat extends fenetre {
             return;
         }
 
+        // Charge les derniers messages s'ils n'ont pas été chargés
+        if (!this.historyLoaded) {
+            await this.loadRecentMessages();
+            this.historyLoaded = true;
+        }
+
         // Si déjà connecté, ne pas tenter de nouveau
         if (this.socket && this.socket.connected) {
             this.output.innerHTML += '<div class="system">Déjà connecté au chat global</div>';
@@ -189,13 +222,13 @@ export class GlobalChat extends fenetre {
             reconnectionDelay: 1000,
             transports: ["websocket", "polling"]
         };
-        // const altPort = window.GLOBAL_CHAT_ALT_PORT;
-        // if (altPort) {
-        //     const host = location.hostname || 'localhost';
-        //     this.socket = io(`http://${host}:${altPort}`, ioConfig);
-        // } else {
-        //     this.socket = io(ioConfig);
-        // }
+        const altPort = window.GLOBAL_CHAT_ALT_PORT;
+        if (altPort) {
+            const host = location.hostname || 'localhost';
+            this.socket = io(`http://${host}:${altPort}`, ioConfig);
+        } else {
+            this.socket = io(ioConfig);
+        }
 
         this.socket.on("connect", () => {
             console.log("→ SOCKET CONNECTÉ ! ID =", this.socket.id);
