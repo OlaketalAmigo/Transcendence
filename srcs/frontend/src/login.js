@@ -33,14 +33,13 @@ export class LoginWindow extends fenetre {
         this.applyStyles();
         this.bindEvents();
 
-        //  **** AJOUT FONCTION GITHUB ****
-        // Dans constructor() de LoginWindow
+        //  **** APPEND FUNCTION GITHUB ****
         this.githubBtn = document.createElement("button");
         this.githubBtn.innerText = "Se connecter avec GitHub";
         this.githubBtn.style.backgroundColor = "#24292e";
         this.githubBtn.style.color = "white";
         this.githubBtn.onclick = () => {
-            // Ouvre le OAuth GitHub dans une popup et reçoit le token via postMessage
+            // open  OAuth GitHub  in popup and receive token with postMessage
             const w = 600;
             const h = 700;
             const left = (screen.width - w) / 2;
@@ -59,7 +58,7 @@ export class LoginWindow extends fenetre {
         };
         this.body.appendChild(this.githubBtn);
 
-        this.checkIfAlreadyLoggedIn(); //verifie si l'utilisateur est connecté au démarrage
+        this.checkIfAlreadyLoggedIn();
     }
 
     applyStyles() {
@@ -93,13 +92,13 @@ export class LoginWindow extends fenetre {
 
         if (response.ok) {
             console.log("connexion ok", data);
-            //  *** STOCKAGE DU TOKEN ***
+            //  *** STORAGE TOKEN ***
             if (data.token) {
                 localStorage.setItem("auth_token", data.token);
                 this.message.innerText = "Connexion réussie ! Bienvenue.";
                 this.message.style.color = "#3cff01";
 
-                // masquer la fenêtre après 1.5s
+                // mask  windows after 1.5s
                 setTimeout(() => this.hide(), 1500);
 
             } 
@@ -109,7 +108,7 @@ export class LoginWindow extends fenetre {
             }
         } 
         else {
-            // Afficher une erreur utilisateur plus visible
+            // print une error user invisibled
             const errMsg = data && data.message ? data.message : "Échec de la connexion";
             this.message.innerText = errMsg;
             this.message.style.color = "#ff4d4d";
