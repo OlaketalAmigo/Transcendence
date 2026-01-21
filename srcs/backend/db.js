@@ -38,6 +38,7 @@ async function createTables()
 				username VARCHAR(50) UNIQUE NOT NULL,
 				password_hash TEXT NOT NULL,
 				email VARCHAR(100),
+				avatar_url TEXT DEFAULT '/avatar/default.png',
 				created_at TIMESTAMP DEFAULT NOW()
 			);
 			

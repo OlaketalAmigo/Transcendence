@@ -3,7 +3,7 @@ export class GlobalChat extends fenetre {
     constructor() {
         super(320, 240, "Global Chat");
 
-        // Création des éléments
+        // Creation of the elements
         this.output = document.createElement("div");
         this.output.className = "chat-output";
 
@@ -24,12 +24,12 @@ export class GlobalChat extends fenetre {
 
         this.applyStyles();
         this.applyEvents();
-        // Connexion au chat global est déclenchée via des contrôles dédiés
+        // Connection to the global chat is started via dedicated controls
         this.connected = false;
         this.createConnectControls();
     }
 
-    // Crée les contrôles Connect / Reconnect dans la fenêtre du chat
+    // Create the controls (Connect / Reconnect) in the chat window
     createConnectControls() {
         this.controls = document.createElement("div");
         this.controls.style.display = "flex";
@@ -62,7 +62,7 @@ export class GlobalChat extends fenetre {
     }
 
     async reconnect_sockio_global_chat() {
-        // Déconnecte et reconnecte le socket si nécessaire
+        // Disconnect and reconnect the socket if necessary
         if (this.socket) {
             try {
                 this.socket.close();
@@ -77,7 +77,7 @@ export class GlobalChat extends fenetre {
     }
 
     applyStyles() {
-        // Conteneur principal en flex column
+        // Main container in flex collumn
         this.body.style.display = "flex";
         this.body.style.flexDirection = "column";
         this.body.style.height = "100%";
@@ -85,7 +85,7 @@ export class GlobalChat extends fenetre {
         this.body.style.boxSizing = "border-box";
         this.body.style.gap = "10px";
 
-        // Zone des messages
+        // Messages zone
         this.output.style.flex = "1";
         this.output.style.overflowY = "auto";
         this.output.style.padding = "8px";
@@ -95,7 +95,7 @@ export class GlobalChat extends fenetre {
         this.output.style.flexDirection = "column";
         this.output.style.gap = "10px";
 
-        // Conteneur input + bouton
+        // Input container + button
         this.inputContainer.style.display = "flex";
         this.inputContainer.style.gap = "8px";
         this.inputContainer.style.paddingTop = "8px";
@@ -107,7 +107,7 @@ export class GlobalChat extends fenetre {
         this.input.style.borderRadius = "6px";
         this.input.style.fontSize = "14px";
 
-        // Bouton envoyer
+        // Sender button
         this.sendButton.style.padding = "8px 16px";
         this.sendButton.style.background = "#0066cc";
         this.sendButton.style.color = "white";
@@ -118,10 +118,10 @@ export class GlobalChat extends fenetre {
     }
 
     applyEvents() {
-        // Envoi avec le bouton
+        // Send with the button
         this.sendButton.addEventListener("click", () => this.sendMessage());
 
-        // Envoi avec Entrée
+        // Send with Enter key
         this.input.addEventListener("keypress", (e) => {
             if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -130,7 +130,7 @@ export class GlobalChat extends fenetre {
         });
     }
 
-    // Envoie le message courant via Socket.IO
+    // Send current message via Socket.IO
     sendMessage() {
         const content = this.input.value.trim();
         if (!content) return;
@@ -143,7 +143,7 @@ export class GlobalChat extends fenetre {
             return;
         }
 
-        // Affichage immédiat dans l'interface pour feedback utilisateur
+        // Immediate display in the interface pour user feedback
         const div = document.createElement("div");
         div.className = "chat-message";
         div.innerHTML = `<strong>Moi:</strong> ${content}`;
@@ -167,7 +167,7 @@ export class GlobalChat extends fenetre {
             return;
         }
 
-        // Si déjà connecté, ne pas tenter de nouveau
+        // If already connected, dont retry
         if (this.socket && this.socket.connected) {
             this.output.innerHTML += '<div class="system">Déjà connecté au chat global</div>';
             return;
@@ -194,7 +194,7 @@ export class GlobalChat extends fenetre {
             reconnectionDelay: 1000,
             transports: ["websocket", "polling"]
         };
-        // Optionnel: se connecter via un port alternatif si défini (ex: pour contourner le proxy)
+        // Optional: connect from an alternative port (ex: to dodge the proxy)
         const altPort = window.GLOBAL_CHAT_ALT_PORT;
         if (altPort) {
             const host = location.hostname || 'localhost';
@@ -218,7 +218,7 @@ export class GlobalChat extends fenetre {
             this.output.innerHTML += `<div class="system">Déconnecté du chat (${reason})</div>`;
         });
 
-        // Réception des messages
+        // Messages reception
         this.socket.on("chat-message", (msg) => {
             const div = document.createElement("div");
             div.className = "chat-message";

@@ -28,8 +28,8 @@ services:
     #   - "3001:3001"
     depends_on:
       - database
-    # volumes:
-    #   //
+    volumes:
+      - ./srcs/backend/avatar:/app/avatar
     env_file:
       - ../.env
     networks:

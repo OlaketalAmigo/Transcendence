@@ -39,6 +39,10 @@ BACKEND
         Aucun moyen de changer l'etat de la room de waiting a en cours ou finished
         ca attendra le systeme du jeu
 
+21/01   Ajout du service/route pour le systeme d'avatar
+        permet aux utilisateurs de changer ou supprimer leur avatar actuel
+        Ajout egalement d'une simple fonction pour recuperer l'avatar d'un utilisateur (pour le frontend)
+
 DATABASE
 
 17/01   Ajout des tables game_rooms, game_players, game_rounds, words
@@ -46,3 +50,5 @@ DATABASE
         - joueurs dans la game, leur scores et leur role actuel (dessinateur, devineur)
         - historique de la game, qui a dessine quoi precedemment ainsi que les timers des rounds, sera aussi utile si on veut faire les stats de compte a l'avenir.
         - contient la liste des mots utilisable par les joueurs
+
+21/01   Ajout de avatar_url dans la table users

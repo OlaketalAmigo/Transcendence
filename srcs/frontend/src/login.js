@@ -33,14 +33,14 @@ export class LoginWindow extends fenetre {
         this.applyStyles();
         this.bindEvents();
 
-        //  **** AJOUT FONCTION GITHUB ****
-        // Dans constructor() de LoginWindow
+        //  **** ADDED GITHUB FUNCTION ****
+        // In constructor() of LoginWindow
         this.githubBtn = document.createElement("button");
         this.githubBtn.innerText = "Se connecter avec GitHub";
         this.githubBtn.style.backgroundColor = "#24292e";
         this.githubBtn.style.color = "white";
         this.githubBtn.onclick = () => {
-            // Ouvre le OAuth GitHub dans une popup et reçoit le token via postMessage
+            // Open the OAUTH Github in a popup and receive the token from postMessage
             const w = 600;
             const h = 700;
             const left = (screen.width - w) / 2;
@@ -59,7 +59,7 @@ export class LoginWindow extends fenetre {
         };
         this.body.appendChild(this.githubBtn);
 
-        this.checkIfAlreadyLoggedIn(); //verifie si l'utilisateur est connecté au démarrage
+        this.checkIfAlreadyLoggedIn(); // Verify if the user is connected on startup
     }
 
     applyStyles() {
@@ -93,13 +93,13 @@ export class LoginWindow extends fenetre {
 
         if (response.ok) {
             console.log("connexion ok", data);
-            //  *** STOCKAGE DU TOKEN ***
+            //  *** TOKEN STORAGE ***
             if (data.token) {
                 localStorage.setItem("auth_token", data.token);
                 this.message.innerText = "Connexion réussie ! Bienvenue.";
                 this.message.style.color = "#3cff01";
 
-                // masquer la fenêtre après 1.5s
+                // mask the window after 1.5s
                 setTimeout(() => this.hide(), 1500);
 
             } 
@@ -109,7 +109,7 @@ export class LoginWindow extends fenetre {
             }
         } 
         else {
-            // Afficher une erreur utilisateur plus visible
+            // Show a more visible user error
             const errMsg = data && data.message ? data.message : "Échec de la connexion";
             this.message.innerText = errMsg;
             this.message.style.color = "#ff4d4d";
