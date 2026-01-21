@@ -24,7 +24,56 @@ export class GlobalChat extends fenetre {
 
         this.applyStyles();
         this.applyEvents();
-        this.connect_sockio_global_chat();
+        // Connexion au chat global est déclenchée via des contrôles dédiés
+        this.connected = false;
+        this.createConnectControls();
+    }
+
+    // Crée les contrôles Connect / Reconnect dans la fenêtre du chat
+    createConnectControls() {
+        this.controls = document.createElement("div");
+        this.controls.style.display = "flex";
+        this.controls.style.gap = "8px";
+        this.controls.style.marginTop = "6px";
+
+        this.connectButton = document.createElement("button");
+        this.connectButton.textContent = "Connecter";
+        this.connectButton.style.padding = "6px 12px";
+        this.connectButton.style.background = "#28a745";
+        this.connectButton.style.color = "white";
+        this.connectButton.style.border = "none";
+        this.connectButton.style.borderRadius = "6px";
+        this.connectButton.style.cursor = "pointer";
+
+        this.reconnectButton = document.createElement("button");
+        this.reconnectButton.textContent = "Reconnecter";
+        this.reconnectButton.style.padding = "6px 12px";
+        this.reconnectButton.style.background = "#007bff";
+        this.reconnectButton.style.color = "white";
+        this.reconnectButton.style.border = "none";
+        this.reconnectButton.style.borderRadius = "6px";
+        this.reconnectButton.style.cursor = "pointer";
+
+        this.controls.append(this.connectButton, this.reconnectButton);
+        this.body.appendChild(this.controls);
+
+        this.connectButton.addEventListener("click", () => this.connect_sockio_global_chat());
+        this.reconnectButton.addEventListener("click", () => this.reconnect_sockio_global_chat());
+    }
+
+    async reconnect_sockio_global_chat() {
+        // Déconnecte et reconnecte le socket si nécessaire
+        if (this.socket) {
+            try {
+                this.socket.close();
+            } catch (e) {
+                // ignore
+            }
+            this.socket = null;
+            this.output.innerHTML += '<div class="system">Reconnexion en cours...</div>';
+        }
+        this.connected = false;
+        await this.connect_sockio_global_chat();
     }
 
     applyStyles() {
@@ -40,7 +89,7 @@ export class GlobalChat extends fenetre {
         this.output.style.flex = "1";
         this.output.style.overflowY = "auto";
         this.output.style.padding = "8px";
-        this.output.style.background = "#f8f9fa";
+        this.output.style.background = "#7fb8f1";
         this.output.style.borderRadius = "6px";
         this.output.style.display = "flex";
         this.output.style.flexDirection = "column";
@@ -81,6 +130,30 @@ export class GlobalChat extends fenetre {
         });
     }
 
+    // Envoie le message courant via Socket.IO
+    sendMessage() {
+        const content = this.input.value.trim();
+        if (!content) return;
+
+        // Envoi au backend si connecté
+        if (this.socket && this.socket.connected) {
+            this.socket.emit("chat-message", { content });
+        } else {
+            this.output.innerHTML += '<div class="system error">Erreur: vous n\'êtes pas connecté au chat global</div>';
+            return;
+        }
+
+        // Affichage immédiat dans l'interface pour feedback utilisateur
+        const div = document.createElement("div");
+        div.className = "chat-message";
+        div.innerHTML = `<strong>Moi:</strong> ${content}`;
+        this.output.appendChild(div);
+        this.output.scrollTop = this.output.scrollHeight;
+
+        // Reset input
+        this.input.value = "";
+    }
+
     async connect_sockio_global_chat() {
         const token = localStorage.getItem("auth_token");
 
@@ -91,6 +164,12 @@ export class GlobalChat extends fenetre {
         if (!token) {
             console.error("→ ERREUR : Aucun token dans localStorage → connexion impossible");
             this.output.innerHTML += '<div class="system">Erreur : vous devez être connecté pour utiliser le chat global</div>';
+            return;
+        }
+
+        // Si déjà connecté, ne pas tenter de nouveau
+        if (this.socket && this.socket.connected) {
+            this.output.innerHTML += '<div class="system">Déjà connecté au chat global</div>';
             return;
         }
 
@@ -108,13 +187,21 @@ export class GlobalChat extends fenetre {
             });
         }
 
-        this.socket = io({
+        const ioConfig = {
             auth: { token },
             reconnection: true,
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
             transports: ["websocket", "polling"]
-        });
+        };
+        // Optionnel: se connecter via un port alternatif si défini (ex: pour contourner le proxy)
+        const altPort = window.GLOBAL_CHAT_ALT_PORT;
+        if (altPort) {
+            const host = location.hostname || 'localhost';
+            this.socket = io(`http://${host}:${altPort}`, ioConfig);
+        } else {
+            this.socket = io(ioConfig);
+        }
 
         this.socket.on("connect", () => {
             console.log("→ SOCKET CONNECTÉ ! ID =", this.socket.id);
