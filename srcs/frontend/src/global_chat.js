@@ -26,6 +26,7 @@ export class GlobalChat extends fenetre {
         this.applyEvents();
         // Connexion au chat global est déclenchée via des contrôles dédiés
         this.connected = false;
+        this.historyLoaded = false;
         this.createConnectControls();
     }
 
@@ -74,6 +75,32 @@ export class GlobalChat extends fenetre {
         }
         this.connected = false;
         await this.connect_sockio_global_chat();
+    }
+
+    // Charge les 50 derniers messages du chat global et les affiche
+    async loadRecentMessages() {
+        const token = localStorage.getItem("auth_token");
+        if (!token) return;
+        try {
+            const res = await fetch("/api/global_chat/messages", {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const messages = await res.json();
+                for (const m of messages) {
+                    const div = document.createElement("div");
+                    div.className = "chat-message";
+                    div.innerHTML = `<strong>${m.username}:</strong> ${m.content}`;
+                    this.output.appendChild(div);
+                }
+                this.output.scrollTop = this.output.scrollHeight;
+            } else {
+                this.output.innerHTML += '<div class="system error">Impossible de récupérer les messages du chat</div>';
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        this.historyLoaded = true;
     }
 
     applyStyles() {
@@ -143,13 +170,8 @@ export class GlobalChat extends fenetre {
             return;
         }
 
-        // Affichage immédiat dans l'interface pour feedback utilisateur
-        const div = document.createElement("div");
-        div.className = "chat-message";
-        div.innerHTML = `<strong>Moi:</strong> ${content}`;
-        this.output.appendChild(div);
-        this.output.scrollTop = this.output.scrollHeight;
-
+        // Pas d'affichage local duplicatif du message afin d'éviter les doublons
+        // Le serveur broadcasting le message avec le username du sender
         // Reset input
         this.input.value = "";
     }
@@ -165,6 +187,12 @@ export class GlobalChat extends fenetre {
             console.error("→ ERREUR : Aucun token dans localStorage → connexion impossible");
             this.output.innerHTML += '<div class="system">Erreur : vous devez être connecté pour utiliser le chat global</div>';
             return;
+        }
+
+        // Charge les derniers messages s'ils n'ont pas été chargés
+        if (!this.historyLoaded) {
+            await this.loadRecentMessages();
+            this.historyLoaded = true;
         }
 
         // Si déjà connecté, ne pas tenter de nouveau
@@ -194,7 +222,6 @@ export class GlobalChat extends fenetre {
             reconnectionDelay: 1000,
             transports: ["websocket", "polling"]
         };
-        // Optionnel: se connecter via un port alternatif si défini (ex: pour contourner le proxy)
         const altPort = window.GLOBAL_CHAT_ALT_PORT;
         if (altPort) {
             const host = location.hostname || 'localhost';
