@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 
 
-//Check si le webtoken est valide
+// Check if the webtoken is valid
 export default function authMiddleware(req, res, next)
 {
 	const header = req.headers.authorization;

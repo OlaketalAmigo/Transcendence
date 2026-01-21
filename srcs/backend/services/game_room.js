@@ -1,15 +1,22 @@
 import {query} from '../db.js';
 
-// Creer la room avec comme seul parametre le nom
-// max_players, status et ses autres variables sont aux valeurs definis dans db.js
-async function createRoom(name)
+// Create the room with name as the only parameter
+// max_players, status and the other variables have their default values defined in db.js
+async function createRoom(name, userId)
 {
 	const result = await query
 	(
 		`INSERT INTO game_rooms (name) VALUES ($1) RETURNING *`,
 		[name]
 	);
-	return (result.rows[0]);
+	const room = result.rows[0];
+
+	await query
+	(
+		'INSERT INTO game_players (room_id, user_id) VALUES ($1, $2)',
+		[room.id, userId]
+	);
+	return (room);
 }
 
 async function getRoomById(roomId)
@@ -22,9 +29,7 @@ async function getRoomById(roomId)
 	return (result.rows[0]);
 }
 
-//Liste toutes les rooms en attente
-//ainsi que le nombre de joueurs dans chaque room
-//utile pour montrer toutes les rooms joignables
+// List all the waiting rooms and the player amount in each of them
 async function listActiveRooms()
 {
 	const result = await query
@@ -87,9 +92,8 @@ async function leaveRoom(roomId, userId)
 	}
 }
 
-//Renvoie la liste des joueurs trie selon leur score
-//Cette liste donne egalement l'info sur qui dessine actuellement
-//Utile pour le jeu en lui meme et le scoreboard de la game
+// List the players in the room and their scores
+// Useful for the scoreboard and also tell which player is currently drawing
 async function getRoomPlayers(roomId)
 {
 	const result = await query

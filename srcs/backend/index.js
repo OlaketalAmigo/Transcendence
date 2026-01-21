@@ -5,8 +5,10 @@ import {Server} from 'socket.io';
 import authRouter from './routes/auth.js';
 import chatRouter from './routes/global_chat.js';
 import gameRoomRouter from './routes/game_room.js';
+// import avatarRouter from './routes/avatar.js';
 import {waitForDb, createTables, ensureOauthClient} from './db.js';
 import setupSocketIO from './services/socket.js';
+// import avatarService from './services/avatar.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -36,9 +38,11 @@ async function startServer()
 		console.warn('OAuth client might already exist or failed to register:', e.message);
 	}
 
+	// app.use('/avatar', express.static(avatarService.AVATAR_DIR));
 	app.use('/api/auth', authRouter);
 	app.use('/api/global_chat', chatRouter);
 	app.use('/api/rooms', gameRoomRouter);
+	// app.use('/api/avatar', avatarRouter);
 	app.get('/api', (req, res) => res.send('Backend running'));
 
 	server.listen(3001, () =>

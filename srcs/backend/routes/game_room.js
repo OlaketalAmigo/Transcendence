@@ -54,7 +54,7 @@ router.post('/', authenticateToken, async(req, res) =>
 		const {name} = req.body;
 		if (!name)
 			return (res.status(400).json({error: 'Room name required'}));
-		const room = await gameRoomService.createRoom(name);
+		const room = await gameRoomService.createRoom(name, req.user.userId);
 		res.status(201).json(room);
 	}
 	catch(err)
