@@ -1,5 +1,5 @@
 import {fenetre} from "./windows.js";
-
+import {avatarWindow} from "./app.js";
 export class LoginWindow extends fenetre {
     constructor() {
         super(320, 240, "Connexion");
@@ -50,6 +50,7 @@ export class LoginWindow extends fenetre {
                 if (ev.data && ev.data.token) {
                     localStorage.setItem('auth_token', ev.data.token);
                     this.message.innerText = 'Connexion GitHub réussie ! Bienvenue.';
+                    avatarWindow.getPhoto();
                     this.message.style.color = '#3cff01';
                     window.removeEventListener('message', listener);
                     if (popup) popup.close();
@@ -98,7 +99,7 @@ export class LoginWindow extends fenetre {
                 localStorage.setItem("auth_token", data.token);
                 this.message.innerText = "Connexion réussie ! Bienvenue.";
                 this.message.style.color = "#3cff01";
-
+                avatarWindow.getPhoto();
                 // mask the window after 1.5s
                 setTimeout(() => this.hide(), 1500);
 
