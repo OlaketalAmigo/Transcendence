@@ -1,8 +1,7 @@
 import {Element, MenuElement} from "./element.js";
-import {fenetre} from "./windows.js";
 import {LoginWindow} from "./login.js";
 import { GlobalChat } from "./global_chat.js";
-import {avatarWindows} from "./avatarWindows.js"; 
+import { AvatarWindow } from "./avatar.js"; 
 
 function direBonjour() {
   alert("clicked !");
@@ -17,9 +16,9 @@ const accueilElement = new MenuElement("accueil");
 const globalChatElement = new MenuElement("global_chat");
 const avatarElement = new MenuElement("avatar");
 // Windows and screens
+export const avatarWindow = new AvatarWindow();
 const loginWindow = new LoginWindow();
 const global_chat = new GlobalChat();
-const avatar_windows = new avatarWindows();
 
 
 // Actions UI
@@ -43,10 +42,10 @@ document.getElementById("global_chat").addEventListener("click", () => {
 
 
 document.getElementById("avatar").addEventListener("click", () => {
-  // Toggle global chat visibility
-  if (avatarWindows.main && avatarWindows.main.style.display !== "none") {
-    avatarWindows.hide();
+  // Toggle avatar window visibility
+  if (avatarWindow.main && avatarWindow.main.style.display !== "none") {
+    avatarWindow.hide();
   } else {
-    avatarWindows.show();
+    avatarWindow.show();
   }
 });
