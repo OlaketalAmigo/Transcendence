@@ -42,6 +42,8 @@ export class AvatarWindow extends fenetre {
 
         this.applyStyles();
         this.bindEvents();
+        // Load current avatar on initialization
+        this.getPhoto();
     }
 
     applyStyles() {
@@ -75,12 +77,8 @@ export class AvatarWindow extends fenetre {
         });
 
         this.saveBtn.addEventListener("click", () => {
-            const url = this.avatarPreview.src;
-            if (url) {
-                localStorage.setItem("avatar_url", url);
-                this.message.textContent = "Avatar enregistré !";
-                this.message.style.color = "#3cff01";
-            }
+            // Send the selected photo to the server
+            this.postPhoto();
         });
 
         // Bind refresh button to re-fetch avatar from server
@@ -107,6 +105,7 @@ export class AvatarWindow extends fenetre {
                 return;
             }
             const data = await response.json();
+            console.log(data);
             if (data && data.avatar_url) {
                 this.avatarPreview.src = data.avatar_url;
             } else {
@@ -117,4 +116,50 @@ export class AvatarWindow extends fenetre {
         }
     }
     
+    async postPhoto(){
+        console.log("postPhoto launched...");
+        const token = localStorage.getItem("auth_token");
+        if (!token) {
+            this.message.textContent = "No auth. plz connect.";
+            this.message.style.color = "#f00";
+            return;
+        }
+        const file = this.fileInput.files && this.fileInput.files[0];
+        if (!file) {
+            this.message.textContent = "take image before";
+            this.message.style.color = "#f00";
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        try {
+            const response = await fetch('/api/avatar/upload', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                const err = data?.error || data?.message || 'Upload failed';
+                this.message.textContent = err;
+                this.message.style.color = '#f00';
+                return;
+            }
+            if (data && data.avatar_url) {
+                this.avatarPreview.src = data.avatar_url;
+            }
+            this.message.textContent = 'Avatar enregistré !';
+            this.message.style.color = '#3cff01';
+        } catch (err) {
+            console.error('Avatar upload error:', err);
+            this.message.textContent = 'Erreur lors de l’envoi';
+            this.message.style.color = '#f00';
+        }
+    }
+
+
 }
