@@ -1,9 +1,8 @@
 import {Element, MenuElement} from "./element.js";
-import {Grid} from "./grid.js";
 import {fenetre} from "./windows.js";
 import {LoginWindow} from "./login.js";
 import { GlobalChat } from "./global_chat.js";
- 
+import {avatarWindows} from "./avatarWindows.js"; 
 
 function direBonjour() {
   alert("clicked !");
@@ -16,15 +15,12 @@ const registeredElement = new MenuElement("registered");
 const explorerElement = new MenuElement("explorer");
 const accueilElement = new MenuElement("accueil");
 const globalChatElement = new MenuElement("global_chat");
-
-// Start of the grid (commented if we dont use it yet)
-// const gridgreen = new Grid('#143a0fff', -1, 25, 0.12, "normal");
-// const gridReverseRed = new Grid('#3a0f0f75', -1, 12.5, 0.09, "reverse");
-
+const avatarElement = new MenuElement("avatar");
 // Windows and screens
-const test = new fenetre();
 const loginWindow = new LoginWindow();
 const global_chat = new GlobalChat();
+const avatar_windows = new avatarWindows();
+
 
 // Actions UI
 document.getElementById("login").addEventListener("click", () => {
@@ -42,5 +38,15 @@ document.getElementById("global_chat").addEventListener("click", () => {
     global_chat.hide();
   } else {
     global_chat.show();
+  }
+});
+
+
+document.getElementById("avatar").addEventListener("click", () => {
+  // Toggle global chat visibility
+  if (avatarWindows.main && avatarWindows.main.style.display !== "none") {
+    avatarWindows.hide();
+  } else {
+    avatarWindows.show();
   }
 });
