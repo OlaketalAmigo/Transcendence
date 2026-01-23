@@ -33,6 +33,7 @@ router.delete('/', authenticateToken, async(req, res) =>
 
 router.get('/me', authenticateToken, async(req, res) =>
 {
+	console.log('GET /me hit, user:', req.user);
 	const result = await avatarService.getAvatarUrl(req.user.userId);
 	res.status(result.status).json(result.data);
 });

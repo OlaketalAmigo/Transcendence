@@ -128,7 +128,8 @@ async function getAvatarUrl(userId)
 		if (result.rows.length === 0)
 			return ({status: 404, data: {error: 'User not found'}});
 
-		return ({status: 200, data: {avatar_url: result.rows[0].avatar_url}});
+		const avatarUrl = result.rows[0].avatar_url || DEFAULT_AVATAR;
+		return ({status: 200, data: {avatar_url: avatarUrl}});
 	}
 	catch (err)
 	{

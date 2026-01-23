@@ -30,18 +30,18 @@ Ressource:
 
 BACKEND
 
-17/01   Ajout du service/route pour le systeme de game_room
+17/01   - Ajout du service/route pour le systeme de game_room
         permet aux joueurs de creer et rejoindre des rooms
         une room vide est automatiquement detruite.
-        Presence d'une fonction affichant toutes les rooms joignables
+        - Presence d'une fonction affichant toutes les rooms joignables
         ainsi qu'une autre fonction pour afficher tous les joueurs de la room avec
         leur scores et leur etat actuel.
-        Aucun moyen de changer l'etat de la room de waiting a en cours ou finished
+        - Aucun moyen de changer l'etat de la room de waiting a en cours ou finished
         ca attendra le systeme du jeu
 
-21/01   Ajout du service/route pour le systeme d'avatar
+21/01   - Ajout du service/route pour le systeme d'avatar
         permet aux utilisateurs de changer ou supprimer leur avatar actuel
-        Ajout egalement d'une simple fonction pour recuperer l'avatar d'un utilisateur (pour le frontend)
+        - Ajout egalement d'une simple fonction pour recuperer l'avatar d'un utilisateur (pour le frontend)
 
 DATABASE
 
