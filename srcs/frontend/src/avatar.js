@@ -1,133 +1,168 @@
-import {fenetre} from "./windows.js";
+import { Window } from './windows.js';
+import { API, STORAGE_KEYS, CSS } from './config.js';
+import { eventBus, Events } from './events.js';
 
-export class AvatarWindow extends fenetre {
+/**
+ * Avatar management window
+ * Allows viewing and modifying the user's avatar
+ */
+export class AvatarWindow extends Window {
     constructor() {
-        super(360, 320, "Avatar");
+        super({
+            name: 'avatar',
+            title: 'Avatar',
+            cssClasses: ['avatar-window']
+        });
+
+        this.buildUI();
+        this.bindEvents();
+        this.loadAvatar();
+
+        // Listen for login events
+        eventBus.on(Events.USER_LOGGED_IN, () => this.loadAvatar());
+    }
+
+    /**
+     * Builds the user interface
+     */
+    buildUI() {
         // Avatar preview
-        this.avatarPreview = document.createElement("img");
-        this.avatarPreview.style.width = "120px";
-        this.avatarPreview.style.height = "120px";
-        this.avatarPreview.style.objectFit = "cover";
-        this.avatarPreview.style.borderRadius = "50%";
-        this.avatarPreview.style.border = "2px solid #fff";
+        this.preview = this.createElement('img', CSS.AVATAR_PREVIEW, {
+            alt: 'Avatar'
+        });
 
+        // Username display
+        this.username = this.createElement('div', CSS.AVATAR_USERNAME);
 
-        this.fileInput = document.createElement("input");
-        this.fileInput.type = "file";
-        this.fileInput.accept = "image/*";
-        // Hide the raw file input to keep only one visible control
-        this.fileInput.style.display = "none";
+        // Hidden file input
+        this.fileInput = this.createElement('input', 'avatar__file-input', {
+            type: 'file',
+            accept: 'image/*'
+        });
 
-        this.chooseBtn = document.createElement("button");
-        this.chooseBtn.textContent = "Choisir image";
+        // Controls
+        this.controls = this.createElement('div', CSS.AVATAR_CONTROLS);
 
-        this.saveBtn = document.createElement("button");
-        this.saveBtn.textContent = "Enregistrer avatar";
+        this.chooseBtn = this.createElement('button', [CSS.BTN, CSS.BTN_SECONDARY], {
+            text: 'Choose image'
+        });
 
-        // Refresh button to re-fetch avatar from server
-        this.refreshBtn = document.createElement("button");
-        this.refreshBtn.textContent = "Rafraîchir photo";
+        this.saveBtn = this.createElement('button', [CSS.BTN, CSS.BTN_PRIMARY], {
+            text: 'Save avatar'
+        });
 
-        this.message = document.createElement("div");
-        this.message.style.fontSize = "0.9em";
+        this.refreshBtn = this.createElement('button', [CSS.BTN, CSS.BTN_SECONDARY], {
+            text: 'Refresh'
+        });
 
+        this.controls.append(this.chooseBtn, this.saveBtn, this.refreshBtn);
+
+        // Feedback message
+        this.message = this.createElement('div', CSS.MESSAGE);
+
+        // Assembly
         this.body.append(
-            this.avatarPreview,
+            this.preview,
+            this.username,
             this.fileInput,
-            this.chooseBtn,
-            this.saveBtn,
-            this.refreshBtn,
+            this.controls,
             this.message
         );
-
-        this.applyStyles();
-        this.bindEvents();
-        // Load current avatar on initialization
-        this.getPhoto();
     }
 
-    applyStyles() {
-        // Center avatar in the window body
-        this.body.style.display = "flex";
-        this.body.style.flexDirection = "column";
-        this.body.style.alignItems = "center";
-        this.body.style.gap = "12px";
-        // Style helpers
-        this.avatarPreview.style.boxShadow = "0 0 8px rgba(0,0,0,0.5)";
-        this.chooseBtn.style.padding = "6px 12px";
-        this.chooseBtn.style.cursor = "pointer";
-        this.saveBtn.style.padding = "6px 12px";
-        this.saveBtn.style.cursor = "pointer";
-    }
-
+    /**
+     * Attaches event handlers
+     */
     bindEvents() {
-        this.fileInput.addEventListener("change", (e) => {
-            const file = e.target.files && e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                this.avatarPreview.src = ev.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-
-        this.chooseBtn.addEventListener("click", () => {
-            // trigger file input
-            this.fileInput.click();
-        });
-
-        this.saveBtn.addEventListener("click", () => {
-            // Send the selected photo to the server
-            this.postPhoto();
-        });
-
-        // Bind refresh button to re-fetch avatar from server
-        this.refreshBtn.addEventListener("click", () => {
-            this.getPhoto();
-        });
+        this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+        this.chooseBtn.addEventListener('click', () => this.fileInput.click());
+        this.saveBtn.addEventListener('click', () => this.uploadAvatar());
+        this.refreshBtn.addEventListener('click', () => this.loadAvatar());
     }
-    async getPhoto(){
-        console.log("getPhoto launched...");
-        const token = localStorage.getItem("auth_token");
+
+    /**
+     * Handles file selection
+     * @param {Event} e
+     */
+    handleFileSelect(e) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            this.preview.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    /**
+     * Decodes a JWT token and returns the payload
+     * @param {string} token
+     * @returns {object|null}
+     */
+    decodeToken(token) {
+        try {
+            const payload = token.split('.')[1];
+            return JSON.parse(atob(payload));
+        } catch {
+            return null;
+        }
+    }
+
+    /**
+     * Loads avatar from the server
+     */
+    async loadAvatar() {
+        const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
         if (!token) {
-            console.log("No auth token found; skipping avatar fetch");
+            console.log('No token, skipping avatar load');
             return;
         }
+
+        // Extract username from JWT token
+        const tokenData = this.decodeToken(token);
+        if (tokenData?.username) {
+            this.username.textContent = tokenData.username;
+        }
+
         try {
-            const response = await fetch("/api/avatar/me", {
-                method: "GET",
+            const response = await fetch(API.AVATAR.GET, {
+                method: 'GET',
                 headers: {
-                    "Authorization": `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`
                 }
             });
+
             if (!response.ok) {
-                console.warn("Failed to fetch avatar (status", response.status, ")");
+                console.warn('Failed to load avatar, status:', response.status);
                 return;
             }
+
             const data = await response.json();
-            console.log(data);
-            if (data && data.avatar_url) {
-                this.avatarPreview.src = data.avatar_url;
+
+            if (data?.avatar_url) {
+                this.preview.src = data.avatar_url;
             } else {
-                console.warn("Avatar URL not found in response");
+                console.warn('Avatar URL not found in response');
             }
-        } catch (err) {
-            console.error("Error while fetching avatar:", err);
+        } catch (error) {
+            console.error('Error loading avatar:', error);
         }
     }
-    
-    async postPhoto(){
-        console.log("postPhoto launched...");
-        const token = localStorage.getItem("auth_token");
+
+    /**
+     * Uploads avatar to the server
+     */
+    async uploadAvatar() {
+        const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
         if (!token) {
-            this.message.textContent = "No auth. plz connect.";
-            this.message.style.color = "#f00";
+            this.showMessage('You must be logged in', 'error');
             return;
         }
-        const file = this.fileInput.files && this.fileInput.files[0];
+
+        const file = this.fileInput.files?.[0];
         if (!file) {
-            this.message.textContent = "take image before";
-            this.message.style.color = "#f00";
+            this.showMessage('Select an image first', 'error');
             return;
         }
 
@@ -135,31 +170,52 @@ export class AvatarWindow extends fenetre {
         formData.append('avatar', file);
 
         try {
-            const response = await fetch('/api/avatar/upload', {
+            this.showMessage('Uploading...', 'info');
+
+            const response = await fetch(API.AVATAR.UPLOAD, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
                 },
                 body: formData
             });
+
             const data = await response.json();
+
             if (!response.ok) {
-                const err = data?.error || data?.message || 'Upload failed';
-                this.message.textContent = err;
-                this.message.style.color = '#f00';
+                const errorMsg = data?.error || data?.message || 'Upload failed';
+                this.showMessage(errorMsg, 'error');
                 return;
             }
-            if (data && data.avatar_url) {
-                this.avatarPreview.src = data.avatar_url;
+
+            if (data?.avatar_url) {
+                this.preview.src = data.avatar_url;
             }
-            this.message.textContent = 'Avatar enregistré !';
-            this.message.style.color = '#3cff01';
-        } catch (err) {
-            console.error('Avatar upload error:', err);
-            this.message.textContent = 'Erreur lors de l’envoi';
-            this.message.style.color = '#f00';
+
+            this.showMessage('Avatar saved!', 'success');
+            eventBus.emit(Events.AVATAR_UPDATED, { url: data?.avatar_url });
+
+        } catch (error) {
+            console.error('Avatar upload error:', error);
+            this.showMessage('Upload error', 'error');
         }
     }
 
+    /**
+     * Displays a feedback message
+     * @param {string} text - Message text
+     * @param {'success'|'error'|'info'} type - Message type
+     */
+    showMessage(text, type = 'info') {
+        this.message.textContent = text;
+        this.message.className = CSS.MESSAGE;
 
+        if (type === 'success') {
+            this.message.classList.add(CSS.MESSAGE_SUCCESS);
+        } else if (type === 'error') {
+            this.message.classList.add(CSS.MESSAGE_ERROR);
+        } else {
+            this.message.classList.add(CSS.MESSAGE_INFO);
+        }
+    }
 }

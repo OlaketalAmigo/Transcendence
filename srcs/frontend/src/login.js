@@ -1,172 +1,235 @@
-import {fenetre} from "./windows.js";
-import {avatarWindow} from "./app.js";
-export class LoginWindow extends fenetre {
+import { Window } from './windows.js';
+import { API, STORAGE_KEYS, CSS } from './config.js';
+import { eventBus, Events } from './events.js';
+
+/**
+ * Login and registration window
+ * Emits events instead of directly importing other windows
+ */
+export class LoginWindow extends Window {
     constructor() {
-        super(320, 240, "Connexion");
+        super({
+            name: 'login',
+            title: 'Login',
+            cssClasses: ['login']
+        });
 
-        this.mode = "login";
+        this.buildUI();
+        this.bindEvents();
+        this.checkIfAlreadyLoggedIn();
+    }
 
-        this.username = document.createElement("input");
-        this.username.placeholder = "Username";
+    /**
+     * Builds the user interface
+     */
+    buildUI() {
+        // Main form
+        this.form = this.createElement('div', 'login__form');
 
-        this.password = document.createElement("input");
-        this.password.type = "password";
-        this.password.placeholder = "Password";
+        // Username field
+        this.usernameInput = this.createElement('input', CSS.INPUT, {
+            type: 'text',
+            placeholder: 'Username'
+        });
 
-        this.submit = document.createElement("button");
-        this.submit.innerText = "Se connecter";
+        // Password field
+        this.passwordInput = this.createElement('input', CSS.INPUT, {
+            type: 'password',
+            placeholder: 'Password'
+        });
 
-        this.switch = document.createElement("button");
-        this.switch.innerText = "S'inscrire";
+        // Action buttons
+        this.actions = this.createElement('div', 'login__actions');
 
-        this.message = document.createElement("div");
-        this.message.style.fontSize = "0.8em";
+        this.loginBtn = this.createElement('button', [CSS.BTN, CSS.BTN_PRIMARY], {
+            text: 'Sign in'
+        });
 
-        this.body.append(
-            this.username,
-            this.password,
-            this.submit,
-            this.switch,
-            this.message
+        this.registerBtn = this.createElement('button', [CSS.BTN, CSS.BTN_SECONDARY], {
+            text: 'Register'
+        });
+
+        this.actions.append(this.loginBtn, this.registerBtn);
+
+        // Feedback message
+        this.message = this.createElement('div', CSS.MESSAGE);
+
+        // Divider
+        this.divider = this.createElement('div', 'login__divider', {
+            text: 'or'
+        });
+
+        // GitHub button
+        this.githubBtn = this.createElement('button', [CSS.BTN, CSS.BTN_GITHUB], {
+            text: 'Sign in with GitHub'
+        });
+
+        // Assembly
+        this.form.append(
+            this.usernameInput,
+            this.passwordInput,
+            this.actions,
+            this.message,
+            this.divider,
+            this.githubBtn
         );
 
-        this.applyStyles();
-        this.bindEvents();
-
-        //  **** ADDED GITHUB FUNCTION ****
-        // In constructor() of LoginWindow
-        this.githubBtn = document.createElement("button");
-        this.githubBtn.innerText = "Se connecter avec GitHub";
-        this.githubBtn.style.backgroundColor = "#24292e";
-        this.githubBtn.style.color = "white";
-        this.githubBtn.onclick = () => {
-            // Open the OAUTH Github in a popup and receive the token from postMessage
-            const w = 600;
-            const h = 700;
-            const left = (screen.width - w) / 2;
-            const top = (screen.height - h) / 2;
-            const popup = window.open('/api/auth/github', 'githubOAuth', `width=${w},height=${h},left=${left},top=${top}`);
-            const listener = (ev) => {
-                if (ev.data && ev.data.token) {
-                    localStorage.setItem('auth_token', ev.data.token);
-                    this.message.innerText = 'Connexion GitHub réussie ! Bienvenue.';
-                    avatarWindow.getPhoto();
-                    this.message.style.color = '#3cff01';
-                    window.removeEventListener('message', listener);
-                    if (popup) popup.close();
-                }
-            };
-            window.addEventListener('message', listener, {once: true});
-        };
-        this.body.appendChild(this.githubBtn);
-
-        this.checkIfAlreadyLoggedIn(); // Verify if the user is connected on startup
+        this.body.appendChild(this.form);
     }
 
-    applyStyles() {
-        this.body.style.display = "flex";
-        this.body.style.flexDirection = "column";
-        this.body.style.gap = "8px";
-    }
-
-    checkIfAlreadyLoggedIn(){
-        const token = localStorage.getItem("auth_token");
-        if (token) {
-            this.message.innerText = "Vous êtes déjà connecté !";
-            this.message.style.color = "#3cff01";
-        }
-    }
-
-    async connexion() {
-        console.log("methode connexion lancée");
-        const response = await fetch("/api/auth/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                username: this.username.value,
-                password: this.password.value
-            })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            console.log("connexion ok", data);
-            //  *** TOKEN STORAGE ***
-            if (data.token) {
-                localStorage.setItem("auth_token", data.token);
-                this.message.innerText = "Connexion réussie ! Bienvenue.";
-                this.message.style.color = "#3cff01";
-                avatarWindow.getPhoto();
-                // mask the window after 1.5s
-                setTimeout(() => this.hide(), 1500);
-
-            } 
-            else {
-                this.message.innerText = "Token manquant dans la réponse";
-                this.message.style.color = "#ff4444";
-            }
-        } 
-        else {
-            // Show a more visible user error
-            const errMsg = data && data.message ? data.message : "Échec de la connexion";
-            this.message.innerText = errMsg;
-            this.message.style.color = "#ff4d4d";
-        }
-    }
-
-
-    async inscription(){
-        console.log("methode inscription lancée");
-        const response = await fetch("/api/auth/register", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                username: this.username.value,
-                password: this.password.value
-            })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            console.log("OK", data);
-        } else {
-            console.error("ERROR", data);
-        }
-    }
-
+    /**
+     * Attaches event handlers
+     */
     bindEvents() {
-        this.switch.onclick = () => this.toggleMode();
+        this.loginBtn.addEventListener('click', () => this.handleLogin());
+        this.registerBtn.addEventListener('click', () => this.handleRegister());
+        this.githubBtn.addEventListener('click', () => this.handleGitHubLogin());
 
-        this.submit.onclick = () => {
-            this.message.innerText = this.mode === "login"
-                                                    ? "Tentative de connexion..."
-                                                    : "Tentative d'inscription...";
-            if (this.mode === "login"){
-                this.connexion();
+        // Login with Enter
+        this.passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.handleLogin();
             }
-            else {
-                this.inscription();
-            }
-        };
+        });
     }
 
-    toggleMode() {
-        if (this.mode === "login") {
-            this.mode = "register";
-            this.header.firstChild.textContent = "Inscription";
-            this.submit.innerText = "S'inscrire";
-            this.switch.innerText = "Se connecter";
+    /**
+     * Checks if user is already logged in
+     */
+    checkIfAlreadyLoggedIn() {
+        const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+        if (token) {
+            this.showMessage('You are already logged in!', 'success');
+        }
+    }
+
+    /**
+     * Handles login
+     */
+    async handleLogin() {
+        const username = this.usernameInput.value.trim();
+        const password = this.passwordInput.value;
+
+        if (!username || !password) {
+            this.showMessage('Please fill in all fields', 'error');
+            return;
+        }
+
+        this.showMessage('Signing in...', 'info');
+
+        try {
+            const response = await fetch(API.AUTH.LOGIN, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.token) {
+                localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token);
+                this.showMessage('Login successful! Welcome.', 'success');
+
+                // Emit login event
+                eventBus.emit(Events.USER_LOGGED_IN, { username, token: data.token });
+
+                // Close window after delay
+                setTimeout(() => this.hide(), 1500);
+            } else {
+                const errorMsg = data?.message || 'Login failed';
+                this.showMessage(errorMsg, 'error');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            this.showMessage('Server connection error', 'error');
+        }
+    }
+
+    /**
+     * Handles registration
+     */
+    async handleRegister() {
+        const username = this.usernameInput.value.trim();
+        const password = this.passwordInput.value;
+
+        if (!username || !password) {
+            this.showMessage('Please fill in all fields', 'error');
+            return;
+        }
+
+        this.showMessage('Registering...', 'info');
+
+        try {
+            const response = await fetch(API.AUTH.REGISTER, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                this.showMessage('Registration successful! You can now sign in.', 'success');
+                eventBus.emit(Events.USER_REGISTERED, { username });
+            } else {
+                const errorMsg = data?.message || 'Registration failed';
+                this.showMessage(errorMsg, 'error');
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            this.showMessage('Server connection error', 'error');
+        }
+    }
+
+    /**
+     * Handles GitHub OAuth login
+     */
+    handleGitHubLogin() {
+        const width = 600;
+        const height = 700;
+        const left = (screen.width - width) / 2;
+        const top = (screen.height - height) / 2;
+
+        const popup = window.open(
+            API.AUTH.GITHUB,
+            'githubOAuth',
+            `width=${width},height=${height},left=${left},top=${top}`
+        );
+
+        const handleMessage = (event) => {
+            if (event.data?.token) {
+                localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, event.data.token);
+                this.showMessage('GitHub login successful! Welcome.', 'success');
+
+                // Emit login event
+                eventBus.emit(Events.USER_LOGGED_IN, {
+                    provider: 'github',
+                    token: event.data.token
+                });
+
+                window.removeEventListener('message', handleMessage);
+                if (popup) popup.close();
+            }
+        };
+
+        window.addEventListener('message', handleMessage, { once: true });
+    }
+
+    /**
+     * Displays a feedback message
+     * @param {string} text - Message text
+     * @param {'success'|'error'|'info'} type - Message type
+     */
+    showMessage(text, type = 'info') {
+        this.message.textContent = text;
+        this.message.className = CSS.MESSAGE;
+
+        if (type === 'success') {
+            this.message.classList.add(CSS.MESSAGE_SUCCESS);
+        } else if (type === 'error') {
+            this.message.classList.add(CSS.MESSAGE_ERROR);
         } else {
-            this.mode = "login";
-            this.header.firstChild.textContent = "Connexion";
-            this.submit.innerText = "Se connecter";
-            this.switch.innerText = "S'inscrire";
+            this.message.classList.add(CSS.MESSAGE_INFO);
         }
     }
 }
