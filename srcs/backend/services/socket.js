@@ -31,7 +31,7 @@ function setupSocketIO(io)
 			try
 			{
 				const message = await chatService.saveMessage(socket.user.userId, data.content);
-				io.to('general-chat').emit('chat-message',
+				socket.broadcast.to('general-chat').emit('chat-message',
 				{
 					id:message.id,
 					username: socket.user.username,
