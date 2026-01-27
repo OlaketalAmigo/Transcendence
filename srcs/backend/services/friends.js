@@ -179,6 +179,29 @@ async function declineFriendRequest(userId, fromUserId) {
 }
 
 /**
+ * Get list of friend IDs for a user (for quick lookup)
+ */
+async function getFriendIds(userId) {
+    try {
+        const result = await query(
+            `SELECT
+                CASE
+                    WHEN f.id_user1 = $1 THEN f.id_user2
+                    ELSE f.id_user1
+                END as friend_id
+             FROM friendship f
+             WHERE (f.id_user1 = $1 OR f.id_user2 = $1)
+             AND f.status = 'accepted'`,
+            [userId]
+        );
+        return result.rows.map(row => row.friend_id);
+    } catch (err) {
+        console.error('Get friend IDs error:', err);
+        return [];
+    }
+}
+
+/**
  * Remove a friend
  */
 async function removeFriend(userId, friendId) {
@@ -207,6 +230,7 @@ async function removeFriend(userId, friendId) {
 
 export default {
     getFriends,
+    getFriendIds,
     getPendingRequests,
     searchUsers,
     sendFriendRequest,

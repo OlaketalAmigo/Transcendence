@@ -382,6 +382,16 @@ body {
     align-self: flex-end;
 }
 
+.chat__friend-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-success);
+    border-radius: 50%;
+    margin-right: var(--spacing-xs);
+    vertical-align: middle;
+}
+
 .chat__system {
     color: var(--color-text-muted);
     font-size: var(--font-size-sm);

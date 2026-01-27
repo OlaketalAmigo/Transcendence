@@ -16,6 +16,7 @@ export class GlobalChat extends Window {
 
         this.socket = null;
         this.connected = false;
+        this.friendIds = new Set();
 
         this.buildUI();
         this.bindEvents();
@@ -100,15 +101,17 @@ export class GlobalChat extends Window {
      * @param {string} username - User name
      * @param {string} content - Message content
      * @param {boolean} isOwn - Is this the current user's message
+     * @param {boolean} isFriend - Is this user a friend
      */
-    addChatMessage(username, content, isOwn = false) {
+    addChatMessage(username, content, isOwn = false, isFriend = false) {
         const msg = this.createElement('div', CSS.CHAT_MESSAGE);
 
         if (isOwn) {
             msg.classList.add('chat__message--own');
         }
 
-        msg.innerHTML = `<strong>${this.escapeHtml(username)}:</strong> ${this.escapeHtml(content)}`;
+        const friendIndicator = isFriend ? '<span class="chat__friend-indicator"></span>' : '';
+        msg.innerHTML = `${friendIndicator}<strong>${this.escapeHtml(username)}:</strong> ${this.escapeHtml(content)}`;
         this.output.appendChild(msg);
         this.scrollToBottom();
     }
@@ -252,8 +255,21 @@ export class GlobalChat extends Window {
             eventBus.emit(Events.CHAT_DISCONNECTED, { reason });
         });
 
+        // Handle initial data (recent messages + friend IDs)
+        this.socket.on('chat-init', (data) => {
+            console.log('Received chat init data:', data.messages.length, 'messages');
+            this.friendIds = new Set(data.friendIds || []);
+
+            // Display recent messages
+            data.messages.forEach(msg => {
+                const isFriend = this.friendIds.has(msg.sender_id);
+                this.addChatMessage(msg.username, msg.content, false, isFriend);
+            });
+        });
+
         this.socket.on('chat-message', (msg) => {
-            this.addChatMessage(msg.username, msg.content);
+            const isFriend = this.friendIds.has(msg.sender_id);
+            this.addChatMessage(msg.username, msg.content, false, isFriend);
             eventBus.emit(Events.CHAT_MESSAGE_RECEIVED, msg);
         });
     }
