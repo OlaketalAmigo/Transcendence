@@ -5,30 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>scribl.lidl_edition</title>
     <link rel="stylesheet" href="style.css" />
-    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <h1>scribl.lidl_edition</h1>
+    <h1 class="title">scribl.lidl_edition</h1>
 
-    <!-- Main menu -->
-    <nav id="menu" aria-label="Menu principal">
-      <button id="accueil" aria-label="Accueil">Accueil</button>
-      <button id="explorer" aria-label="Explorer">Explorer</button>
-      <button id="registered" aria-label="Enregistré">Enregistré</button>
-      <button id="login" aria-label="Login">Login</button>
-      <button id="global_chat" aria-label="Global chat">Global chat</button>
-      <button id="avatar" aria-label="avatar">avatar</button>
+    <nav class="menu" aria-label="Menu principal">
+      <button class="menu__item" data-action="login" aria-label="Login">Login</button>
+      <button class="menu__item" data-action="chat" aria-label="Global chat">Global chat</button>
+      <button class="menu__item" data-action="avatar" aria-label="Avatar">Avatar</button>
+      <button class="menu__item" data-action="friends" aria-label="Amis">Amis</button>
     </nav>
 
-    <button onclick="direBonjour()" style="position: absolute; top: 20%; left: 50%; z-index: 1;">
-      Ne cliquez pas !
-    </button>
+    <button class="easter-egg" data-action="easter-egg">Ne cliquez pas !</button>
 
     <script type="module" src="app.js"></script>
   </body>
-</html>
-</script>
-  
-</html></script>
-  
 </html>

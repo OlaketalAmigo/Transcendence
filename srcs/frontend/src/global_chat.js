@@ -1,200 +1,202 @@
-import {fenetre} from "./windows.js";
-export class GlobalChat extends fenetre {
+import { Window } from './windows.js';
+import { STORAGE_KEYS, CSS } from './config.js';
+import { eventBus, Events } from './events.js';
+
+/**
+ * Global chat window
+ * Uses Socket.IO for real-time communication
+ */
+export class GlobalChat extends Window {
     constructor() {
-        super(320, 240, "Global Chat");
+        super({
+            name: 'chat',
+            title: 'Global Chat',
+            cssClasses: ['chat']
+        });
 
-        // Creation of the elements
-        this.output = document.createElement("div");
-        this.output.className = "chat-output";
-
-        this.input = document.createElement("input");
-        this.input.type = "text";
-        this.input.placeholder = "Tape ton message...";
-        this.input.className = "chat-input";
-
-        this.sendButton = document.createElement("button");
-        this.sendButton.textContent = "Envoyer";
-        this.sendButton.className = "send-btn";
-
-        this.inputContainer = document.createElement("div");
-        this.inputContainer.className = "input-container";
-        this.inputContainer.append(this.input, this.sendButton);
-
-        this.body.append(this.output, this.inputContainer);
-
-        this.applyStyles();
-        this.applyEvents();
-        // Connection to the global chat is started via dedicated controls
+        this.socket = null;
         this.connected = false;
-        this.createConnectControls();
+        this.friendIds = new Set();
+
+        this.buildUI();
+        this.bindEvents();
     }
 
-    // Create the controls (Connect / Reconnect) in the chat window
-    createConnectControls() {
-        this.controls = document.createElement("div");
-        this.controls.style.display = "flex";
-        this.controls.style.gap = "8px";
-        this.controls.style.marginTop = "6px";
+    /**
+     * Builds the user interface
+     */
+    buildUI() {
+        // Message display area
+        this.output = this.createElement('div', CSS.CHAT_OUTPUT);
 
-        this.connectButton = document.createElement("button");
-        this.connectButton.textContent = "Connecter";
-        this.connectButton.style.padding = "6px 12px";
-        this.connectButton.style.background = "#28a745";
-        this.connectButton.style.color = "white";
-        this.connectButton.style.border = "none";
-        this.connectButton.style.borderRadius = "6px";
-        this.connectButton.style.cursor = "pointer";
+        // Input container
+        this.inputContainer = this.createElement('div', 'chat__input-container');
 
-        this.reconnectButton = document.createElement("button");
-        this.reconnectButton.textContent = "Reconnecter";
-        this.reconnectButton.style.padding = "6px 12px";
-        this.reconnectButton.style.background = "#007bff";
-        this.reconnectButton.style.color = "white";
-        this.reconnectButton.style.border = "none";
-        this.reconnectButton.style.borderRadius = "6px";
-        this.reconnectButton.style.cursor = "pointer";
+        this.input = this.createElement('input', [CSS.INPUT, CSS.CHAT_INPUT], {
+            type: 'text',
+            placeholder: 'Type your message...'
+        });
 
-        this.controls.append(this.connectButton, this.reconnectButton);
-        this.body.appendChild(this.controls);
+        this.sendBtn = this.createElement('button', [CSS.BTN, CSS.BTN_PRIMARY], {
+            text: 'Send'
+        });
 
-        this.connectButton.addEventListener("click", () => this.connect_sockio_global_chat());
-        this.reconnectButton.addEventListener("click", () => this.reconnect_sockio_global_chat());
+        this.inputContainer.append(this.input, this.sendBtn);
+
+        // Connection controls
+        this.controls = this.createElement('div', CSS.CHAT_CONTROLS);
+
+        this.connectBtn = this.createElement('button', [CSS.BTN, CSS.BTN_SUCCESS], {
+            text: 'Connect'
+        });
+
+        this.reconnectBtn = this.createElement('button', [CSS.BTN, CSS.BTN_PRIMARY], {
+            text: 'Reconnect'
+        });
+
+        this.controls.append(this.connectBtn, this.reconnectBtn);
+
+        // Assembly
+        this.body.append(this.output, this.inputContainer, this.controls);
     }
 
-    async reconnect_sockio_global_chat() {
-        // Disconnect and reconnect the socket if necessary
-        if (this.socket) {
-            try {
-                this.socket.close();
-            } catch (e) {
-                // ignore
-            }
-            this.socket = null;
-            this.output.innerHTML += '<div class="system">Reconnexion en cours...</div>';
-        }
-        this.connected = false;
-        await this.connect_sockio_global_chat();
-    }
+    /**
+     * Attaches event handlers
+     */
+    bindEvents() {
+        this.sendBtn.addEventListener('click', () => this.sendMessage());
+        this.connectBtn.addEventListener('click', () => this.connect());
+        this.reconnectBtn.addEventListener('click', () => this.reconnect());
 
-    applyStyles() {
-        // Main container in flex collumn
-        this.body.style.display = "flex";
-        this.body.style.flexDirection = "column";
-        this.body.style.height = "100%";
-        this.body.style.padding = "10px";
-        this.body.style.boxSizing = "border-box";
-        this.body.style.gap = "10px";
-
-        // Messages zone
-        this.output.style.flex = "1";
-        this.output.style.overflowY = "auto";
-        this.output.style.padding = "8px";
-        this.output.style.background = "#7fb8f1";
-        this.output.style.borderRadius = "6px";
-        this.output.style.display = "flex";
-        this.output.style.flexDirection = "column";
-        this.output.style.gap = "10px";
-
-        // Input container + button
-        this.inputContainer.style.display = "flex";
-        this.inputContainer.style.gap = "8px";
-        this.inputContainer.style.paddingTop = "8px";
-
-        // Input
-        this.input.style.flex = "1";
-        this.input.style.padding = "8px 12px";
-        this.input.style.border = "1px solid #ccc";
-        this.input.style.borderRadius = "6px";
-        this.input.style.fontSize = "14px";
-
-        // Sender button
-        this.sendButton.style.padding = "8px 16px";
-        this.sendButton.style.background = "#0066cc";
-        this.sendButton.style.color = "white";
-        this.sendButton.style.border = "none";
-        this.sendButton.style.borderRadius = "6px";
-        this.sendButton.style.cursor = "pointer";
-        this.sendButton.style.fontWeight = "500";
-    }
-
-    applyEvents() {
-        // Send with the button
-        this.sendButton.addEventListener("click", () => this.sendMessage());
-
-        // Send with Enter key
-        this.input.addEventListener("keypress", (e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
+        // Send with Enter
+        this.input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 this.sendMessage();
             }
         });
     }
 
-    // Send current message via Socket.IO
+    /**
+     * Displays a system message
+     * @param {string} text - Message text
+     * @param {'info'|'error'|'success'} type - Message type
+     */
+    addSystemMessage(text, type = 'info') {
+        const msg = this.createElement('div', CSS.CHAT_SYSTEM);
+
+        if (type === 'error') {
+            msg.classList.add('chat__system--error');
+        } else if (type === 'success') {
+            msg.classList.add('chat__system--success');
+        }
+
+        msg.textContent = text;
+        this.output.appendChild(msg);
+        this.scrollToBottom();
+    }
+
+    /**
+     * Displays a chat message
+     * @param {string} username - User name
+     * @param {string} content - Message content
+     * @param {boolean} isOwn - Is this the current user's message
+     * @param {boolean} isFriend - Is this user a friend
+     */
+    addChatMessage(username, content, isOwn = false, isFriend = false) {
+        const msg = this.createElement('div', CSS.CHAT_MESSAGE);
+
+        if (isOwn) {
+            msg.classList.add('chat__message--own');
+        }
+
+        const friendIndicator = isFriend ? '<span class="chat__friend-indicator"></span>' : '';
+        msg.innerHTML = `${friendIndicator}<strong>${this.escapeHtml(username)}:</strong> ${this.escapeHtml(content)}`;
+        this.output.appendChild(msg);
+        this.scrollToBottom();
+    }
+
+    /**
+     * Escapes HTML to prevent XSS
+     * @param {string} text
+     * @returns {string}
+     */
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    /**
+     * Scrolls the message area to the bottom
+     */
+    scrollToBottom() {
+        this.output.scrollTop = this.output.scrollHeight;
+    }
+
+    /**
+     * Sends a message
+     */
     sendMessage() {
         const content = this.input.value.trim();
         if (!content) return;
 
-        // Envoi au backend si connecté
-        if (this.socket && this.socket.connected) {
-            this.socket.emit("chat-message", { content });
-        } else {
-            this.output.innerHTML += '<div class="system error">Erreur: vous n\'êtes pas connecté au chat global</div>';
+        if (!this.socket?.connected) {
+            this.addSystemMessage('Error: you are not connected to the global chat', 'error');
             return;
         }
 
-        // Immediate display in the interface pour user feedback
-        const div = document.createElement("div");
-        div.className = "chat-message";
-        div.innerHTML = `<strong>Moi:</strong> ${content}`;
-        this.output.appendChild(div);
-        this.output.scrollTop = this.output.scrollHeight;
-
-        // Reset input
-        this.input.value = "";
+        this.socket.emit('chat-message', { content });
+        this.addChatMessage('Me', content, true);
+        this.input.value = '';
     }
 
-    async connect_sockio_global_chat() {
-        const token = localStorage.getItem("auth_token");
+    /**
+     * Reconnects to the server
+     */
+    async reconnect() {
+        if (this.socket) {
+            try {
+                this.socket.close();
+            } catch (e) {
+                // Ignore
+            }
+            this.socket = null;
+        }
 
-        console.log("Tentative de connexion Socket.IO");
-        console.log("→ Token trouvé ? ", !!token);
-        if (token) console.log("→ Token (début) : ", token.substring(0, 20) + "...");
+        this.connected = false;
+        this.addSystemMessage('Reconnecting...');
+        await this.connect();
+    }
+
+    /**
+     * Connects to the Socket.IO server
+     */
+    async connect() {
+        const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 
         if (!token) {
-            console.error("→ ERREUR : Aucun token dans localStorage → connexion impossible");
-            this.output.innerHTML += '<div class="system">Erreur : vous devez être connecté pour utiliser le chat global</div>';
+            this.addSystemMessage('Error: you must be logged in to use the global chat', 'error');
             return;
         }
 
-        // If already connected, dont retry
-        if (this.socket && this.socket.connected) {
-            this.output.innerHTML += '<div class="system">Déjà connecté au chat global</div>';
+        if (this.socket?.connected) {
+            this.addSystemMessage('Already connected to global chat');
             return;
         }
 
-        if (!window.io) {
-            const script = document.createElement("script");
-            script.src = "/socket.io/socket.io.js";
-            document.head.appendChild(script);
-
-            await new Promise(resolve => {
-                script.onload = () => {
-                    console.log("Script socket.io chargé depuis le backend");
-                    resolve();
-                };
-                script.onerror = () => console.error("Impossible de charger socket.io depuis le backend");
-            });
-        }
+        // Load Socket.IO if needed
+        await this.loadSocketIO();
 
         const ioConfig = {
             auth: { token },
             reconnection: true,
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
-            transports: ["websocket", "polling"]
+            transports: ['websocket', 'polling']
         };
-        // Optional: connect from an alternative port (ex: to dodge the proxy)
+
+        // Optional alternative port
         const altPort = window.GLOBAL_CHAT_ALT_PORT;
         if (altPort) {
             const host = location.hostname || 'localhost';
@@ -203,28 +205,72 @@ export class GlobalChat extends fenetre {
             this.socket = io(ioConfig);
         }
 
-        this.socket.on("connect", () => {
-            console.log("→ SOCKET CONNECTÉ ! ID =", this.socket.id);
-            this.output.innerHTML += '<div class="system">Connecté au chat global ✓</div>';
+        this.setupSocketListeners();
+    }
+
+    /**
+     * Loads the Socket.IO script if needed
+     */
+    async loadSocketIO() {
+        if (window.io) return;
+
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = '/socket.io/socket.io.js';
+
+            script.onload = () => {
+                console.log('Socket.IO loaded');
+                resolve();
+            };
+
+            script.onerror = () => {
+                console.error('Failed to load Socket.IO');
+                reject(new Error('Socket.IO load failed'));
+            };
+
+            document.head.appendChild(script);
+        });
+    }
+
+    /**
+     * Sets up Socket.IO listeners
+     */
+    setupSocketListeners() {
+        this.socket.on('connect', () => {
+            console.log('Socket connected, ID:', this.socket.id);
+            this.connected = true;
+            this.addSystemMessage('Connected to global chat', 'success');
+            eventBus.emit(Events.CHAT_CONNECTED, { socketId: this.socket.id });
         });
 
-        this.socket.on("connect_error", (err) => {
-            console.error("→ Erreur de connexion socket :", err.message);
-            this.output.innerHTML += `<div class="system error">Erreur connexion chat : ${err.message}</div>`;
+        this.socket.on('connect_error', (err) => {
+            console.error('Socket connection error:', err.message);
+            this.addSystemMessage(`Connection error: ${err.message}`, 'error');
         });
 
-        this.socket.on("disconnect", (reason) => {
-            console.log("→ Déconnecté :", reason);
-            this.output.innerHTML += `<div class="system">Déconnecté du chat (${reason})</div>`;
+        this.socket.on('disconnect', (reason) => {
+            console.log('Socket disconnected:', reason);
+            this.connected = false;
+            this.addSystemMessage(`Disconnected (${reason})`);
+            eventBus.emit(Events.CHAT_DISCONNECTED, { reason });
         });
 
-        // Messages reception
-        this.socket.on("chat-message", (msg) => {
-            const div = document.createElement("div");
-            div.className = "chat-message";
-            div.innerHTML = `<strong>${msg.username}:</strong> ${msg.content}`;
-            this.output.appendChild(div);
-            this.output.scrollTop = this.output.scrollHeight;
+        // Handle initial data (recent messages + friend IDs)
+        this.socket.on('chat-init', (data) => {
+            console.log('Received chat init data:', data.messages.length, 'messages');
+            this.friendIds = new Set(data.friendIds || []);
+
+            // Display recent messages
+            data.messages.forEach(msg => {
+                const isFriend = this.friendIds.has(msg.sender_id);
+                this.addChatMessage(msg.username, msg.content, false, isFriend);
+            });
+        });
+
+        this.socket.on('chat-message', (msg) => {
+            const isFriend = this.friendIds.has(msg.sender_id);
+            this.addChatMessage(msg.username, msg.content, false, isFriend);
+            eventBus.emit(Events.CHAT_MESSAGE_RECEIVED, msg);
         });
     }
 }

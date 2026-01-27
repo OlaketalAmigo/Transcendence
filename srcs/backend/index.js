@@ -6,6 +6,7 @@ import authRouter from './routes/auth.js';
 import chatRouter from './routes/global_chat.js';
 import gameRoomRouter from './routes/game_room.js';
 import avatarRouter from './routes/avatar.js';
+import friendsRouter from './routes/friends.js';
 import {waitForDb, createTables, ensureOauthClient} from './db.js';
 import setupSocketIO from './services/socket.js';
 import avatarService from './services/avatar.js';
@@ -43,6 +44,7 @@ async function startServer()
 	app.use('/api/global_chat', chatRouter);
 	app.use('/api/rooms', gameRoomRouter);
 	app.use('/api/avatar', avatarRouter);
+	app.use('/api/friends', friendsRouter);
 	app.get('/api', (req, res) => res.send('Backend running'));
 
 	server.listen(3001, () =>
