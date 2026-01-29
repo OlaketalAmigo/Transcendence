@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Lobby</title>
+		<link rel="stylesheet" href="game.css" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet" />
+	</head>
+	<body>
+		<h1 class="title">Lobby</h1>
+
+		<nav class="menu" aria-label="Menu principal">
+			<button class="menu__item" data-action="login" aria-label="Login">Login</button>
+			<button class="menu__item" data-action="chat" aria-label="Global chat">Global chat</button>
+			<button class="menu__item" data-action="avatar" aria-label="Avatar">Avatar</button>
+			<button class="menu__item" data-action="friends" aria-label="Amis">Amis</button>
+		</nav>
+
+		<nav class="game" aria-label="Game">
+			<button class="game__item" data-action="Home page" aria-label="Home Page"
+			onclick="window.location.href='index.html'">Home Page</button>
+		</nav>
+
+    <div class="page" aria-label="Page">
+      <button class="page__item">Create new game</button>
+      <button class="page__item">Join existing game</button>
+    </div>
+
+
+		<script type="module" src="app.js"></script>
+	</body>
+</html>

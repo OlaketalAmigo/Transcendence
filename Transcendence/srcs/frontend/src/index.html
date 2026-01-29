@@ -1,26 +1,31 @@
 <!doctype html>
 <html lang="fr">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>scribl.lidl_edition</title>
-    <link rel="stylesheet" href="style.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet" />
-  </head>
-  <body>
-    <h1 class="title">scribl.lidl_edition</h1>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Transcendence.io</title>
+		<link rel="stylesheet" href="index.css" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet" />
+	</head>
+	<body>
+		<h1 class="title">Transcendence.io</h1>
 
-    <nav class="menu" aria-label="Menu principal">
-      <button class="menu__item" data-action="login" aria-label="Login">Login</button>
-      <button class="menu__item" data-action="chat" aria-label="Global chat">Global chat</button>
-      <button class="menu__item" data-action="avatar" aria-label="Avatar">Avatar</button>
-      <button class="menu__item" data-action="friends" aria-label="Amis">Amis</button>
-    </nav>
+		<nav class="menu" aria-label="Menu principal">
+			<button class="menu__item" data-action="login" aria-label="Login">Login</button>
+			<button class="menu__item" data-action="chat" aria-label="Global chat">Global chat</button>
+			<button class="menu__item" data-action="avatar" aria-label="Avatar">Avatar</button>
+			<button class="menu__item" data-action="friends" aria-label="Amis">Amis</button>
+		</nav>
 
-    <button class="easter-egg" data-action="easter-egg">Ne cliquez pas !</button>
-
-    <script type="module" src="app.js"></script>
-  </body>
-</html>
+		<nav class="game" aria-label="Game">
+			<button class="game__item" data-action="new_game" aria-label="Start new game"
+			onclick="window.location.href='game.html'">Start new game</button>
+		</nav>
+		
+		<script type="module" src="app.js"></script>
+	</body>
+	</html>
+	
+	<!-- <button class="easter-egg" data-action="easter-egg">Ne cliquez pas !</button> -->

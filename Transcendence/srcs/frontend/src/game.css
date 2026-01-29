@@ -1,11 +1,3 @@
-/* ============================================
-   TRANSCENDENCE - Main Stylesheet
-   Convention: BEM (Block__Element--Modifier)
-   ============================================ */
-
-/* ============================================
-   CSS VARIABLES
-   ============================================ */
 :root {
     --color-primary: #0066cc;
     --color-primary-hover: #0052a3;
@@ -16,6 +8,15 @@
     --color-github: #24292e;
 
     --color-bg: #000;
+
+    --app-background-base: radial-gradient(
+        circle at top,
+        #1b2735,
+        #090a0f
+    );
+
+    /* --app-background-image: url("./assets/background.png"); */
+
     --color-surface: #222;
     --color-surface-light: #333;
     --color-text: #fff;
@@ -25,7 +26,7 @@
     --font-size-sm: 1.2rem;
     --font-size-md: 1.4rem;
     --font-size-lg: 1.6rem;
-    --font-size-xl: 4rem;
+    --font-size-xl: 3rem;
 
     --spacing-xs: 4px;
     --spacing-sm: 8px;
@@ -44,7 +45,7 @@
 
     --transition-fast: 150ms ease;
     --transition-normal: 250ms ease;
-
+    
     --z-menu: 2;
     --z-window: 100;
     --z-modal: 200;
@@ -60,19 +61,37 @@
 }
 
 html {
-    font-size: var(--font-size-base);
-    background-color: var(--color-bg);
+    height: 100%;
+    background-image:
+        var(--app-background-base);
+
+    background-size:
+        contain,
+        cover;
+
+    background-position:
+        center,
+        center;
+
+    background-repeat:
+        no-repeat,
+        no-repeat;
 }
 
 body {
     margin: 0;
-    width: 70%;
-    min-width: 800px;
-    margin: 0 auto;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     color: var(--color-text);
     line-height: 1.5;
 }
+
+.app {
+	position: relative;
+    width: 70%;
+    min-width: 800px;
+    margin: 0 auto;
+}
+
 
 /* ============================================
    TYPOGRAPHY
@@ -100,6 +119,7 @@ body {
 /* ============================================
    MENU
    ============================================ */
+
 .menu {
     position: fixed;
     top: 0;
@@ -134,8 +154,84 @@ body {
 }
 
 /* ============================================
+   GAME
+   ============================================ */
+
+.game {
+    position: fixed;
+    top: 0;
+    right: 50px;
+    padding: 0;
+    margin: 0;
+    z-index: var(--z-menu);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.game__item {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-surface-light);
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: right;
+}
+
+.game__item:hover {
+    background: var(--color-surface-light);
+    font-size: var(--font-size-lg);
+}
+
+.game__item--active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+/* ============================================
+   PAGES
+   ============================================ */
+
+.page {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+
+    z-index: var(--z-menu);
+}
+
+.page__item {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-surface-light);
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: right;
+}
+
+.page__item:hover {
+    background: var(--color-surface-light);
+    font-size: var(--font-size-lg);
+}
+
+.page__item--active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+/* ============================================
    BUTTONS
    ============================================ */
+
 .btn {
     display: inline-flex;
     align-items: center;
@@ -463,7 +559,7 @@ body {
 /* ============================================
    EASTER EGG BUTTON
    ============================================ */
-.easter-egg {
+/* .easter-egg {
     position: absolute;
     top: 20%;
     left: 50%;
@@ -482,7 +578,7 @@ body {
 .easter-egg:hover {
     background: var(--color-error);
     border-color: var(--color-error);
-}
+} */
 
 /* ============================================
    UTILITIES
