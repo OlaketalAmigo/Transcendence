@@ -290,9 +290,21 @@ export class FriendsWindow extends Window {
         });
         avatar.src = user.avatar_url || '/avatar/default.png';
 
+        const infoContainer = this.createElement('div', 'friends__info');
+
         const name = this.createElement('span', CSS.FRIENDS_NAME, {
             text: user.username
         });
+
+        infoContainer.appendChild(name);
+
+        // Show stats for friends
+        if (type === 'friend' && user.total_points !== undefined) {
+            const stats = this.createElement('span', 'friends__stats', {
+                text: `${user.total_points || 0} pts`
+            });
+            infoContainer.appendChild(stats);
+        }
 
         const actions = this.createElement('div', CSS.FRIENDS_ACTIONS);
 
@@ -322,7 +334,7 @@ export class FriendsWindow extends Window {
             actions.appendChild(addBtn);
         }
 
-        item.append(avatar, name, actions);
+        item.append(avatar, infoContainer, actions);
         return item;
     }
 

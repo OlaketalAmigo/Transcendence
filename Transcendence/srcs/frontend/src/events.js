@@ -84,5 +84,10 @@ export const Events = {
     // Chat
     CHAT_CONNECTED: 'chat:connected',
     CHAT_DISCONNECTED: 'chat:disconnected',
-    CHAT_MESSAGE_RECEIVED: 'chat:message-received'
+    CHAT_MESSAGE_RECEIVED: 'chat:message-received',
+
+    // Game Rooms
+    ROOM_JOINED: 'room:joined',
+    ROOM_LEFT: 'room:left',
+    ROOM_CREATED: 'room:created'
 };

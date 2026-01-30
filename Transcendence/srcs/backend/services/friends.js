@@ -6,7 +6,7 @@ import { query } from '../db.js';
 async function getFriends(userId) {
     try {
         const result = await query(
-            `SELECT u.id, u.username, u.avatar_url
+            `SELECT u.id, u.username, u.avatar_url, u.total_points, u.games_played, u.games_won
              FROM friendship f
              JOIN users u ON (
                  CASE

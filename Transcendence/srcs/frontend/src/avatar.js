@@ -34,6 +34,13 @@ export class AvatarWindow extends Window {
         // Username display
         this.username = this.createElement('div', CSS.AVATAR_USERNAME);
 
+        // Stats display
+        this.statsContainer = this.createElement('div', 'avatar__stats');
+        this.pointsDisplay = this.createElement('div', 'avatar__stat');
+        this.gamesPlayedDisplay = this.createElement('div', 'avatar__stat');
+        this.gamesWonDisplay = this.createElement('div', 'avatar__stat');
+        this.statsContainer.append(this.pointsDisplay, this.gamesPlayedDisplay, this.gamesWonDisplay);
+
         // Hidden file input
         this.fileInput = this.createElement('input', 'avatar__file-input', {
             type: 'file',
@@ -64,6 +71,7 @@ export class AvatarWindow extends Window {
         this.body.append(
             this.preview,
             this.username,
+            this.statsContainer,
             this.fileInput,
             this.controls,
             this.message
@@ -148,6 +156,46 @@ export class AvatarWindow extends Window {
         } catch (error) {
             console.error('Error loading avatar:', error);
         }
+
+        // Load stats
+        await this.loadStats();
+    }
+
+    /**
+     * Loads player stats from the server
+     */
+    async loadStats() {
+        const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+        if (!token) return;
+
+        try {
+            const response = await fetch(API.STATS.ME, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                console.warn('Failed to load stats, status:', response.status);
+                return;
+            }
+
+            const data = await response.json();
+            this.updateStatsDisplay(data);
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+    }
+
+    /**
+     * Updates the stats display
+     * @param {object} stats
+     */
+    updateStatsDisplay(stats) {
+        this.pointsDisplay.innerHTML = `<span class="avatar__stat-label">Points:</span> <span class="avatar__stat-value">${stats.total_points || 0}</span>`;
+        this.gamesPlayedDisplay.innerHTML = `<span class="avatar__stat-label">Parties:</span> <span class="avatar__stat-value">${stats.games_played || 0}</span>`;
+        this.gamesWonDisplay.innerHTML = `<span class="avatar__stat-label">Victoires:</span> <span class="avatar__stat-value">${stats.games_won || 0}</span>`;
     }
 
     /**

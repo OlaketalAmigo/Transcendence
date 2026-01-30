@@ -28,6 +28,33 @@ async function waitForDb(retries = 10, delay = 2000)
 	throw new Error('Could not connect to database after multiple attempts');
 }
 
+async function runMigrations()
+{
+	try
+	{
+		// Add total_points column if it doesn't exist
+		await pool.query(`
+			DO $$
+			BEGIN
+				IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='total_points') THEN
+					ALTER TABLE users ADD COLUMN total_points INT DEFAULT 0;
+				END IF;
+				IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='games_played') THEN
+					ALTER TABLE users ADD COLUMN games_played INT DEFAULT 0;
+				END IF;
+				IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='games_won') THEN
+					ALTER TABLE users ADD COLUMN games_won INT DEFAULT 0;
+				END IF;
+			END $$;
+		`);
+		console.log('Migrations completed!');
+	}
+	catch (err)
+	{
+		console.error('Error running migrations:', err);
+	}
+}
+
 async function createTables()
 {
 	try
@@ -39,6 +66,9 @@ async function createTables()
 				password_hash TEXT NOT NULL,
 				email VARCHAR(100),
 				avatar_url TEXT DEFAULT '/avatar/default.png',
+				total_points INT DEFAULT 0,
+				games_played INT DEFAULT 0,
+				games_won INT DEFAULT 0,
 				created_at TIMESTAMP DEFAULT NOW()
 			);
 			
@@ -148,6 +178,7 @@ export
 {
 	waitForDb,
 	createTables,
+	runMigrations,
 	query,
 	ensureOauthClient
 };

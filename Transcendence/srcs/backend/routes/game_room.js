@@ -1,6 +1,7 @@
 import express from 'express';
 import gameRoomService from '../services/game_room.js';
 import authenticateToken from '../middleware/auth.js';
+import { getIO, broadcastRoomsList } from '../services/socket.js';
 const router = express.Router();
 
 router.get('/', authenticateToken, async(req, res) =>
@@ -11,6 +12,23 @@ router.get('/', authenticateToken, async(req, res) =>
 		res.json(rooms);
 	}
 	catch (err)
+	{
+		console.error(err);
+		res.status(500).json({error: 'Server error'});
+	}
+});
+
+// IMPORTANT: This route must be before /:roomId to avoid "current" being interpreted as a roomId
+router.get('/current', authenticateToken, async(req, res) =>
+{
+	try
+	{
+		const room = await gameRoomService.getCurrentRoom(req.user.userId);
+		if (!room)
+			return res.status(204).send(); // No content - user is not in any room
+		res.json(room);
+	}
+	catch(err)
 	{
 		console.error(err);
 		res.status(500).json({error: 'Server error'});
@@ -55,6 +73,13 @@ router.post('/', authenticateToken, async(req, res) =>
 		if (!name)
 			return (res.status(400).json({error: 'Room name required'}));
 		const room = await gameRoomService.createRoom(name, req.user.userId);
+
+		// Broadcast updated rooms list to all clients
+		const io = getIO();
+		if (io) {
+			broadcastRoomsList(io);
+		}
+
 		res.status(201).json(room);
 	}
 	catch(err)
@@ -69,6 +94,13 @@ router.post('/:roomId/join', authenticateToken, async(req, res) =>
 	try
 	{
 		const player = await gameRoomService.joinRoom(req.params.roomId, req.user.userId);
+
+		// Broadcast updated rooms list to all clients
+		const io = getIO();
+		if (io) {
+			broadcastRoomsList(io);
+		}
+
 		res.json(player);
 	}
 	catch(err)
@@ -86,6 +118,13 @@ router.post('/:roomId/leave', authenticateToken, async(req, res) =>
 	try
 	{
 		await gameRoomService.leaveRoom(req.params.roomId, req.user.userId);
+
+		// Broadcast updated rooms list to all clients
+		const io = getIO();
+		if (io) {
+			broadcastRoomsList(io);
+		}
+
 		res.json({message: 'Left room successfully'});
 	}
 	catch(err)

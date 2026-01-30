@@ -98,7 +98,7 @@ async function getRoomPlayers(roomId)
 {
 	const result = await query
 	(
-		`SELECT gp.*, u.username
+		`SELECT gp.*, u.username, u.avatar_url, u.total_points, u.games_played, u.games_won
 		FROM game_players gp
 		JOIN users u ON gp.user_id = u.id
 		WHERE gp.room_id = $1
@@ -108,6 +108,21 @@ async function getRoomPlayers(roomId)
 	return (result.rows);
 }
 
+// Get the current room of a user (if any)
+async function getCurrentRoom(userId)
+{
+	const result = await query
+	(
+		`SELECT r.*
+		FROM game_rooms r
+		JOIN game_players gp ON r.id = gp.room_id
+		WHERE gp.user_id = $1 AND r.status = 'waiting'
+		LIMIT 1`,
+		[userId]
+	);
+	return (result.rows[0] || null);
+}
+
 export default
 {
 	createRoom,
@@ -115,5 +130,6 @@ export default
 	listActiveRooms,
 	joinRoom,
 	leaveRoom,
-	getRoomPlayers
+	getRoomPlayers,
+	getCurrentRoom
 };

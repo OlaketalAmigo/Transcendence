@@ -7,6 +7,7 @@ import { LoginWindow } from './login.js';
 import { GlobalChat } from './global_chat.js';
 import { AvatarWindow } from './avatar.js';
 import { FriendsWindow } from './friends.js';
+import { GameRoomWindow } from './game_room.js';
 
 /**
  * Main application class
@@ -23,11 +24,11 @@ class App {
      * Initializes all windows
      */
     initWindows() {
-        // Windows automatically register themselves in the registry
         new LoginWindow();
         new GlobalChat();
         new AvatarWindow();
         new FriendsWindow();
+        new GameRoomWindow();
     }
 
     /**
@@ -41,12 +42,12 @@ class App {
             return;
         }
 
-        // Action to window name mapping
         const actionMap = {
             'login': 'login',
             'chat': 'chat',
             'avatar': 'avatar',
-            'friends': 'friends'
+            'friends': 'friends',
+            'gameroom': 'gameroom'
         };
 
         // Event delegation on the menu
@@ -72,7 +73,7 @@ class App {
         const easterEgg = document.querySelector('.easter-egg');
         if (easterEgg) {
             easterEgg.addEventListener('click', () => {
-                alert('You clicked when we told you not to!');
+                alert('DONT CLICK!');
             });
         }
     }
