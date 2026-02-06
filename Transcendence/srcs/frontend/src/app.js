@@ -17,6 +17,7 @@ class App {
     constructor() {
         this.initWindows();
         this.initMenu();
+        this.initPage();
         this.initEasterEgg();
     }
 
@@ -46,13 +47,39 @@ class App {
             'login': 'login',
             'chat': 'chat',
             'avatar': 'avatar',
-            'friends': 'friends',
-            'gameroom': 'gameroom'
+            'friends': 'friends'
         };
 
         // Event delegation on the menu
         menu.addEventListener('click', (e) => {
             const button = e.target.closest('.menu__item');
+            if (!button) return;
+
+            const action = button.dataset.action;
+
+            // Actions with associated windows
+            if (actionMap[action]) {
+                windowRegistry.toggle(actionMap[action]);
+                return;
+            }
+
+        });
+    }
+
+    initPage() {
+        const page = document.querySelector('.page');
+        if (!page) {
+            console.warn('Page not found');
+            return;
+        }
+
+        const actionMap = {
+            'gameroom': 'gameroom'
+        };
+
+        // Event delegation on the menu
+        page.addEventListener('click', (e) => {
+            const button = e.target.closest('.page__item');
             if (!button) return;
 
             const action = button.dataset.action;
