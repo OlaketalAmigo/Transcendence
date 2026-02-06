@@ -1,0 +1,29 @@
+{
+  "canisters": {
+    "tetris_backend": {
+      "declarations": {
+        "node_compatibility": true
+      },
+      "main": "src/tetris_backend/main.mo",
+      "type": "motoko"
+    },
+    "tetris_frontend": {
+      "dependencies": [
+        "tetris_backend"
+      ],
+      "source": [
+        "src/tetris_frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "tetris_frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
