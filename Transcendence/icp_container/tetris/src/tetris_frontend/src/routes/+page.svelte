@@ -21,7 +21,7 @@
   <form action="#" onsubmit={onSubmit}>
     <label for="name">Enter your name: &nbsp;</label>
     <input id="name" alt="Name" type="text" />
-    <button type="submit">Click Me!</button>
+    <button type="submit">Click Me (HELLLOOOOOOOOOOOOOOO)!</button>
   </form>
   <section id="greeting">{greeting}</section>
 </main>
