@@ -2,7 +2,7 @@ build_image:
 	docker image build --tag icp_image .
 
 create_container: 
-	docker container create -v ./tetris:/tetris  --publish 4943:4943 --name icp_container icp_image
+	docker container create --publish 4943:4943 --name icp_container icp_image
 
 start_container:
 	docker container start icp_container
