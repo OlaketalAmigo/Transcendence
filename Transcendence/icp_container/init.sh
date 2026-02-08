@@ -4,6 +4,14 @@
 #create le projet
 dfx new tetris --type motoko --frontend sveltekit
 
+#remplacement du fichier index.scss
+rm -rf /tetris/src/tetris_frontend/src/index.scss
+mv /src/index.scss /tetris/src/tetris_frontend/src/.
+
+#remplacement du fichier +page.svelte
+rm -rf /tetris/src/tetris_frontend/src/routes/+page.svelte
+mv /src/+page.svelte /tetris/src/tetris_frontend/src/routes/.
+
 cd tetris #chemin du volume
 
 dfx start --background --host 0.0.0.0:4943
