@@ -1,0 +1,3 @@
+[submodule "Transcendence/icp_container/tetris"]
+	path = Transcendence/icp_container/tetris
+	url = https://github.com/H3XploR/tetris_icp.git
