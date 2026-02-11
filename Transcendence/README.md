@@ -52,3 +52,17 @@ DATABASE
         - contient la liste des mots utilisable par les joueurs
 
 21/01   Ajout de avatar_url dans la table users
+
+# Feuille de route icp_container
+        J'ai ajouté un submodule qui est un projet dfx au projet Transcendance
+        Pour update le submodule il suffit de faire la commande ci-dessous:
+                
+                git submodule update --remote 
+
+        Pour l'ajouter une fois le projet cloné:
+
+                git submodule update --init --recursive
+
+                        - git submodule init : Enregistre les submodules listés dans .gitmodules dans la config git locale (.git/config). Il ne télécharge rien, il prépare juste la configuration.
+
+                        - git submodule update : Télécharge le code des submodules et checkout le commit exact référencé par le projet parent. C'est là que les dossiers vides se remplissent.
