@@ -187,8 +187,8 @@ button:disabled { opacity: 0.3; cursor: not-allowed; }
     border: 1px solid var(--border);
     border-radius: 6px;
     padding: 14px 20px;
-    margin-top: 0px;   /* plus bas */
-    margin-left: -800px; /* vers la gauche */
+    margin-top: -250px;   /* plus bas */
+    margin-left: -600px; /* vers la gauche */
     box-shadow: 0 0 20px rgba(0,255,231,0.05);
     position: relative;
     z-index: 1;

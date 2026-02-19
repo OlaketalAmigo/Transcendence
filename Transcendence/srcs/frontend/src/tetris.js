@@ -47,6 +47,7 @@ class Tetris {
         this.isPaused   = false;
         this.grid       = this._createGrid(10, 20);
         this.score      = 0;
+        this.count      = 0;
         this.timeToDown = this.initialTimeToDown;
         this.storedPiece = null;
         this.canStore    = true;
@@ -98,7 +99,7 @@ class Tetris {
             this.lastTime = currentTime;
             this.accumulator += deltaTime;
 
-            while (this.accumulator >= this.timeToDown) {
+            while (this.isRunning && this.accumulator >= this.timeToDown) {
                 this._tick();
                 this.accumulator -= this.timeToDown;
                 if (this.accumulator > this.timeToDown * 3) {
@@ -268,9 +269,9 @@ class Tetris {
     }
 
     _makeHarder() {
-        if (this.count >= this.hardening){
+        if (this.count >= this.hardening) {
             this.count = 0;
-            this.timeToDown -= this.decrementTTD;
+            this.timeToDown = Math.max(100, this.timeToDown - this.decrementTTD);
         }
     }
 
