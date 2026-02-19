@@ -52,3 +52,53 @@ DATABASE
         - contient la liste des mots utilisable par les joueurs
 
 21/01   Ajout de avatar_url dans la table users
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+TETRIS
+
+Feuille de route
+    - Ajout du jeu Tetris au projet Transcendence
+    - Bouton Tetris qui redirige vers une page dédiée (tetris.html)
+    - Architecture modulaire : le monolithe HTML a été découpé en 5 fichiers séparés :
+        tetris.html  — structure de la page
+        tetris.css   — styles (thème cyberpunk)
+        pieces.js    — définition des 7 pièces Tetris et leurs rotations
+        tetris.js    — logique du jeu (classe Tetris)
+        renderer.js  — rendu canvas (grille, hold, next)
+        ui.js        — glue UI : boutons, overlay, liaison game ↔ DOM
+
+Architecture — classe Tetris (tetris.js)
+    Constructeur
+        new Tetris(onRender, onGameOver)
+        onRender    : callback appelé à chaque frame pour redessiner
+        onGameOver  : callback appelé avec le score final
+
+    Méthodes publiques
+        start()                         — initialise et lance une partie
+        stop()                          — arrête la partie en cours
+        pause()                         — bascule pause / reprise
+        configure({ timeToDown,         — modifie les paramètres de difficulté
+                    hardening,            (efficace uniquement avant start()
+                    decrementTTD })       pour timeToDown)
+
+    Paramètres de difficulté (configurables via le panneau Settings)
+        timeToDown   (ms, défaut 1000)  — intervalle entre deux descentes automatiques.
+                                          Plus la valeur est petite, plus le jeu est rapide.
+        hardening    (pts, défaut 1000) — nombre de points de score cumulés avant chaque
+                                          accélération. Augmenter = progression plus lente.
+        decrementTTD (ms, défaut 100)   — réduction de timeToDown à chaque palier atteint.
+                                          Augmenter = accélération plus brutale.
+
+    Flux de jeu
+        spawn → tick (toutes les timeToDown ms) → moveDown ou lockPiece
+        → verifierLignes (score + lignes) → _makeHarder → spawn suivant
+        → game over si la pièce spawne dans une case occupée
+
+Contrôles clavier
+    ← →      Déplacer la pièce
+    ↓        Descente douce (+1 pt)
+    Espace   Hard drop (+2 pts par case)
+    Q        Rotation gauche
+    W        Rotation droite
+    C        Hold (stocker / échanger la pièce courante)
