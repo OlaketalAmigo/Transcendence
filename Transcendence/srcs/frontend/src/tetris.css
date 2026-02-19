@@ -46,14 +46,43 @@ h1 {
     z-index: 1;
 }
 
-#app {
+/* ── Zone de jeu globale ── */
+#game-area {
     display: flex;
-    gap: 16px;
+    gap: 32px;
     align-items: flex-start;
     position: relative;
     z-index: 1;
 }
 
+/* ── Section locale (légèrement décalée à gauche par le flex naturel) ── */
+#local-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#app {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+/* ── Section adversaire ── */
+#opponent-section {
+    display: none;   /* masqué jusqu'à connexion duel */
+    gap: 16px;
+    align-items: flex-start;
+}
+#opponent-section.visible {
+    display: flex;
+}
+
+.opponent-info-panel {
+    width: 130px;
+}
+
+/* ── Panneaux ── */
 .panel {
     background: var(--panel);
     border: 1px solid var(--border);
@@ -85,6 +114,13 @@ canvas { display: block; border-radius: 4px; }
     margin: 0 auto;
 }
 
+/* ── Canvas adversaire ── */
+#canvas-opponent {
+    border: 1px solid var(--accent2);
+    box-shadow: 0 0 30px rgba(255,0,170,0.08), inset 0 0 30px rgba(0,0,0,0.5);
+}
+
+/* ── Score ── */
 .score-block {
     margin-top: 14px;
     text-align: center;
@@ -106,6 +142,7 @@ canvas { display: block; border-radius: 4px; }
     text-shadow: 0 0 10px var(--accent);
 }
 
+/* ── Boutons ── */
 .btn-group {
     display: flex;
     flex-direction: column;
@@ -139,6 +176,7 @@ button {
 
 button:disabled { opacity: 0.3; cursor: not-allowed; }
 
+/* ── Contrôles ── */
 .controls-list {
     margin-top: 14px;
     font-size: 0.6rem;
@@ -147,9 +185,12 @@ button:disabled { opacity: 0.3; cursor: not-allowed; }
 }
 .controls-list span { color: var(--text); }
 
-#main-wrapper { position: relative; }
+/* ── Overlays ── */
+#main-wrapper,
+#opponent-wrapper { position: relative; }
 
-#overlay {
+#overlay,
+#overlay-opponent {
     display: none;
     position: absolute;
     top: 0; left: 0;
@@ -164,7 +205,8 @@ button:disabled { opacity: 0.3; cursor: not-allowed; }
     z-index: 10;
     pointer-events: none;
 }
-#overlay.visible { display: flex; }
+#overlay.visible,
+#overlay-opponent.visible { display: flex; }
 
 #overlay-title {
     font-family: 'Orbitron', monospace;
@@ -181,14 +223,84 @@ button:disabled { opacity: 0.3; cursor: not-allowed; }
     color: var(--accent);
 }
 
+#overlay-opponent-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.4rem;
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-shadow: 0 0 20px var(--accent);
+}
+
+#overlay-opponent-score {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.9rem;
+    color: var(--accent2);
+}
+
+/* ── Panneau duel ── */
+#duel-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 20px;
+    margin-bottom: 14px;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 0 20px rgba(255,0,170,0.04);
+}
+
+.duel-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+#input-room-code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--accent2);
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    padding: 6px 10px;
+    width: 120px;
+    text-transform: uppercase;
+    outline: none;
+    transition: border-color 0.2s;
+}
+#input-room-code:focus {
+    border-color: var(--accent2);
+    box-shadow: 0 0 8px rgba(255,0,170,0.2);
+}
+
+#btn-join-duel  { color: var(--accent2); border-color: var(--accent2); width: auto; padding: 6px 14px; }
+#btn-join-duel:hover:not(:disabled) { background: var(--accent2); color: var(--bg); box-shadow: 0 0 12px var(--accent2); }
+
+#btn-leave-duel { color: #ef4444; border-color: #ef4444; width: auto; padding: 6px 14px; }
+#btn-leave-duel:hover:not(:disabled) { background: #ef4444; color: var(--bg); box-shadow: 0 0 12px #ef4444; }
+
+#duel-status {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--dim);
+    min-width: 120px;
+}
+#duel-status.waiting { color: #f97316; }
+#duel-status.ready   { color: var(--accent); }
+
 /* ── Settings Panel ── */
 #settings-panel {
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 6px;
     padding: 14px 20px;
-    margin-top: -250px;   /* plus bas */
-    margin-left: -600px; /* vers la gauche */
+    margin-top: -250px;
+    margin-left: -600px;
     box-shadow: 0 0 20px rgba(0,255,231,0.05);
     position: relative;
     z-index: 1;

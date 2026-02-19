@@ -7,6 +7,9 @@ import playerStatsService from './player_stats.js';
 // Store game state per room
 const gameRooms = new Map();
 
+// Store tetris duel rooms  { roomCode → Map<socketId, socket> }
+const tetrisRooms = new Map();
+
 // Store io instance globally for use in routes
 let ioInstance = null;
 
@@ -422,8 +425,75 @@ function setupSocketIO(io)
 			io.to(roomId).emit('game-ended');
 		});
 
+		// ============================================
+		// TETRIS DUEL EVENTS
+		// ============================================
+
+		socket.on('tetris:join', ({ roomCode }) => {
+			const code = String(roomCode).toUpperCase().slice(0, 8);
+
+			// Quitter l'ancienne room tetris si besoin
+			if (socket.tetrisRoomCode) {
+				_tetrisLeave(socket);
+			}
+
+			if (!tetrisRooms.has(code)) {
+				tetrisRooms.set(code, new Map());
+			}
+			const room = tetrisRooms.get(code);
+
+			if (room.size >= 2) {
+				socket.emit('tetris:room-status', { status: 'full', players: [] });
+				return;
+			}
+
+			room.set(socket.id, socket);
+			socket.tetrisRoomCode = code;
+
+			const players = [...room.values()].map(s => s.user.username);
+
+			if (room.size === 1) {
+				socket.emit('tetris:room-status', { status: 'waiting', players });
+			} else {
+				// Notifier les deux joueurs
+				for (const s of room.values()) {
+					s.emit('tetris:room-status', { status: 'ready', players });
+				}
+				// Notifier l'adversaire qu'un nouveau joueur a rejoint
+				for (const [id, s] of room) {
+					if (id !== socket.id) {
+						s.emit('tetris:opponent-joined', { username: socket.user.username });
+					}
+				}
+			}
+		});
+
+		socket.on('tetris:leave', () => {
+			_tetrisLeave(socket);
+		});
+
+		// Relay pur : grid-update → adversaire uniquement
+		socket.on('tetris:grid-update', (data) => {
+			_tetrisRelayToOpponent(socket, 'tetris:grid-update', data);
+		});
+
+		// Relay pur : lines-cleared → adversaire uniquement
+		socket.on('tetris:lines-cleared', (data) => {
+			_tetrisRelayToOpponent(socket, 'tetris:lines-cleared', data);
+		});
+
+		// game-over → relayé en opponent-game-over chez l'adversaire
+		socket.on('tetris:game-over', (data) => {
+			_tetrisRelayToOpponent(socket, 'tetris:opponent-game-over', data);
+		});
+
 		socket.on('disconnect', async () =>
 		{
+			// Nettoyage room tetris
+			if (socket.tetrisRoomCode) {
+				_tetrisLeave(socket);
+			}
+
 			console.log(`User disconnected: ${socket.user.username}`);
 
 			// Notify game room if player was in one
@@ -451,6 +521,34 @@ function setupSocketIO(io)
 			}
 		});
 	});
+}
+
+// ── Helpers tetris duel ──────────────────────────────────────────────────
+
+function _tetrisLeave(socket) {
+	const code = socket.tetrisRoomCode;
+	if (!code) return;
+	const room = tetrisRooms.get(code);
+	if (room) {
+		room.delete(socket.id);
+		// Notifier l'adversaire restant
+		for (const s of room.values()) {
+			s.emit('tetris:opponent-left');
+			s.emit('tetris:room-status', { status: 'waiting', players: [s.user.username] });
+		}
+		if (room.size === 0) tetrisRooms.delete(code);
+	}
+	socket.tetrisRoomCode = null;
+}
+
+function _tetrisRelayToOpponent(socket, event, data) {
+	const code = socket.tetrisRoomCode;
+	if (!code) return;
+	const room = tetrisRooms.get(code);
+	if (!room) return;
+	for (const [id, s] of room) {
+		if (id !== socket.id) s.emit(event, data);
+	}
 }
 
 export { broadcastRoomsList };

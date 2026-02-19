@@ -11,50 +11,89 @@
 
 <h1>TETRIS</h1>
 
-<div id="app">
+<!-- Panneau de connexion duel -->
+<div id="duel-panel">
+    <span class="settings-title">Duel</span>
+    <div class="duel-row">
+        <input id="input-room-code" placeholder="Code de salle" maxlength="8" spellcheck="false">
+        <button id="btn-join-duel">Rejoindre</button>
+        <button id="btn-leave-duel" disabled>Quitter</button>
+    </div>
+    <div id="duel-status">—</div>
+</div>
 
-    <!-- Panneau gauche : Hold + Score + Boutons -->
-    <div class="panel">
-        <div class="panel-title">Hold</div>
-        <canvas id="canvas-hold" width="100" height="80"></canvas>
+<div id="game-area">
 
-        <div class="score-block">
-            <div class="score-label">Score</div>
-            <div class="score-value" id="score-display">0</div>
-        </div>
+    <!-- ── JOUEUR LOCAL ── -->
+    <div id="local-section">
+        <div id="app">
 
-        <div class="btn-group">
-            <button id="btn-start">Start</button>
-            <button id="btn-pause" disabled>Pause</button>
-            <button id="btn-stop"  disabled>Stop</button>
+            <!-- Panneau gauche : Hold + Score + Boutons -->
+            <div class="panel">
+                <div class="panel-title">Hold</div>
+                <canvas id="canvas-hold" width="100" height="80"></canvas>
+
+                <div class="score-block">
+                    <div class="score-label">Score</div>
+                    <div class="score-value" id="score-display">0</div>
+                </div>
+
+                <div class="btn-group">
+                    <button id="btn-start">Start</button>
+                    <button id="btn-pause" disabled>Pause</button>
+                    <button id="btn-stop"  disabled>Stop</button>
+                </div>
+            </div>
+
+            <!-- Grille principale -->
+            <div id="main-wrapper">
+                <canvas id="canvas-main" width="300" height="600"></canvas>
+                <div id="overlay">
+                    <div id="overlay-title">GAME OVER</div>
+                    <div id="overlay-score"></div>
+                </div>
+            </div>
+
+            <!-- Panneau droit : Next + Contrôles -->
+            <div class="panel">
+                <div class="panel-title">Next</div>
+                <canvas id="canvas-next" width="100" height="80"></canvas>
+
+                <div class="controls-list">
+                    <div><span>← →</span> Déplacer</div>
+                    <div><span>↓</span> Descendre</div>
+                    <div><span>Q</span> Rot. gauche</div>
+                    <div><span>W</span> Rot. droite</div>
+                    <div><span>Espace</span> Drop</div>
+                    <div><span>C</span> Hold</div>
+                </div>
+            </div>
+
         </div>
     </div>
-    <!-- Grille principale -->
-    <div id="main-wrapper">
-        <canvas id="canvas-main" width="300" height="600"></canvas>
-        <div id="overlay">
-            <div id="overlay-title">GAME OVER</div>
-            <div id="overlay-score"></div>
+
+    <!-- ── JOUEUR ADVERSAIRE ── -->
+    <div id="opponent-section">
+        <div class="panel opponent-info-panel">
+            <div class="panel-title" id="opponent-name">Adversaire</div>
+            <div class="score-block">
+                <div class="score-label">Score</div>
+                <div class="score-value" id="opponent-score">—</div>
+            </div>
         </div>
-    </div>
 
-    <!-- Panneau droit : Next + Contrôles -->
-    <div class="panel">
-        <div class="panel-title">Next</div>
-        <canvas id="canvas-next" width="100" height="80"></canvas>
-
-        <div class="controls-list">
-            <div><span>← →</span> Déplacer</div>
-            <div><span>↓</span> Descendre</div>
-            <div><span>Q</span> Rot. gauche</div>
-            <div><span>W</span> Rot. droite</div>
-            <div><span>Espace</span> Drop</div>
-            <div><span>C</span> Hold</div>
+        <div id="opponent-wrapper">
+            <canvas id="canvas-opponent" width="300" height="600"></canvas>
+            <div id="overlay-opponent">
+                <div id="overlay-opponent-title"></div>
+                <div id="overlay-opponent-score"></div>
+            </div>
         </div>
     </div>
 
 </div>
-        <!-- Panneau de configuration -->
+
+<!-- Panneau de configuration -->
 <div id="settings-panel">
     <div class="settings-title">Paramètres</div>
     <div class="settings-row">
@@ -72,9 +111,11 @@
 </div>
 
 
+<script src="/socket.io/socket.io.js"></script>
 <script src="pieces.js"></script>
 <script src="tetris.js"></script>
 <script src="renderer.js"></script>
+<script src="duel.js"></script>
 <script src="ui.js"></script>
 </body>
 </html>

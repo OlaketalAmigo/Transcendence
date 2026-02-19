@@ -3,9 +3,11 @@
 // ─────────────────────────────────────────────
 
 class Tetris {
-    constructor(onRender, onGameOver) {
-        this.onRender   = onRender;
-        this.onGameOver = onGameOver;
+    constructor(onRender, onGameOver, onBlockPlaced = null, onLinesCleared = null) {
+        this.onRender       = onRender;
+        this.onGameOver     = onGameOver;
+        this.onBlockPlaced  = onBlockPlaced;
+        this.onLinesCleared = onLinesCleared;
 
         this.grid         = this._createGrid(10, 20);
         this.bufferGrid   = this._createGrid(10, 5);
@@ -19,6 +21,8 @@ class Tetris {
         this.hardening        = 1000;
         this.count            = 0;
         this.decrementTTD     = 100;
+
+        this.lastLandingCol = 4;
 
         this.isRunning = false;
         this.isPaused  = false;
@@ -266,6 +270,8 @@ class Tetris {
         const points = [0, 100, 300, 500, 800];
         this.score += points[cleared];
         this.count += points[cleared];
+        if (this.onLinesCleared && cleared > 0)
+            this.onLinesCleared(cleared, this.lastLandingCol);
     }
 
     _makeHarder() {
@@ -342,6 +348,15 @@ class Tetris {
             for (let col = 0; col < shape[row].length; col++)
                 if (shape[row][col] !== 0)
                     this.grid[y + row][x + col] = color;
+        this.lastLandingCol = x + Math.floor(shape[0].length / 2);
+        if (this.onBlockPlaced) this.onBlockPlaced(this.grid.map(r => [...r]));
+    }
+
+    addGarbageLines(lines) {
+        if (!this.isRunning || !lines.length) return;
+        this.grid.splice(0, lines.length);
+        for (const line of lines) this.grid.push([...line]);
+        if (!this._isValidPosition()) this._gameOver();
     }
 
     _gameOver() {

@@ -3,11 +3,12 @@
 // ─────────────────────────────────────────────
 
 const CELL   = 30;
-const COLORS = ['#070712','#a855f7','#f97316','#3b82f6','#06b6d4','#ef4444','#22c55e','#eab308'];
+const COLORS = ['#070712','#a855f7','#f97316','#3b82f6','#06b6d4','#ef4444','#22c55e','#eab308','#555577'];
 
-const ctxMain = document.getElementById('canvas-main').getContext('2d');
-const ctxNext = document.getElementById('canvas-next').getContext('2d');
-const ctxHold = document.getElementById('canvas-hold').getContext('2d');
+const ctxMain     = document.getElementById('canvas-main').getContext('2d');
+const ctxNext     = document.getElementById('canvas-next').getContext('2d');
+const ctxHold     = document.getElementById('canvas-hold').getContext('2d');
+const ctxOpponent = document.getElementById('canvas-opponent').getContext('2d');
 
 function drawCell(ctx, x, y, colorIndex, size) {
     const p = 1;
@@ -113,4 +114,13 @@ function render() {
 
     // Score
     document.getElementById('score-display').textContent = game.score;
+}
+
+function renderOpponent(opponentGrid) {
+    clearCanvas(ctxOpponent, 300, 600);
+    drawGridLines(ctxOpponent, 10, 20, CELL);
+    for (let y = 0; y < opponentGrid.length; y++)
+        for (let x = 0; x < opponentGrid[y].length; x++)
+            if (opponentGrid[y][x] !== 0)
+                drawCell(ctxOpponent, x, y, opponentGrid[y][x], CELL);
 }
