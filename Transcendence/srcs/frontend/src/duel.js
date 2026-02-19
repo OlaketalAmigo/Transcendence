@@ -3,10 +3,11 @@
 // ─────────────────────────────────────────────
 
 class Duel {
-    constructor(socket, tetrisGame, onStatusChange) {
+    constructor(socket, tetrisGame, onStatusChange, onStart) {
         this.socket         = socket;
         this.tetrisGame     = tetrisGame;
         this.onStatusChange = onStatusChange;   // (status, opponentName) => void
+        this.onStart        = onStart;          // () => void — déclenche le début du jeu local
 
         this.action_queue   = [];
         this.opponentGrid   = this._emptyGrid();
@@ -22,6 +23,11 @@ class Duel {
     join(roomCode) {
         this.roomCode = roomCode;
         this.socket.emit('tetris:join', { roomCode });
+    }
+
+    startDuel() {
+        if (!this.isReady) return;
+        this.socket.emit('tetris:start-duel');
     }
 
     leave() {
@@ -111,6 +117,10 @@ class Duel {
 
         this.socket.on('tetris:opponent-game-over', (data) => {
             this.action_queue.push({ type: 'OPPONENT_GAME_OVER', score: data.score });
+        });
+
+        this.socket.on('tetris:start-duel', () => {
+            if (this.onStart) this.onStart();
         });
     }
 

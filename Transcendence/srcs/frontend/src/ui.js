@@ -41,7 +41,13 @@ function hideOverlay() {
 // SOCKET + DUEL
 // ─────────────────────────────────────────────
 
-const socket = io({ auth: { token: localStorage.getItem('token') } });
+const socket = io({
+    auth: { token: localStorage.getItem('auth_token') },
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+    transports: ['websocket', 'polling']
+});
 
 let duel = null;
 
@@ -63,11 +69,18 @@ function updateDuelStatus(status, opponentName) {
     }
 }
 
+function startLocalGame() {
+    hideOverlay();
+    game.start();
+    updateButtons();
+    render();
+}
+
 btnJoinDuel.addEventListener('click', () => {
     const code = inputRoomCode.value.trim().toUpperCase();
     if (!code) return;
     if (duel) { duel.leave(); }
-    duel = new Duel(socket, game, updateDuelStatus);
+    duel = new Duel(socket, game, updateDuelStatus, startLocalGame);
     duel.join(code);
     btnJoinDuel.disabled  = true;
     btnLeaveDuel.disabled = false;
@@ -112,10 +125,11 @@ const game = new Tetris(
 );
 
 btnStart.addEventListener('click', () => {
-    hideOverlay();
-    game.start();
-    updateButtons();
-    render();
+    if (duel && duel.isReady) {
+        duel.startDuel();   // déclenche les deux parties via le serveur
+    } else {
+        startLocalGame();   // solo
+    }
 });
 
 btnPause.addEventListener('click', () => {

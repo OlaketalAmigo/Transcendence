@@ -482,6 +482,17 @@ function setupSocketIO(io)
 			_tetrisRelayToOpponent(socket, 'tetris:lines-cleared', data);
 		});
 
+		// start-duel → relayé aux DEUX joueurs de la room (inclut l'émetteur)
+		socket.on('tetris:start-duel', () => {
+			const code = socket.tetrisRoomCode;
+			if (!code) return;
+			const room = tetrisRooms.get(code);
+			if (!room || room.size < 2) return;
+			for (const s of room.values()) {
+				s.emit('tetris:start-duel');
+			}
+		});
+
 		// game-over → relayé en opponent-game-over chez l'adversaire
 		socket.on('tetris:game-over', (data) => {
 			_tetrisRelayToOpponent(socket, 'tetris:opponent-game-over', data);
