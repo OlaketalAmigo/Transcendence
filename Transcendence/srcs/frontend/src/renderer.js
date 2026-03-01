@@ -53,7 +53,7 @@ function drawGhost(ctx, piece, grid) {
                 if (shape[row][col] !== 0) {
                     const ny = ghost.y + row;
                     const nx = ghost.x + col;
-                    if (ny >= grid.length || grid[ny][nx] !== 0) valid = false;
+                    if (ny < 0 || ny >= grid.length || nx < 0 || nx >= grid[ny].length || grid[ny][nx] !== 0) valid = false;
                 }
         if (!valid) { ghost.y--; break; }
     }

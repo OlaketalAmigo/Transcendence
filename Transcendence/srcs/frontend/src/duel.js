@@ -54,9 +54,16 @@ class Duel {
         this.socket.emit('tetris:lines-cleared', { count, holeCol, garbageLines });
     }
 
-    onLocalGameOver(score) {
+    onLocalGameOver(score, validBlock) {
         if (!this.isReady) return;
-        this.socket.emit('tetris:game-over', { score });
+        this.socket.emit('tetris:game-over', { score, validBlock });
+        this.endDuel();
+    }
+
+    endDuel() {
+        this.isReady      = false;
+        this.action_queue = [];
+        if (this.tetrisGame.isRunning) this.tetrisGame.stop();
     }
 
     // ─── Traitement de la queue ───────────────
@@ -82,7 +89,8 @@ class Duel {
                 break;
 
             case 'OPPONENT_GAME_OVER':
-                this._showOpponentOverlay('YOU WIN', action.score);
+                showOverlay('YOU WIN', action.score);
+                this.endDuel();
                 break;
         }
     }
@@ -116,12 +124,48 @@ class Duel {
         });
 
         this.socket.on('tetris:opponent-game-over', (data) => {
-            this.action_queue.push({ type: 'OPPONENT_GAME_OVER', score: data.score });
+            this.action_queue.push({ type: 'OPPONENT_GAME_OVER', score: data.score, validBlock: data.validBlock });
         });
 
         this.socket.on('tetris:start-duel', () => {
             if (this.onStart) this.onStart();
         });
+
+        this.socket.on('tetris:pause', () => {
+            this.tetrisGame.pause();
+            updateButtons();
+            if (this.tetrisGame.isPaused) showOverlay('PAUSE');
+            else hideOverlay();
+        });
+
+        this.socket.on('tetris:stop', () => {
+            this.tetrisGame.stop();
+            updateButtons();
+            render();
+            showOverlay('STOPPED');
+        });
+
+        this.socket.on('tetris:settings', (data) => {
+            document.getElementById('input-ttd').value        = data.timeToDown;
+            document.getElementById('input-hardening').value  = data.hardening;
+            document.getElementById('input-decrement').value  = data.decrementTTD;
+            this.tetrisGame.configure(data);
+        });
+    }
+
+    togglePause() {
+        if (!this.isReady) return;
+        this.socket.emit('tetris:pause');
+    }
+
+    stop() {
+        if (!this.isReady) return;
+        this.socket.emit('tetris:stop');
+    }
+
+    syncSettings(settings) {
+        if (!this.isReady) return;
+        this.socket.emit('tetris:settings', settings);
     }
 
     // ─── Utilitaires ─────────────────────────

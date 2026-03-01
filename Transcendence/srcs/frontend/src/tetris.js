@@ -129,7 +129,7 @@ class Tetris {
             this._makeHarder();
             this._spawnNewPiece();
             this.canStore = true;
-            if (!this._canSpawn()) this._gameOver();
+            if (!this._canSpawn()) this._gameOver(true);
         }
     }
 
@@ -185,7 +185,7 @@ class Tetris {
         this._spawnNewPiece();
         this.canStore    = true;
         this.accumulator = 0;
-        if (!this._canSpawn()) this._gameOver();
+        if (!this._canSpawn()) this._gameOver(true);
     }
 
     _rotatePiece(direction) {
@@ -290,6 +290,7 @@ class Tetris {
                 if (shape[row][col] !== 0) {
                     const ny = y + row + 1;
                     const nx = x + col;
+                    if (ny < 0) continue; // encore au-dessus de la grille
                     if (ny >= this.grid.length || this.grid[ny][nx] !== 0) return false;
                 }
         return true;
@@ -302,6 +303,7 @@ class Tetris {
         for (let row = 0; row < shape.length; row++)
             for (let col = 0; col < shape[row].length; col++)
                 if (shape[row][col] !== 0) {
+                    if (y + row < 0) continue; // au-dessus de la grille
                     const nx = x + col - 1;
                     if (nx < 0 || this.grid[y + row][nx] !== 0) return false;
                 }
@@ -315,6 +317,7 @@ class Tetris {
         for (let row = 0; row < shape.length; row++)
             for (let col = 0; col < shape[row].length; col++)
                 if (shape[row][col] !== 0) {
+                    if (y + row < 0) continue; // au-dessus de la grille
                     const nx = x + col + 1;
                     if (nx >= this.grid[0].length || this.grid[y + row][nx] !== 0) return false;
                 }
@@ -346,7 +349,7 @@ class Tetris {
         const color    = this.currentPiece.getColor();
         for (let row = 0; row < shape.length; row++)
             for (let col = 0; col < shape[row].length; col++)
-                if (shape[row][col] !== 0)
+                if (shape[row][col] !== 0 && y + row >= 0)
                     this.grid[y + row][x + col] = color;
         this.lastLandingCol = x + Math.floor(shape[0].length / 2);
         if (this.onBlockPlaced) this.onBlockPlaced(this.grid.map(r => [...r]));
@@ -355,12 +358,36 @@ class Tetris {
     addGarbageLines(lines) {
         if (!this.isRunning || !lines.length) return;
         this.grid.splice(0, lines.length);
-        for (const line of lines) this.grid.push([...line]);
-        if (!this._isValidPosition()) this._gameOver();
+        for (const line of lines) this.grid.push([...line]); // ...line pour faire une copie independante
+        // La grille a remonté de lines.length lignes — on remonte la pièce du même décalage
+        // pour qu'elle reste dans la même position relative aux blocs verrouillés.
+        if (this.currentPiece) {
+            this.currentPiece.position.y -= lines.length;
+        }
+        if (this.grid[0].some(c => c !== 0)) { this._gameOver(false); return; }
+        if (!this._isValidPositionAllowTop()) this._gameOver(false);
     }
 
-    _gameOver() {
+    // Comme _isValidPosition mais tolère gy < 0 (zone tampon au-dessus de la grille après garbage)
+    _isValidPositionAllowTop() {
+        if (!this.currentPiece) return true;
+        const { x, y } = this.currentPiece.getPosition();
+        const shape    = this.currentPiece.getShape();
+        for (let row = 0; row < shape.length; row++)
+            for (let col = 0; col < shape[row].length; col++)
+                if (shape[row][col] !== 0) {
+                    const gy = y + row;
+                    const gx = x + col;
+                    if (gy < 0) continue; // au-dessus de la grille : OK
+                    if (gx < 0 || gx >= this.grid[0].length ||
+                        gy >= this.grid.length ||
+                        this.grid[gy][gx] !== 0) return false;
+                }
+        return true;
+    }
+
+    _gameOver(validBlock = false) {
         this.stop();
-        this.onGameOver(this.score);
+        this.onGameOver(this.score, validBlock);
     }
 }

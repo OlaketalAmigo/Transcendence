@@ -1,0 +1,64 @@
+le you win apparait sur la grille de l'adversaire, elle doit apparaitre sur la grille principale du joueur qui gagne FIXED ? [OUI]
+
+undefined is not an object (evaluating 'grid[ny][nx]')
+a la ligne 56 de renderer.js FIXED ? [CA_EN_A_L'AIR]
+A tester plusieurs game, si ca freeze et que l'erreur reviens, NAN, j'ai changer les limite
+sur les bord gauche droit de la grid, a voir
+
+Quand je fais pause, 
+ca ne fait pas pose pour tout le monde FIXED[OUI]
+
+Quand je fait stop, 
+ca ne fais pas stop pour tout le monde FIXED[OUI]
+
+durant le duel du tetris en ligne:
+j'ai plusieurs probleme:
+
+
+Les parametre doivent etre les memes pour tout le monde
+FIXED[OUI]
+
+
+DES GAMES OVER ARRIVE COMME CA SANS RAISON durant le duel FIXED[OUI]
+
+ est-ce du au valid-block ? au addGarbage ?
+
+Bug A — Faux game over via garbage (tetris.js)
+
+addGarbageLines appelait _isValidPosition() qui retourne false si gy < 0. 
+Or après garbage, la pièce monte légitimement au-dessus de la grille 
+(y négatif). 
+Fix : nouvelle méthode _isValidPositionAllowTop() qui 
+ignore les cellules au-dessus de la grille (zone tampon) et 
+ne vérifie que les collisions réelles dans la grille.
+
+Bug B — Crash si la pièce est au-dessus de la grille (tetris.js)
+
+_canMoveDown, _canMoveLeft, _canMoveRight, et _lockPiece accèdent à grid[y + row] 
+sans vérifier si y + row < 0 → undefined → crash. Fix : 
+skip des rangées hors grille avec continue.
+
+Bug C — Game over par garbage ne termine pas le duel (duel.js)
+
+onLocalGameOver ne faisait endDuel() que si validBlock=true. Un game over réel dû à du garbage (validBlock=false) laissait le duel dans un état cassé et l'adversaire ne voyait jamais "YOU WIN". Fix : endDuel() systématique, et OPPONENT_GAME_OVER affiche toujours "YOU WIN".
+
+
+
+separer le code tetris du reste, de meme pour les sockets. FAIT[?]
+
+
+error:
+renderer.js:56 Uncaught TypeError: Cannot read properties of undefined (reading 'length')
+    at drawGhost (renderer.js:56:71)
+    at render (renderer.js:101:9)
+    at Tetris.onRender (ui.js:107:9)
+    at gameLoop (tetris.js:115:18)
+
+FIXED[ON DIRAIS BIEN]
+
+Il faut verifier si le garbage si retrouve a la premiere ligne,
+si c'est le cas, game-over
+
+Il faut un bouton restart
+
+system d'attribution de point et d'enregistrement de point

@@ -108,8 +108,8 @@ const game = new Tetris(
         updateButtons();
     },
     // onGameOver
-    (score) => {
-        if (duel) duel.onLocalGameOver(score);
+    (score, validBlock) => {
+        if (duel) duel.onLocalGameOver(score, validBlock);
         render();
         updateButtons();
         showOverlay('GAME OVER', score);
@@ -133,25 +133,35 @@ btnStart.addEventListener('click', () => {
 });
 
 btnPause.addEventListener('click', () => {
-    game.pause();
-    updateButtons();
-    if (game.isPaused) showOverlay('PAUSE');
-    else hideOverlay();
+    if (duel && duel.isReady) {
+        duel.togglePause();
+    } else {
+        game.pause();
+        updateButtons();
+        if (game.isPaused) showOverlay('PAUSE');
+        else hideOverlay();
+    }
 });
 
 btnStop.addEventListener('click', () => {
-    game.stop();
-    updateButtons();
-    render();
-    showOverlay('STOPPED');
+    if (duel && duel.isReady) {
+        duel.stop();
+    } else {
+        game.stop();
+        updateButtons();
+        render();
+        showOverlay('STOPPED');
+    }
 });
 
 function applySettings() {
-    game.configure({
+    const settings = {
         timeToDown:   parseInt(inputTTD.value,       10),
         hardening:    parseInt(inputHardening.value, 10),
         decrementTTD: parseInt(inputDecrement.value, 10),
-    });
+    };
+    game.configure(settings);
+    if (duel && duel.isReady) duel.syncSettings(settings);
 }
 
 inputTTD.addEventListener('change',       applySettings);

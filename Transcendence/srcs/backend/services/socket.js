@@ -493,6 +493,39 @@ function setupSocketIO(io)
 			}
 		});
 
+		// pause → relayé aux DEUX joueurs de la room
+		socket.on('tetris:pause', () => {
+			const code = socket.tetrisRoomCode;
+			if (!code) return;
+			const room = tetrisRooms.get(code);
+			if (!room) return;
+			for (const s of room.values()) {
+				s.emit('tetris:pause');
+			}
+		});
+
+		// stop → relayé aux DEUX joueurs de la room
+		socket.on('tetris:stop', () => {
+			const code = socket.tetrisRoomCode;
+			if (!code) return;
+			const room = tetrisRooms.get(code);
+			if (!room) return;
+			for (const s of room.values()) {
+				s.emit('tetris:stop');
+			}
+		});
+
+		// settings → relayé aux DEUX joueurs de la room
+		socket.on('tetris:settings', (data) => {
+			const code = socket.tetrisRoomCode;
+			if (!code) return;
+			const room = tetrisRooms.get(code);
+			if (!room) return;
+			for (const s of room.values()) {
+				s.emit('tetris:settings', data);
+			}
+		});
+
 		// game-over → relayé en opponent-game-over chez l'adversaire
 		socket.on('tetris:game-over', (data) => {
 			_tetrisRelayToOpponent(socket, 'tetris:opponent-game-over', data);

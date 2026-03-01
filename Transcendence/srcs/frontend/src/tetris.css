@@ -55,11 +55,11 @@ h1 {
     z-index: 1;
 }
 
-/* ── Section locale (légèrement décalée à gauche par le flex naturel) ── */
+/* ── Section locale ── */
 #local-section {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
 }
 
 #app {
@@ -165,11 +165,37 @@ button {
     width: 100%;
 }
 
-#btn-start  { color: var(--accent);  border-color: var(--accent); }
-#btn-start:hover:not(:disabled)  { background: var(--accent);  color: var(--bg); box-shadow: 0 0 15px var(--accent); }
+#btn-start  { 
+    color: var(--accent);  
+    border-color: var(--accent); 
+}
 
-#btn-pause  { color: var(--accent2); border-color: var(--accent2); }
-#btn-pause:hover:not(:disabled)  { background: var(--accent2); color: var(--bg); box-shadow: 0 0 15px var(--accent2); }
+#btn-start:hover:not(:disabled)  
+{
+    background: var(--accent);  
+    color: var(--bg); 
+    box-shadow: 0 0 15px var(--accent); 
+}
+
+#btn-restart {
+    color: var(--accent);  
+    border-color: var(--accent);
+}
+
+#btn-restart:hover:not(:disabled){
+    background: var(--accent);  
+    color: var(--bg); 
+    box-shadow: 0 0 15px var(--accent); 
+}
+
+#btn-pause  {
+     color: var(--accent2); 
+     border-color: var(--accent2); 
+}
+#btn-pause:hover:not(:disabled)  {
+    background: var(--accent2);
+    color: var(--bg); box-shadow: 0 0 15px var(--accent2);
+}
 
 #btn-stop   { color: #ef4444;        border-color: #ef4444; }
 #btn-stop:hover:not(:disabled)   { background: #ef4444;        color: var(--bg); box-shadow: 0 0 15px #ef4444; }
@@ -293,21 +319,26 @@ button:disabled { opacity: 0.3; cursor: not-allowed; }
 #duel-status.waiting { color: #f97316; }
 #duel-status.ready   { color: var(--accent); }
 
+/* ── Colonne gauche (panel + settings empilés) ── */
+#left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 130px;
+    flex-shrink: 0;
+}
+
 /* ── Settings Panel ── */
 #settings-panel {
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 14px 20px;
-    margin-top: -250px;
-    margin-left: -600px;
+    padding: 14px;
     box-shadow: 0 0 20px rgba(0,255,231,0.05);
-    position: relative;
-    z-index: 1;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: fit-content;
+    width: 130px;
 }
 
 .settings-title {
@@ -322,10 +353,9 @@ button:disabled { opacity: 0.3; cursor: not-allowed; }
 
 .settings-row {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    font-size: 0.6rem;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.55rem;
     color: var(--dim);
     letter-spacing: 0.05em;
 }
@@ -338,7 +368,7 @@ button:disabled { opacity: 0.3; cursor: not-allowed; }
     font-family: 'Orbitron', monospace;
     font-size: 0.65rem;
     padding: 4px 8px;
-    width: 80px;
+    width: 100%;
     text-align: right;
     outline: none;
     transition: border-color 0.2s;
