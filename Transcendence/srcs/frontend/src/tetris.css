@@ -178,14 +178,14 @@ button {
 }
 
 #btn-restart {
-    color: var(--accent);  
-    border-color: var(--accent);
+    color: var(--accent2);  
+    border-color: var(--accent2);
 }
 
 #btn-restart:hover:not(:disabled){
-    background: var(--accent);  
+    background: var(--accent2);  
     color: var(--bg); 
-    box-shadow: 0 0 15px var(--accent); 
+    box-shadow: 0 0 15px var(--accent2); 
 }
 
 #btn-pause  {

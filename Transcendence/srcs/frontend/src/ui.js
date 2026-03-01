@@ -168,5 +168,13 @@ inputTTD.addEventListener('change',       applySettings);
 inputHardening.addEventListener('change', applySettings);
 inputDecrement.addEventListener('change', applySettings);
 
-render();
-updateButtons();
+btnRestart.addEventListener('click', () => {
+    if (duel && duel.isReady) {
+        // In duel mode, we don't restart from client side - let server handle it
+        return;
+    } else {
+        game.restart();
+        updateButtons();
+        render();
+    }
+});

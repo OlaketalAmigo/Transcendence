@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────
 // LOGIQUE TETRIS
-// ───────────────────────────────────────────
+// ─────────────────────────────────────────────
 
 class Tetris {
     constructor(onRender, onGameOver, onBlockPlaced = null, onLinesCleared = null) {
@@ -70,11 +70,6 @@ class Tetris {
         this.accumulator = 0;
         this.lastTime    = 0;
         document.removeEventListener('keydown', this._keyHandler);
-    }
-
-    restart() {
-        this.stop();
-        this.start();
     }
 
     pause() {
@@ -392,7 +387,15 @@ class Tetris {
     }
 
     _gameOver(validBlock = false) {
+    }
+}
+    _gameOver(validBlock = false) {
         this.stop();
         this.onGameOver(this.score, validBlock);
+    }
+    
+    restart() {
+        this.stop();
+        this.start();
     }
 }
