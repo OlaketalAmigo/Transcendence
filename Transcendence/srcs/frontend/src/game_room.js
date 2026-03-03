@@ -14,9 +14,17 @@ export class GameRoomWindow extends Window {
 		this.currentRoom = null;
 		this.roomsList = [];
 		this.socket = null;
+		this.isSpectating = false;
+		this.messageTimeout = null;
 		this.buildUI();
 		this.bindEvents();
 
+		// Handle page close/refresh to disconnect socket
+		window.addEventListener('beforeunload', () => {
+			if (this.socket?.connected) {
+				this.socket.disconnect();
+			}
+		});
 		eventBus.on(Events.USER_LOGGED_IN, () => {
 			this.updateTabsAccess();
 			this.checkCurrentRoom();

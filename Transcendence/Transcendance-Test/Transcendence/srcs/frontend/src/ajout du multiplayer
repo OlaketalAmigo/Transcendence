@@ -1,0 +1,45 @@
+Je veux faire un mode duel du tetris,
+il est fonctionnel est solo.
+
+Pour commencer, je vais devoir
+creer une div qui sera le rendu
+du joueur second joueur. il sera a droite de la 
+div principale qui lui meme sera legerement decale vers la gauche,
+cette div sera grossierement identitique en style qui la div principale
+
+je ne vais pas voir en temps reelle
+les pieces du joueur qui tombe.
+A la place quand le joueur 2 a mis une piece, il envoie un signal,
+le joueur 1 envoie un signal egalement quand la piece tombe.
+
+en mode duel, quand une ligne est clear, il envoie la ligne
+moins la cellule qui a provoquer le clear (donc avec un trou pile
+la ou la derniere piece est arrive) au joueur opposant.
+
+Ce qui a pour effet de decaler toute les lignes vers le haut
+a l'opposant pour recevoir la ligne recu avec le trou.
+
+Pour se faire je vais devoir connecter les deux joueurs.
+
+Il me faudra :
+
+une class Duel il aura pour methode et membre:
+
+action_queue: c'est un tableau qui repertorie tous les 
+signaux a traiter, c'est un tableau qui sera partager
+entre le joueur1 et le joueur2
+
+
+Syncronise_game: fonction qui traite les 
+actions de action_queue et qui verifie l'integrite du duel,
+il va par exemple regarder l'etat du jeu de chaque joueur
+pour voir s'il correspond bien a ce qui est attendu
+
+il y aura different type de signaux.
+Le signal bloc pose avec le type de bloc,
+sa rotation et as position
+
+le signal line cleared, avec le nombre de ligne
+cleared et on ajoute le trou aussi
+
+Aucune idee de si je dois utiliser web socket ou autre

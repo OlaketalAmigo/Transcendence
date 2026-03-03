@@ -1,0 +1,185 @@
+import express from 'express';
+import gameRoomService from '../services/game_room.js';
+import authenticateToken from '../middleware/auth.js';
+import { getIO, broadcastRoomsList } from '../services/socket.js';
+const router = express.Router();
+
+router.get('/', authenticateToken, async(req, res) =>
+{
+	try
+	{
+		const rooms = await gameRoomService.listActiveRooms();
+		res.json(rooms);
+	}
+	catch (err)
+	{
+		console.error(err);
+		res.status(500).json({error: 'Server error'});
+	}
+});
+
+// Get list of rooms currently being played (for spectators)
+router.get('/playing', authenticateToken, async(req, res) =>
+{
+	try
+	{
+		const rooms = await gameRoomService.listPlayingRooms();
+		res.json(rooms);
+	}
+	catch (err)
+	{
+		console.error(err);
+		res.status(500).json({error: 'Server error'});
+	}
+});
+
+// IMPORTANT: This route must be before /:roomId to avoid "current" being interpreted as a roomId
+router.get('/current', authenticateToken, async(req, res) =>
+{
+	try
+	{
+		const room = await gameRoomService.getCurrentRoom(req.user.userId);
+		if (!room)
+			return res.status(204).send(); // No content - user is not in any room
+		res.json(room);
+	}
+	catch(err)
+	{
+		console.error(err);
+		res.status(500).json({error: 'Server error'});
+	}
+});
+
+router.get('/:roomId', authenticateToken, async(req, res) =>
+{
+	try
+	{
+		const room = await gameRoomService.getRoomById(req.params.roomId);
+		if (!room)
+			return (res.status(404).json({error: 'Room not found'}));
+		res.json(room);
+	}
+	catch(err)
+	{
+		console.error(err);
+		res.status(500).json({error: 'Server error'});
+	}
+});
+
+router.get('/:roomId/players', authenticateToken, async(req, res) =>
+{
+	try
+	{
+		const players = await gameRoomService.getRoomPlayers(req.params.roomId);
+		res.json(players);
+	}
+	catch(err)
+	{
+		console.error(err);
+		res.status(500).json({error: 'Server error'});
+	}
+});
+
+router.post('/', authenticateToken, async(req, res) =>
+{
+	try
+	{
+		const {name} = req.body;
+		if (!name)
+			return (res.status(400).json({error: 'Room name required'}));
+		const room = await gameRoomService.createRoom(name, req.user.userId);
+
+		// Broadcast updated rooms list to all clients
+		const io = getIO();
+		if (io) {
+			broadcastRoomsList(io);
+		}
+
+		res.status(201).json(room);
+	}
+	catch(err)
+	{
+		console.error(err);
+		res.status(500).json({error: 'Server error'});
+	}
+});
+
+router.post('/:roomId/join', authenticateToken, async(req, res) =>
+{
+	try
+	{
+		const player = await gameRoomService.joinRoom(req.params.roomId, req.user.userId);
+
+		// Broadcast updated rooms list to all clients
+		const io = getIO();
+		if (io) {
+			broadcastRoomsList(io);
+		}
+
+		res.json(player);
+	}
+	catch(err)
+	{
+		console.error(err);
+		if (err.message.includes('full') || err.message.includes('already'))
+			res.status(400).json({error: err.message});
+		else
+			res.status(500).json({error: err.message});
+	}
+});
+
+router.post('/:roomId/leave', authenticateToken, async(req, res) =>
+{
+	try
+	{
+		await gameRoomService.leaveRoom(req.params.roomId, req.user.userId);
+
+		// Broadcast updated rooms list to all clients
+		const io = getIO();
+		if (io) {
+			broadcastRoomsList(io);
+		}
+
+		res.json({message: 'Left room successfully'});
+	}
+	catch(err)
+	{
+		console.error(err);
+		res.status(500).json({error: 'Server error'});
+	}
+});
+
+// Join a room as spectator
+router.post('/:roomId/spectate', authenticateToken, async(req, res) =>
+{
+	try
+	{
+		const room = await gameRoomService.spectateRoom(req.params.roomId, req.user.userId);
+		res.json(room);
+	}
+	catch(err)
+	{
+		console.error(err);
+		if (err.message.includes('not found') || err.message.includes('not in playing') || err.message.includes('already in'))
+			res.status(400).json({error: err.message});
+		else
+			res.status(500).json({error: err.message});
+	}
+});
+
+// Leave spectator mode
+router.post('/:roomId/leave-spectate', authenticateToken, async(req, res) =>
+{
+	try
+	{
+		await gameRoomService.leaveSpectateRoom(req.params.roomId, req.user.userId);
+		res.json({message: 'Left spectator mode successfully'});
+	}
+	catch(err)
+	{
+		console.error(err);
+		res.status(500).json({error: 'Server error'});
+	}
+});
+
+export default router;

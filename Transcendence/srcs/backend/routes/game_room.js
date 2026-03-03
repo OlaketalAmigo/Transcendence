@@ -18,6 +18,22 @@ router.get('/', authenticateToken, async(req, res) =>
 	}
 });
 
+// Get list of rooms currently being played (for spectators)
+router.get('/playing', authenticateToken, async(req, res) =>
+{
+	try
+	{
+		const rooms = await gameRoomService.listPlayingRooms();
+		res.json(rooms);
+	}
+	catch (err)
+	{
+		console.error(err);
+		res.status(500).json({error: 'Server error'});
+	}
+});
+
+
 // IMPORTANT: This route must be before /:roomId to avoid "current" being interpreted as a roomId
 router.get('/current', authenticateToken, async(req, res) =>
 {
@@ -133,5 +149,40 @@ router.post('/:roomId/leave', authenticateToken, async(req, res) =>
 		res.status(500).json({error: 'Server error'});
 	}
 });
+
+
+// Join a room as spectator
+router.post('/:roomId/spectate', authenticateToken, async(req, res) =>
+{
+	try
+	{
+		const room = await gameRoomService.spectateRoom(req.params.roomId, req.user.userId);
+		res.json(room);
+	}
+	catch(err)
+	{
+		console.error(err);
+		if (err.message.includes('not found') || err.message.includes('not in playing') || err.message.includes('already in'))
+			res.status(400).json({error: err.message});
+		else
+			res.status(500).json({error: err.message});
+	}
+});
+
+// Leave spectator mode
+router.post('/:roomId/leave-spectate', authenticateToken, async(req, res) =>
+{
+	try
+	{
+		await gameRoomService.leaveSpectateRoom(req.params.roomId, req.user.userId);
+		res.json({message: 'Left spectator mode successfully'});
+	}
+	catch(err)
+	{
+		console.error(err);
+		res.status(500).json({error: 'Server error'});
+	}
+});
+
 
 export default router;

@@ -27,6 +27,42 @@ async function broadcastRoomsList(io) {
 	}
 }
 
+// Check if a playing game has only 1 player left and auto-stop it
+async function checkAndStopSinglePlayerGame(io, roomId, dbRoomId) {
+	if (!dbRoomId) return;
+	
+	try {
+		// Check if room is in 'playing' status
+		const room = await gameRoomService.getRoomById(dbRoomId);
+		if (!room || room.status !== 'playing') return;
+		
+		// Count remaining players
+		const players = await gameRoomService.getRoomPlayers(dbRoomId);
+		if (players.length <= 1) {
+			console.log(`Room ${dbRoomId} has only ${players.length} player(s) left, ending game`);
+			
+			// Update room status to 'ended'
+			await gameRoomService.updateRoomStatus(dbRoomId, 'waiting');
+            await gameRoomService.resetRoomScores(dbRoomId);
+			
+			// Remove from game state
+			gameRooms.delete(roomId);
+			
+			// Notify remaining player(s)
+			io.to(roomId).emit('game-ended');
+			io.to(roomId).emit('game-message', {
+				message: 'La partie s\'est terminée car il ne reste qu\'un seul joueur',
+				type: 'info'
+			});
+			
+			// Broadcast updated rooms list
+			broadcastRoomsList(io);
+		}
+	} catch (err) {
+		console.error('Error checking single player game:', err);
+	}
+}
+
 // Save round points to database (only the difference from round start)
 async function saveRoundPoints(currentScores, roundStartScores) {
 	for (const [username, currentPoints] of Object.entries(currentScores)) {
@@ -185,15 +221,93 @@ function setupSocketIO(io)
 				socket.gameRoomId = null;
 				socket.gameRoomDbId = null;
 
+				// Check if game should auto-stop due to single player
+				await checkAndStopSinglePlayerGame(io, roomId, dbRoomId);
 				// Broadcast updated rooms list
 				broadcastRoomsList(io);
 			}
 		});
 
+		// Join a game room as spectator
+		socket.on('game-spectate-room', async (data) => {
+			console.log('Received game-spectate-room from', socket.user.username, 'data:', data);
+			const roomId = `game-room-${data.roomId}`;
+			
+			// Verify room exists and is in playing status, and user is not already in a game
+			try {
+				const room = await gameRoomService.spectateRoom(data.roomId, socket.user.userId);
+				
+				socket.join(roomId);
+				socket.gameRoomId = roomId;
+				socket.gameRoomDbId = data.roomId;
+				socket.isSpectator = true;
+				console.log(`${socket.user.username} joined ${roomId} as spectator`);
+
+				// Send confirmation
+				socket.emit('game-spectate-joined', {
+					roomId: data.roomId,
+					success: true
+				});
+
+				// Notify others that a spectator joined
+				socket.to(roomId).emit('game-spectator-joined', {
+					username: socket.user.username
+				});
+
+				// Send current game state
+				const gameState = gameRooms.get(roomId);
+				if (gameState && gameState.isPlaying) {
+					socket.emit('game-state-sync', {
+						isPlaying: gameState.isPlaying,
+						drawer: gameState.drawer,
+						wordLength: gameState.currentWord ? gameState.currentWord.length : 0,
+						revealedLetters: gameState.revealedLetters,
+						revealedWord: gameState.revealedWord || [],
+						guessedLetters: gameState.guessedLetters,
+						players: gameState.players,
+						scores: gameState.scores || {}
+					});
+				}
+			} catch (err) {
+				console.error('Error joining as spectator:', err);
+				socket.emit('game-spectate-error', {
+					error: err.message || 'Cannot spectate this room'
+				});
+			}
+		});
+
+		// Leave spectator mode
+		socket.on('game-leave-spectate', () => {
+			if (socket.gameRoomId && socket.isSpectator) {
+				const roomId = socket.gameRoomId;
+				
+				socket.to(roomId).emit('game-spectator-left', {
+					username: socket.user.username
+				});
+				
+				socket.leave(roomId);
+				console.log(`${socket.user.username} left spectator mode in ${roomId}`);
+				
+				socket.gameRoomId = null;
+				socket.gameRoomDbId = null;
+				socket.isSpectator = false;
+			}
+		});
+
+
 		// Start the game
-		socket.on('game-start', (data) => {
+		socket.on('game-start', async (data) => {
 			console.log('Received game-start event from', socket.user.username);
 			console.log('socket.gameRoomId:', socket.gameRoomId);
+
+			// Security check: need at least 2 players
+			if (!data.players || data.players.length < 2) {
+				console.log('Game start rejected: not enough players');
+				socket.emit('game-start-error', {
+					error: 'Il faut au moins 2 joueurs pour commencer'
+				});
+				return;
+			}
 
 			const gameStartedData = {
 				drawer: data.drawer,
@@ -207,6 +321,33 @@ function setupSocketIO(io)
 				console.log('WARNING: No roomId for socket, starting game for this socket only');
 				socket.emit('game-started', gameStartedData);
 				return;
+			}
+
+			// Verify player count from database
+			const dbRoomId = socket.gameRoomDbId;
+			if (dbRoomId) {
+				try {
+					const players = await gameRoomService.getRoomPlayers(dbRoomId);
+					if (players.length < 2) {
+						console.log(`Game start rejected: only ${players.length} player(s) in room`);
+						socket.emit('game-start-error', {
+							error: 'Il faut au moins 2 joueurs pour commencer'
+						});
+						return;
+					}
+				} catch (err) {
+					console.error('Error checking player count:', err);
+				}
+			}
+
+			// Update room status to 'playing' in database
+			if (dbRoomId) {
+				try {
+					await gameRoomService.updateRoomStatus(dbRoomId, 'playing');
+					console.log(`Room ${dbRoomId} status updated to 'playing'`);
+				} catch (err) {
+					console.error('Error updating room status to playing:', err);
+				}
 			}
 
 			// Initialize scores for all players
@@ -233,6 +374,9 @@ function setupSocketIO(io)
 			socket.emit('game-started', gameStartedData);
 
 			console.log(`Game started in ${roomId} by ${socket.user.username}`);
+
+			// Broadcast updated rooms list (this room should no longer appear)
+			broadcastRoomsList(io);
 		});
 
 		// Drawer sets the word
@@ -269,6 +413,12 @@ function setupSocketIO(io)
 			const roomId = socket.gameRoomId;
 			if (!roomId) return;
 
+			// Spectators cannot draw
+			if (socket.isSpectator) {
+				console.log(`Spectator ${socket.user.username} tried to draw - blocked`);
+				return;
+			}
+
 			// Broadcast drawing to all other players in the room
 			socket.to(roomId).emit('game-draw', {
 				x1: data.x1,
@@ -285,6 +435,9 @@ function setupSocketIO(io)
 			const roomId = socket.gameRoomId;
 			if (!roomId) return;
 
+			// Spectators cannot clear canvas
+			if (socket.isSpectator) return;
+
 			socket.to(roomId).emit('game-clear-canvas');
 		});
 
@@ -292,6 +445,13 @@ function setupSocketIO(io)
 		socket.on('game-guess', (data) => {
 			const roomId = socket.gameRoomId;
 			if (!roomId) return;
+
+			// Spectators cannot make guesses
+			if (socket.isSpectator) {
+				console.log(`Spectator ${socket.user.username} tried to guess - blocked`);
+				return;
+			}
+
 
 			const gameState = gameRooms.get(roomId);
 			if (!gameState || !gameState.currentWord) return;
@@ -416,13 +576,71 @@ function setupSocketIO(io)
 			});
 		});
 
+		socket.on('leave-room-during-game', async () => {
+			const roomId = socket.gameRoomId;
+			const dbRoomId = socket.gameRoomDbId;
+			const userId = socket.user.userId;
+			const username = socket.user.username;
+
+			if (!roomId || !dbRoomId || !userId) return;
+
+			console.log(`Player ${username} leaving room ${roomId} during game`);
+
+			try
+			{
+				socket.leave(roomId);
+
+				await gameRoomService.leaveRoom(dbRoomId, userId);
+
+				io.to(roomId).emit('game-player-left', {
+					username: username,
+					message: `${username} a quitté la partie`
+				});
+
+				const gameState = gameRooms.get(roomId);
+				if (gameState)
+				{
+					gameState.players = gameState.players.filter(p => p !== username);
+					delete gameState.scores[username];
+
+					io.to(roomId).emit('scores-updated', gameState.scores);
+				}
+
+				await checkAndStopSinglePlayerGame(io, roomId, dbRoomId);
+
+				socket.gameRoomId = null;
+				socket.gameRoomDbId = null;
+
+				broadcastRoomsList(io);
+			}
+			catch (err)
+			{
+				console.error('Error leaving room during game:', err);
+			}
+		});
+
 		// End game
-		socket.on('game-end', () => {
+		socket.on('game-end', async () => {
 			const roomId = socket.gameRoomId;
 			if (!roomId) return;
 
+			// Update room status to 'waiting' in database
+			const dbRoomId = socket.gameRoomDbId;
+			if (dbRoomId) {
+				try {
+					await gameRoomService.updateRoomStatus(dbRoomId, 'waiting');
+					await gameRoomService.resetRoomScores(dbRoomId);
+					console.log(`Room ${dbRoomId} status updated to 'waiting'`);
+				} catch (err) {
+					console.error('Error updating room status to waiting:', err);
+				}
+			}
+
 			gameRooms.delete(roomId);
 			io.to(roomId).emit('game-ended');
+
+			// Broadcast updated rooms list
+			broadcastRoomsList(io);
 		});
 
 		// ============================================
@@ -540,10 +758,38 @@ function setupSocketIO(io)
 
 			console.log(`User disconnected: ${socket.user.username}`);
 
-			// Notify game room if player was in one
+			// Notify game room if player/spectator was in one
 			if (socket.gameRoomId) {
 				const roomId = socket.gameRoomId;
 				const dbRoomId = socket.gameRoomDbId;
+
+				// If spectator, just notify and leave
+				if (socket.isSpectator) {
+					socket.to(roomId).emit('game-spectator-left', {
+						username: socket.user.username
+					});
+					console.log(`Spectator ${socket.user.username} disconnected from ${roomId}`);
+				} else {
+					// Regular player disconnect
+					socket.to(roomId).emit('game-player-left', {
+						username: socket.user.username,
+						userId: socket.user.userId
+					});
+
+					// Get updated player list and broadcast
+					if (dbRoomId) {
+						try {
+							const players = await gameRoomService.getRoomPlayers(dbRoomId);
+							io.to(roomId).emit('game-players-updated', { players });
+						} catch (err) {
+							console.log('Room may have been deleted on disconnect:', err.message);
+						}
+					}
+
+					// Check if game should auto-stop due to single player
+					await checkAndStopSinglePlayerGame(io, roomId, dbRoomId);
+
+
 
 				socket.to(roomId).emit('game-player-left', {
 					username: socket.user.username,
