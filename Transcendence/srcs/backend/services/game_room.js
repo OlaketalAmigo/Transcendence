@@ -108,7 +108,6 @@ async function leaveSpectateRoom(roomId, userId)
 	}
 }
 
-
 async function joinRoom(roomId, userId)
 {
 	const room = await getRoomById(roomId);
@@ -181,7 +180,7 @@ async function getCurrentRoom(userId)
 		`SELECT r.*
 		FROM game_rooms r
 		JOIN game_players gp ON r.id = gp.room_id
-		WHERE gp.user_id = $1 AND r.status = 'waiting'
+		WHERE gp.user_id = $1 AND r.status IN ('waiting', 'playing')
 		LIMIT 1`,
 		[userId]
 	);

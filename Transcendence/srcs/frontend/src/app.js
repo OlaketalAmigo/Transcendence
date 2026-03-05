@@ -69,7 +69,6 @@ class App {
     initPage() {
         const page = document.querySelector('.page');
         if (!page) {
-            console.warn('Page not found');
             return;
         }
 

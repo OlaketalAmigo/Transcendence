@@ -600,10 +600,36 @@ function setupSocketIO(io)
 				const gameState = gameRooms.get(roomId);
 				if (gameState)
 				{
+					const wasDrawer = gameState.drawer === username;
+					
 					gameState.players = gameState.players.filter(p => p !== username);
 					delete gameState.scores[username];
 
 					io.to(roomId).emit('scores-updated', gameState.scores);
+
+					// If the drawer left and there are still enough players, choose a new drawer
+					if (wasDrawer && gameState.players.length >= 1)
+					{
+						// Pick the next player as the new drawer
+						gameState.currentPlayerIndex = gameState.currentPlayerIndex % gameState.players.length;
+						const newDrawer = gameState.players[gameState.currentPlayerIndex];
+						gameState.drawer = newDrawer;
+						
+						// Reset the word state for the new round
+						gameState.currentWord = '';
+						gameState.revealedLetters = [];
+						gameState.revealedWord = [];
+						gameState.guessedLetters = [];
+						gameState.wrongGuesses = 0;
+
+						console.log(`Drawer ${username} left, new drawer is ${newDrawer}`);
+
+						io.to(roomId).emit('game-drawer-changed', {
+							newDrawer: newDrawer,
+							reason: 'drawer_left',
+							message: `${username} (dessinateur) a quitté, ${newDrawer} devient le nouveau dessinateur`
+						});
+					}
 				}
 
 				await checkAndStopSinglePlayerGame(io, roomId, dbRoomId);
@@ -769,7 +795,9 @@ function setupSocketIO(io)
 						username: socket.user.username
 					});
 					console.log(`Spectator ${socket.user.username} disconnected from ${roomId}`);
-				} else {
+				}
+				else
+				{
 					// Regular player disconnect
 					socket.to(roomId).emit('game-player-left', {
 						username: socket.user.username,
@@ -789,25 +817,9 @@ function setupSocketIO(io)
 					// Check if game should auto-stop due to single player
 					await checkAndStopSinglePlayerGame(io, roomId, dbRoomId);
 
-
-
-				socket.to(roomId).emit('game-player-left', {
-					username: socket.user.username,
-					userId: socket.user.userId
-				});
-
-				// Get updated player list and broadcast
-				if (dbRoomId) {
-					try {
-						const players = await gameRoomService.getRoomPlayers(dbRoomId);
-						io.to(roomId).emit('game-players-updated', { players });
-					} catch (err) {
-						console.log('Room may have been deleted on disconnect:', err.message);
-					}
+					// Broadcast updated rooms list
+					broadcastRoomsList(io);
 				}
-
-				// Broadcast updated rooms list
-				broadcastRoomsList(io);
 			}
 		});
 	});
@@ -815,7 +827,8 @@ function setupSocketIO(io)
 
 // ── Helpers tetris duel ──────────────────────────────────────────────────
 
-function _tetrisLeave(socket) {
+function _tetrisLeave(socket)
+{
 	const code = socket.tetrisRoomCode;
 	if (!code) return;
 	const room = tetrisRooms.get(code);

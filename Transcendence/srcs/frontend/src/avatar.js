@@ -16,7 +16,9 @@ export class AvatarWindow extends Window {
 
         this.buildUI();
         this.bindEvents();
-        this.loadAvatar();
+        if (localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)) {
+            this.loadAvatar();
+        }
 
         // Listen for login events
         eventBus.on(Events.USER_LOGGED_IN, () => this.loadAvatar());

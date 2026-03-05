@@ -53,11 +53,13 @@ class EventBus {
      */
     emit(event, data) {
         if (this.listeners.has(event)) {
+            const listeners = this.listeners.get(event);
             this.listeners.get(event).forEach(callback => {
                 try {
                     callback(data);
-                } catch (error) {
-                    console.error(`Error in listener for "${event}":`, error);
+                }
+                catch (err) {
+                    // Show that some events are not fully handled, but don't break the app
                 }
             });
         }

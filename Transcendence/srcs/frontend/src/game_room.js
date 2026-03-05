@@ -36,9 +36,9 @@ export class GameRoomWindow extends Window {
 		this.updateTabsAccess();
 
 		// Verifier si l'utilisateur est deja dans un salon au chargement
-		if (this.isLoggedIn()) {
+		const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+		if (token)
 			this.checkCurrentRoom();
-		}
 	}
 
 	buildUI() {
@@ -48,6 +48,11 @@ export class GameRoomWindow extends Window {
 			text: 'Salons'
 		});
 		this.browseTab.dataset.tab = 'browse';
+
+		this.spectatorTab = this.createElement('button', CSS.GAMEROOM_TAB, {
+			text: 'Spectateur'
+		});
+		this.spectatorTab.dataset.tab = 'spectator';
 
 		this.createTab = this.createElement('button', CSS.GAMEROOM_TAB, {
 			text: 'Creer'
@@ -60,7 +65,7 @@ export class GameRoomWindow extends Window {
 		this.lobbyTab.dataset.tab = 'lobby';
 		this.lobbyTab.style.display = 'none';
 
-		this.tabs.append(this.browseTab, this.createTab, this.lobbyTab);
+		this.tabs.append(this.browseTab, this.spectatorTab, this.createTab, this.lobbyTab);
 
 		this.content = this.createElement('div', CSS.GAMEROOM_CONTENT);
 
@@ -99,9 +104,12 @@ export class GameRoomWindow extends Window {
 
 		this.list = this.createElement('div', CSS.GAMEROOM_LIST);
 
+		this.spectatorList = this.createElement('div', CSS.GAMEROOM_LIST);
+		this.spectatorList.style.display = 'none';
+
 		this.message = this.createElement('div', CSS.MESSAGE);
 
-		this.content.append(this.createContainer, this.lobbyContainer, this.list, this.message);
+		this.content.append(this.createContainer, this.lobbyContainer, this.list, this.spectatorList, this.message);
 
 		this.body.append(this.tabs, this.content);
 	}
@@ -160,7 +168,7 @@ export class GameRoomWindow extends Window {
 
 		// Boutons du jeu
 		this.gameButtons = this.createElement('div', 'gameroom__game-buttons');
-		this.backToLobbyBtn = this.createElement('button', [CSS.BTN, CSS.BTN_SECONDARY], { text: 'Retour au lobby' });
+		this.backToLobbyBtn = this.createElement('button', [CSS.BTN, CSS.BTN_SECONDARY], { text: 'Quitter la partie' });
 		this.endRoundBtn = this.createElement('button', [CSS.BTN, CSS.BTN_DANGER], { text: 'Terminer le jeu' });
 		this.gameButtons.append(this.backToLobbyBtn, this.endRoundBtn);
 
@@ -198,7 +206,7 @@ export class GameRoomWindow extends Window {
 		this.lastY = 0;
 
 		this.canvas.addEventListener('mousedown', (e) => {
-			if (!this.gameState.isPlaying || !this.isCurrentUserDrawer()) return;
+			if (!this.gameState.isPlaying || !this.isCurrentUserDrawer() || this.isSpectating) return;
 			this.isDrawing = true;
 			[this.lastX, this.lastY] = [e.offsetX, e.offsetY];
 		});
@@ -365,7 +373,25 @@ export class GameRoomWindow extends Window {
 		});
 
 		this.socket.on('game-player-left', (data) => {
-			console.log(`${data.username} left the room`);
+			this.showMessage(`${data.username} a quitté le salon`, 'info');
+
+			if (this.gameState.isPlaying)
+			{
+				if (this.gameState.players)
+					this.gameState.players = this.gameState.players.filter(p => p !== data.username);
+			}
+
+			if (this.gameState.scores)
+			{
+				delete this.gameState.scores[data.username];
+				this.updateScoresDisplay(this.gameState.scores);
+			}
+
+			// Note: If the drawer left, the server will emit 'game-drawer-changed' 
+			// with the new drawer, so we don't need to handle it here
+
+			if (this.currentRoom && !this.gameState.isPlaying)
+				this.loadLobby();
 		});
 
 		// Game started
@@ -384,6 +410,12 @@ export class GameRoomWindow extends Window {
 			this.setupRound();
 		});
 
+		// Game start error
+		this.socket.on('game-start-error', (data) => {
+			console.error('Game start error:', data.error);
+			this.showMessage(data.error || 'Impossible de démarrer la partie', 'error');
+		});
+
 		// Word was set by drawer
 		this.socket.on('game-word-set', (data) => {
 			console.log(`Word set by ${data.drawer}, length: ${data.wordLength}`);
@@ -396,6 +428,13 @@ export class GameRoomWindow extends Window {
 			}
 
 			this.updateWordDisplay();
+			
+			// Don't change UI for spectators
+			if (this.isSpectating) {
+				this.currentDrawerInfo.textContent = '👁️ MODE SPECTATEUR - Vous regardez la partie';
+				return;
+			}
+			
 			this.currentDrawerInfo.textContent = `${data.drawer} dessine (${data.wordLength} lettres)`;
 
 			// Enable guess input for non-drawers
@@ -451,7 +490,22 @@ export class GameRoomWindow extends Window {
 
 		// Game ended
 		this.socket.on('game-ended', () => {
-			this.resetGameUI();
+			// If spectating, return to spectator list
+			if (this.isSpectating) {
+				this.resetGameUI();
+				this.currentRoom = null;
+				this.isSpectating = false;
+				this.switchTab('spectator');
+				this.showMessage('La partie est terminée', 'info');
+			} else {
+				this.resetGameUI();
+				this.loadLobby();
+			}
+		});
+
+		// Game message from server
+		this.socket.on('game-message', (data) => {
+			this.showMessage(data.message, data.type || 'info');
 		});
 
 		// Sync state for late joiners
@@ -463,12 +517,25 @@ export class GameRoomWindow extends Window {
 				this.gameState.revealedLetters = data.revealedLetters || [];
 				this.gameState.revealedWord = data.revealedWord || new Array(data.wordLength).fill('_');
 				this.gameState.players = data.players;
+				this.gameState.scores = data.scores || {};
 
 				this.showGameUI();
 				this.updateWordDisplay();
+
+				// Update scores display
+				if (data.scores) {
+					this.updateScoresDisplay(data.scores);
+				}
+
 				this.currentDrawerInfo.textContent = `${data.drawer} dessine (${data.wordLength} lettres)`;
 
-				if (!this.isCurrentUserDrawer()) {
+				// Don't enable input for spectators
+				if (this.isSpectating) {
+					this.guessContainer.style.display = 'none';
+					this.wordInputContainer.style.display = 'none';
+					this.drawTools.style.display = 'none';
+					this.currentDrawerInfo.textContent = '👁️ MODE SPECTATEUR - Vous regardez la partie';
+				} else if (!this.isCurrentUserDrawer()) {
 					this.guessContainer.style.display = 'flex';
 					if (data.wordLength > 0) {
 						this.letterInput.disabled = false;
@@ -482,11 +549,73 @@ export class GameRoomWindow extends Window {
 				}
 			}
 		});
+
+		// Spectator events
+		this.socket.on('game-spectate-joined', (data) => {
+			console.log('Successfully joined as spectator:', data.roomId);
+			this.isSpectating = true;
+			
+			// Prepare UI for spectating
+			this.spectatorList.style.display = 'none';
+			this.list.style.display = 'none';
+			this.createContainer.style.display = 'none';
+			this.lobbyContainer.style.display = 'flex';
+			
+			// Hide lobby elements, keep game container for when state syncs
+			this.playerList.style.display = 'none';
+			this.lobbyButtons.style.display = 'none';
+			this.lobbyTitle.textContent = 'Mode Spectateur';
+			
+			this.showMessage('Vous regardez la partie...', 'success');
+			// The game state will be synced via game-state-sync event
+		});
+
+		this.socket.on('game-spectate-error', (data) => {
+			console.error('Spectate error:', data.error);
+			this.showMessage(data.error || 'Impossible de regarder cette partie', 'error');
+		});
+
+		this.socket.on('game-spectator-joined', (data) => {
+			console.log(`Spectator ${data.username} joined`);
+		});
+
+		this.socket.on('game-spectator-left', (data) => {
+			console.log(`Spectator ${data.username} left`);
+		});
+
+		// Drawer changed (when drawer leaves during game)
+		this.socket.on('game-drawer-changed', (data) => {
+			console.log('Drawer changed:', data);
+			this.showMessage(data.message, 'info');
+
+			// Update game state with new drawer
+			this.gameState.drawer = data.newDrawer;
+			this.gameState.currentPlayerIndex = this.gameState.players.indexOf(data.newDrawer);
+
+			// Reset round state
+			this.gameState.currentWord = '';
+			this.gameState.wordLength = 0;
+			this.gameState.revealedLetters = [];
+			this.gameState.revealedWord = [];
+			this.gameState.guessedLetters = [];
+
+			// Clear canvas and history
+			this.clearCanvas();
+			this.guessHistory.innerHTML = '';
+			this.wordDisplay.textContent = '';
+
+			// Setup UI for new round with new drawer
+			this.setupRound();
+		});
 	}
 
 	disconnectGameSocket() {
 		if (this.socket) {
-			this.socket.emit('game-leave-room');
+			if (this.isSpectating) {
+				this.socket.emit('game-leave-spectate');
+			} else {
+				this.socket.emit('game-leave-room');
+			}
 		}
 	}
 
@@ -533,13 +662,14 @@ export class GameRoomWindow extends Window {
 
 		this.currentTab = tabName;
 
-		[this.browseTab, this.createTab, this.lobbyTab].forEach(tab => {
+		[this.browseTab, this.spectatorTab, this.createTab, this.lobbyTab].forEach(tab => {
 			tab.classList.toggle(CSS.GAMEROOM_TAB_ACTIVE, tab.dataset.tab === tabName);
 		});
 
 		this.createContainer.style.display = tabName === 'create' ? 'flex' : 'none';
 		this.lobbyContainer.style.display = tabName === 'lobby' ? 'flex' : 'none';
 		this.list.style.display = tabName === 'browse' ? 'flex' : 'none';
+		this.spectatorList.style.display = tabName === 'spectator' ? 'flex' : 'none';
 
 		this.loadCurrentTab();
 	}
@@ -549,6 +679,10 @@ export class GameRoomWindow extends Window {
 			case 'browse':
 				this.loadRooms();
 				// Connect to socket to receive real-time room updates
+				this.ensureSocketConnected();
+				break;
+			case 'spectator':
+				this.loadPlayingRooms();
 				this.ensureSocketConnected();
 				break;
 			case 'create':
@@ -776,6 +910,123 @@ export class GameRoomWindow extends Window {
 		}
 	}
 
+	createSpectatorRoomItem(room) {
+		const item = this.createElement('div', CSS.GAMEROOM_ITEM);
+
+		const name = this.createElement('span', CSS.GAMEROOM_NAME, {
+			text: room.name
+		});
+
+		const players = this.createElement('span', CSS.GAMEROOM_PLAYERS, {
+			text: `${room.player_count || 0}/${room.max_players || 8}`
+		});
+
+		const status = this.createElement('span', 'gameroom__status', {
+			text: '🎮 En cours'
+		});
+		status.style.color = '#4CAF50';
+		status.style.fontWeight = 'bold';
+
+		const actions = this.createElement('div', CSS.GAMEROOM_ACTIONS);
+
+		const spectateBtn = this.createElement('button', [CSS.BTN, CSS.BTN_PRIMARY], {
+			text: 'Regarder'
+		});
+		spectateBtn.addEventListener('click', () => this.spectateRoom(room.id));
+		actions.appendChild(spectateBtn);
+
+		item.append(name, players, status, actions);
+		return item;
+	}
+
+	async loadPlayingRooms() {
+		const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+		if (!token) {
+			this.showMessage('Connectez-vous pour voir les parties en cours', 'info');
+			return;
+		}
+
+		try {
+			const response = await fetch(API.ROOMS.PLAYING, {
+				headers: this.getHeaders()
+			});
+			const data = await response.json();
+
+			if (!response.ok) {
+				this.showMessage(data.error || 'Erreur', 'error');
+				return;
+			}
+
+			this.renderPlayingRoomsList(data || []);
+		} catch (error) {
+			console.error('Load playing rooms error:', error);
+			this.showMessage('Erreur de connexion', 'error');
+		}
+	}
+
+	renderPlayingRoomsList(rooms) {
+		this.spectatorList.innerHTML = '';
+		this.message.textContent = '';
+
+		if (rooms.length === 0) {
+			this.showMessage('Aucune partie en cours', 'info');
+			return;
+		}
+
+		rooms.forEach(room => {
+			const item = this.createSpectatorRoomItem(room);
+			this.spectatorList.appendChild(item);
+		});
+	}
+
+	async spectateRoom(roomId) {
+		const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+		if (!token) {
+			this.showMessage('Connectez-vous pour regarder', 'info');
+			return;
+		}
+
+		// Check if user is already in a room as a player
+		if (this.currentRoom && !this.isSpectating) {
+			this.showMessage('Vous êtes déjà dans un salon. Quittez-le d\'abord.', 'error');
+			return;
+		}
+
+		// Check if already spectating another game
+		if (this.isSpectating && this.currentRoom && this.currentRoom.id !== roomId) {
+			this.showMessage('Vous regardez déjà une autre partie', 'error');
+			return;
+		}
+
+		try {
+			const response = await fetch(API.ROOMS.SPECTATE(roomId), {
+				method: 'POST',
+				headers: this.getHeaders()
+			});
+			const data = await response.json();
+
+			if (!response.ok) {
+				this.showMessage(data.error || 'Impossible de regarder cette partie', 'error');
+				return;
+			}
+
+			// Store room info and mark as spectating
+			this.currentRoom = data;
+			this.isSpectating = true;
+
+			// Join as spectator via socket
+			await this.ensureSocketConnected();
+			if (this.socket?.connected) {
+				this.socket.emit('game-spectate-room', { roomId: roomId });
+			}
+
+			this.showMessage('Connexion à la partie...', 'info');
+		} catch (error) {
+			console.error('Spectate room error:', error);
+			this.showMessage('Erreur de connexion', 'error');
+		}
+	}
+
 	async joinRoom(roomId) {
 		const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 		if (!token) {
@@ -844,6 +1095,8 @@ export class GameRoomWindow extends Window {
 	async loadLobby() {
 		if (!this.currentRoom) return;
 
+		this.gameState.scores = {};
+
 		try {
 			const response = await fetch(API.ROOMS.PLAYERS(this.currentRoom.id), {
 				headers: this.getHeaders()
@@ -870,6 +1123,10 @@ export class GameRoomWindow extends Window {
 				text: 'Aucun joueur'
 			});
 			this.playerList.appendChild(empty);
+			// Disable start button if no players
+			this.startGameBtn.disabled = true;
+			this.startGameBtn.style.opacity = '0.5';
+			this.startGameBtn.title = 'Il faut au moins 2 joueurs';
 			return;
 		}
 
@@ -899,6 +1156,17 @@ export class GameRoomWindow extends Window {
 			item.append(avatar, name, statsContainer);
 			this.playerList.appendChild(item);
 		});
+
+		// Enable/disable start button based on player count
+		if (players.length < 2) {
+			this.startGameBtn.disabled = true;
+			this.startGameBtn.style.opacity = '0.5';
+			this.startGameBtn.title = 'Il faut au moins 2 joueurs';
+		} else {
+			this.startGameBtn.disabled = false;
+			this.startGameBtn.style.opacity = '1';
+			this.startGameBtn.title = '';
+		}
 	}
 
 	async leaveRoom() {
@@ -941,6 +1209,11 @@ export class GameRoomWindow extends Window {
 	}
 
 	showMessage(text, type = 'info') {
+		// Clear any existing timeout
+		if (this.messageTimeout) {
+			clearTimeout(this.messageTimeout);
+		}
+
 		this.message.textContent = text;
 		this.message.className = CSS.MESSAGE;
 
@@ -951,6 +1224,12 @@ export class GameRoomWindow extends Window {
 		} else {
 			this.message.classList.add(CSS.MESSAGE_INFO);
 		}
+
+		// Auto-clear message after 5 seconds
+		this.messageTimeout = setTimeout(() => {
+			this.message.textContent = '';
+			this.message.className = CSS.MESSAGE;
+		}, 5000);
 	}
 
 	// ============================================
@@ -978,6 +1257,23 @@ export class GameRoomWindow extends Window {
 		this.lobbyButtons.style.display = 'none';
 		this.clearCanvas();
 		this.guessHistory.innerHTML = '';
+
+		// If spectating, show indicator and disable interactions
+		if (this.isSpectating) {
+			this.currentDrawerInfo.textContent = '👁️ MODE SPECTATEUR - Vous regardez la partie';
+			this.currentDrawerInfo.style.backgroundColor = '#2196F3';
+			this.currentDrawerInfo.style.color = 'white';
+			this.currentDrawerInfo.style.padding = '8px';
+			this.currentDrawerInfo.style.borderRadius = '4px';
+			this.currentDrawerInfo.style.textAlign = 'center';
+			
+			// Change button text for spectators
+			this.backToLobbyBtn.textContent = 'Arrêter de regarder';
+			this.endRoundBtn.style.display = 'none'; // Hide end game button for spectators
+		} else {
+			this.backToLobbyBtn.textContent = 'Quitter la partie';
+			this.endRoundBtn.style.display = 'inline-block';
+		}
 	}
 
 	resetGameUI() {
@@ -987,6 +1283,21 @@ export class GameRoomWindow extends Window {
 		this.gameState.revealedLetters = [];
 		this.gameState.revealedWord = [];
 		this.gameState.drawer = null;
+		this.isSpectating = false;
+
+		this.gameState.scores = {};
+   		this.gameState.players = [];
+   		this.gameState.currentPlayerIndex = 0;
+    	this.gameState.guessedLetters = [];
+
+    	// Clear scores display
+    	if (this.scoresDisplay)
+        	this.scoresDisplay.textContent = '';
+
+		if (this.guessHistory)
+			this.guessHistory.innerHTML = '';
+
+		this.clearCanvas();
 
 		this.gameContainer.style.display = 'none';
 		this.playerList.style.display = 'flex';
@@ -996,6 +1307,12 @@ export class GameRoomWindow extends Window {
 		this.guessContainer.style.display = 'none';
 		this.drawTools.style.display = 'none';
 
+		// Reset spectator styling
+		this.currentDrawerInfo.style.backgroundColor = '';
+		this.currentDrawerInfo.style.color = '';
+		this.currentDrawerInfo.style.padding = '';
+		this.currentDrawerInfo.style.borderRadius = '';
+		this.currentDrawerInfo.style.textAlign = '';
 		this.currentDrawerInfo.classList.remove('gameroom__drawer-info--winner');
 	}
 
@@ -1010,8 +1327,8 @@ export class GameRoomWindow extends Window {
 
 		console.log('Players found:', players);
 
-		if (players.length < 1) {
-			this.showMessage('Il faut au moins 1 joueur pour jouer', 'error');
+		if (players.length < 2) {
+			this.showMessage('Il faut au moins 2 joueurs pour commencer', 'error');
 			return;
 		}
 
@@ -1047,6 +1364,15 @@ export class GameRoomWindow extends Window {
 		this.wordDisplay.textContent = '';
 		this.guessHistory.innerHTML = '';
 		this.clearCanvas();
+
+		// Spectators cannot interact
+		if (this.isSpectating) {
+			this.wordInputContainer.style.display = 'none';
+			this.guessContainer.style.display = 'none';
+			this.drawTools.style.display = 'none';
+			this.currentDrawerInfo.textContent = '👁️ MODE SPECTATEUR - Vous regardez la partie';
+			return;
+		}
 
 		if (this.isCurrentUserDrawer()) {
 			// Drawer chooses a word
@@ -1254,9 +1580,14 @@ export class GameRoomWindow extends Window {
 	}
 
 	backToLobby() {
+		if (this.socket?.connected) {
+			this.socket.emit('leave-room-during-game');
+		}
+
 		// Return to lobby without ending game for others
 		this.resetGameUI();
-		this.loadLobby();
+		this.exitLobby();
+		this.showMessage('Vous avez quitté la partie', 'info');
 	}
 
 	endGame() {

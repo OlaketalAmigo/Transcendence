@@ -33,7 +33,6 @@ router.get('/playing', authenticateToken, async(req, res) =>
 	}
 });
 
-
 // IMPORTANT: This route must be before /:roomId to avoid "current" being interpreted as a roomId
 router.get('/current', authenticateToken, async(req, res) =>
 {
@@ -150,7 +149,6 @@ router.post('/:roomId/leave', authenticateToken, async(req, res) =>
 	}
 });
 
-
 // Join a room as spectator
 router.post('/:roomId/spectate', authenticateToken, async(req, res) =>
 {
@@ -183,6 +181,5 @@ router.post('/:roomId/leave-spectate', authenticateToken, async(req, res) =>
 		res.status(500).json({error: 'Server error'});
 	}
 });
-
 
 export default router;

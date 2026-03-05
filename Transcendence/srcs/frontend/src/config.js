@@ -23,11 +23,14 @@ export const API = {
     },
     ROOMS: {
         LIST: '/api/rooms',
+        PLAYING: '/api/rooms/playing',
         CREATE: '/api/rooms',
         GET: (id) => `/api/rooms/${id}`,
         PLAYERS: (id) => `/api/rooms/${id}/players`,
         JOIN: (id) => `/api/rooms/${id}/join`,
         LEAVE: (id) => `/api/rooms/${id}/leave`,
+        SPECTATE: (id) => `/api/rooms/${id}/spectate`,
+        LEAVE_SPECTATE: (id) => `/api/rooms/${id}/leave-spectate`,
         CURRENT: '/api/rooms/current'
     },
     STATS: {
