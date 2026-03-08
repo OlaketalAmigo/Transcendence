@@ -11,11 +11,16 @@ const inputHardening = document.getElementById('input-hardening');
 const inputDecrement = document.getElementById('input-decrement');
 
 // Duel UI
-const btnJoinDuel   = document.getElementById('btn-join-duel');
-const btnLeaveDuel  = document.getElementById('btn-leave-duel');
-const inputRoomCode = document.getElementById('input-room-code');
-const duelStatusEl  = document.getElementById('duel-status');
-const opponentSection = document.getElementById('opponent-section');
+const btnJoinDuel      = document.getElementById('btn-join-duel');
+const btnLeaveDuel     = document.getElementById('btn-leave-duel');
+const inputRoomCode    = document.getElementById('input-room-code');
+const duelStatusEl     = document.getElementById('duel-status');
+const opponentSection  = document.getElementById('opponent-section');
+
+// Matchmaking UI
+const btnMatchmaking       = document.getElementById('btn-matchmaking');
+const btnMatchmakingCancel = document.getElementById('btn-matchmaking-cancel');
+const matchmakingStatusEl  = document.getElementById('matchmaking-status');
 
 function updateButtons() {
     btnStart.disabled        = game.isRunning;
@@ -76,6 +81,34 @@ function startLocalGame() {
     render();
 }
 
+// ─────────────────────────────────────────────
+// SCORE SAVE (solo)
+// ─────────────────────────────────────────────
+
+function saveTetrisScore(score) {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+    fetch('/api/stats/tetris/score', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ score })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.bestScore !== undefined) {
+            console.log('Meilleur score tetris:', data.bestScore);
+        }
+    })
+    .catch(err => console.error('Erreur sauvegarde score tetris:', err));
+}
+
+// ─────────────────────────────────────────────
+// DUEL BUTTONS
+// ─────────────────────────────────────────────
+
 btnJoinDuel.addEventListener('click', () => {
     const code = inputRoomCode.value.trim().toUpperCase();
     if (!code) return;
@@ -97,6 +130,56 @@ btnLeaveDuel.addEventListener('click', () => {
 });
 
 // ─────────────────────────────────────────────
+// MATCHMAKING
+// ─────────────────────────────────────────────
+
+btnMatchmaking.addEventListener('click', () => {
+    socket.emit('tetris:matchmaking-join');
+    btnMatchmaking.disabled       = true;
+    btnMatchmakingCancel.disabled = false;
+    btnJoinDuel.disabled          = true;
+    matchmakingStatusEl.textContent = 'Recherche en cours…';
+    matchmakingStatusEl.className   = 'waiting';
+});
+
+btnMatchmakingCancel.addEventListener('click', () => {
+    socket.emit('tetris:matchmaking-leave');
+    btnMatchmaking.disabled       = false;
+    btnMatchmakingCancel.disabled = true;
+    btnJoinDuel.disabled          = false;
+    matchmakingStatusEl.textContent = '';
+});
+
+socket.on('tetris:matchmaking-status', (data) => {
+    if (data.status === 'searching') {
+        matchmakingStatusEl.textContent = `Recherche… (${data.position} joueur(s) en attente)`;
+    } else if (data.status === 'idle') {
+        matchmakingStatusEl.textContent = '';
+        btnMatchmaking.disabled       = false;
+        btnMatchmakingCancel.disabled = true;
+        btnJoinDuel.disabled          = false;
+    }
+});
+
+socket.on('tetris:matched', (data) => {
+    matchmakingStatusEl.textContent = `Adversaire trouvé : ${data.opponent} !`;
+    matchmakingStatusEl.className   = 'ready';
+    btnMatchmaking.disabled       = false;
+    btnMatchmakingCancel.disabled = true;
+    btnJoinDuel.disabled          = false;
+
+    // Auto-rejoindre la salle générée
+    if (duel) { duel.leave(); }
+    duel = new Duel(socket, game, updateDuelStatus, startLocalGame);
+    duel.join(data.roomCode);
+    inputRoomCode.value     = data.roomCode;
+    btnJoinDuel.disabled    = true;
+    btnLeaveDuel.disabled   = false;
+    inputRoomCode.disabled  = true;
+    updateDuelStatus('waiting', null);
+});
+
+// ─────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────
 
@@ -109,10 +192,16 @@ const game = new Tetris(
     },
     // onGameOver
     (score, validBlock) => {
-        if (duel) duel.onLocalGameOver(score, validBlock);
+        const isDuel = duel && duel.isReady;
+        if (isDuel) {
+            duel.onLocalGameOver(score, validBlock);
+        } else {
+            saveTetrisScore(score);
+        }
         render();
         updateButtons();
         showOverlay('GAME OVER', score);
+        loadLeaderboards();
     },
     // onBlockPlaced — relay duel
     (grid) => {
@@ -168,13 +257,100 @@ inputTTD.addEventListener('change',       applySettings);
 inputHardening.addEventListener('change', applySettings);
 inputDecrement.addEventListener('change', applySettings);
 
-btnRestart.addEventListener('click', () => {
-    if (duel && duel.isReady) {
-        // In duel mode, we don't restart from client side - let server handle it
-        return;
-    } else {
+const btnRestart = document.getElementById('btn-restart');
+if (btnRestart) {
+    btnRestart.addEventListener('click', () => {
+        if (duel && duel.isReady) return;
         game.restart();
         updateButtons();
         render();
+    });
+}
+
+// ─────────────────────────────────────────────
+// LEADERBOARDS
+// ─────────────────────────────────────────────
+
+async function loadLeaderboards() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+
+    const headers = { 'Authorization': `Bearer ${token}` };
+
+    try {
+        const [scoresRes, winsRes, meRes, rankScoreRes, rankWinsRes] = await Promise.all([
+            fetch('/api/stats/tetris/leaderboard/score', { headers }),
+            fetch('/api/stats/tetris/leaderboard/wins',  { headers }),
+            fetch('/api/stats/me',                       { headers }),
+            fetch('/api/stats/tetris/rank/score',        { headers }),
+            fetch('/api/stats/tetris/rank/wins',         { headers })
+        ]);
+
+        const me         = meRes.ok         ? await meRes.json()         : null;
+        const rankScore  = rankScoreRes.ok  ? (await rankScoreRes.json()).rank  : null;
+        const rankWins   = rankWinsRes.ok   ? (await rankWinsRes.json()).rank   : null;
+
+        if (scoresRes.ok) {
+            const scores = await scoresRes.json();
+            renderLeaderboard('lb-scores-body', scores, ['tetris_best_score', 'tetris_games_played'], me, rankScore);
+        }
+
+        if (winsRes.ok) {
+            const wins = await winsRes.json();
+            renderLeaderboard('lb-wins-body', wins, ['tetris_wins', 'tetris_games_played'], me, rankWins);
+        }
+    } catch (err) {
+        console.error('Erreur chargement leaderboards:', err);
     }
+}
+
+function renderLeaderboard(tbodyId, rows, [col1, col2], me, myRank) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+    if (!rows.length && !me) {
+        tbody.innerHTML = '<tr><td colspan="4">Aucun résultat</td></tr>';
+        return;
+    }
+
+    const myUsername = me?.username;
+    const inTop = rows.some(r => r.username === myUsername);
+
+    let html = rows.map((r, i) => {
+        const isMe = r.username === myUsername;
+        return `<tr class="${isMe ? 'lb-me' : ''}">
+            <td>${i + 1}</td>
+            <td>${escapeHtml(r.username)}${isMe ? ' <span class="lb-you">(vous)</span>' : ''}</td>
+            <td>${r[col1] ?? 0}</td>
+            <td>${r[col2] ?? 0}</td>
+        </tr>`;
+    }).join('');
+
+    if (!inTop && me && myRank !== null) {
+        html += `<tr class="lb-separator"><td colspan="4">· · ·</td></tr>`;
+        html += `<tr class="lb-me">
+            <td>${myRank}</td>
+            <td>${escapeHtml(myUsername)} <span class="lb-you">(vous)</span></td>
+            <td>${me[col1] ?? 0}</td>
+            <td>${me[col2] ?? 0}</td>
+        </tr>`;
+    }
+
+    tbody.innerHTML = html || '<tr><td colspan="4">Aucun résultat</td></tr>';
+}
+
+function escapeHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Tabs leaderboard
+document.querySelectorAll('.lb-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('lb-tab--active'));
+        document.querySelectorAll('.lb-content').forEach(c => c.classList.remove('lb-content--active'));
+        tab.classList.add('lb-tab--active');
+        document.getElementById(`lb-${tab.dataset.tab}`).classList.add('lb-content--active');
+    });
 });
+
+// Chargement initial des leaderboards
+loadLeaderboards();

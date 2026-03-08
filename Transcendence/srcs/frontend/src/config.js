@@ -36,7 +36,10 @@ export const API = {
     STATS: {
         ME: '/api/stats/me',
         USER: (username) => `/api/stats/user/${username}`,
-        LEADERBOARD: '/api/stats/leaderboard'
+        LEADERBOARD: '/api/stats/leaderboard',
+        TETRIS_SCORE: '/api/stats/tetris/score',
+        TETRIS_LEADERBOARD_SCORE: '/api/stats/tetris/leaderboard/score',
+        TETRIS_LEADERBOARD_WINS: '/api/stats/tetris/leaderboard/wins'
     }
 };
 

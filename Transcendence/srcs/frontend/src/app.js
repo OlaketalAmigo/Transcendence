@@ -8,6 +8,7 @@ import { GlobalChat } from './global_chat.js';
 import { AvatarWindow } from './avatar.js';
 import { FriendsWindow } from './friends.js';
 import { GameRoomWindow } from './game_room.js';
+import { StatsWindow } from './stats.js';
 
 /**
  * Main application class
@@ -30,6 +31,7 @@ class App {
         new AvatarWindow();
         new FriendsWindow();
         new GameRoomWindow();
+        new StatsWindow();
     }
 
     /**

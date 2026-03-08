@@ -10,6 +10,9 @@ const gameRooms = new Map();
 // Store tetris duel rooms  { roomCode → Map<socketId, socket> }
 const tetrisRooms = new Map();
 
+// Matchmaking queue for tetris
+const tetrisMatchmakingQueue = [];
+
 // Store io instance globally for use in routes
 let ioInstance = null;
 
@@ -770,13 +773,65 @@ function setupSocketIO(io)
 			}
 		});
 
-		// game-over → relayé en opponent-game-over chez l'adversaire
-		socket.on('tetris:game-over', (data) => {
-			_tetrisRelayToOpponent(socket, 'tetris:opponent-game-over', data);
+		// game-over → save stats + relay opponent-game-over
+		socket.on('tetris:game-over', async (data) => {
+			const loserId = socket.user.userId;
+			try {
+				await playerStatsService.updateTetrisBestScore(loserId, data.score || 0);
+				await playerStatsService.incrementTetrisGamesPlayed(loserId);
+			} catch (err) {
+				console.error('Error saving tetris loser stats:', err);
+			}
+
+			const code = socket.tetrisRoomCode;
+			if (code) {
+				const room = tetrisRooms.get(code);
+				if (room) {
+					for (const [id, s] of room) {
+						if (id !== socket.id) {
+							s.emit('tetris:opponent-game-over', data);
+							try {
+								await playerStatsService.incrementTetrisWins(s.user.userId);
+								await playerStatsService.incrementTetrisGamesPlayed(s.user.userId);
+							} catch (err) {
+								console.error('Error saving tetris winner stats:', err);
+							}
+						}
+					}
+				}
+			}
+		});
+
+		// Matchmaking
+		socket.on('tetris:matchmaking-join', () => {
+			// Remove from queue if already there
+			const idx = tetrisMatchmakingQueue.findIndex(s => s.id === socket.id);
+			if (idx !== -1) tetrisMatchmakingQueue.splice(idx, 1);
+
+			tetrisMatchmakingQueue.push(socket);
+			socket.emit('tetris:matchmaking-status', { status: 'searching', position: tetrisMatchmakingQueue.length });
+
+			if (tetrisMatchmakingQueue.length >= 2) {
+				const player1 = tetrisMatchmakingQueue.shift();
+				const player2 = tetrisMatchmakingQueue.shift();
+				const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+				player1.emit('tetris:matched', { roomCode, opponent: player2.user.username });
+				player2.emit('tetris:matched', { roomCode, opponent: player1.user.username });
+			}
+		});
+
+		socket.on('tetris:matchmaking-leave', () => {
+			const idx = tetrisMatchmakingQueue.findIndex(s => s.id === socket.id);
+			if (idx !== -1) tetrisMatchmakingQueue.splice(idx, 1);
+			socket.emit('tetris:matchmaking-status', { status: 'idle' });
 		});
 
 		socket.on('disconnect', async () =>
 		{
+			// Nettoyage matchmaking tetris
+			const mqIdx = tetrisMatchmakingQueue.findIndex(s => s.id === socket.id);
+			if (mqIdx !== -1) tetrisMatchmakingQueue.splice(mqIdx, 1);
+
 			// Nettoyage room tetris
 			if (socket.tetrisRoomCode) {
 				_tetrisLeave(socket);

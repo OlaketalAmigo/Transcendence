@@ -1,4 +1,4 @@
-import { Window } from './windows.js';
+import { Window, windowRegistry } from './windows.js';
 import { API, STORAGE_KEYS, CSS } from './config.js';
 import { eventBus, Events } from './events.js';
 
@@ -52,6 +52,10 @@ export class AvatarWindow extends Window {
         // Controls
         this.controls = this.createElement('div', CSS.AVATAR_CONTROLS);
 
+        this.statsBtn = this.createElement('button', [CSS.BTN, CSS.BTN_PRIMARY], {
+            text: 'Mes statistiques'
+        });
+
         this.chooseBtn = this.createElement('button', [CSS.BTN, CSS.BTN_SECONDARY], {
             text: 'Choose image'
         });
@@ -64,7 +68,7 @@ export class AvatarWindow extends Window {
             text: 'Refresh'
         });
 
-        this.controls.append(this.chooseBtn, this.saveBtn, this.refreshBtn);
+        this.controls.append(this.statsBtn, this.chooseBtn, this.saveBtn, this.refreshBtn);
 
         // Feedback message
         this.message = this.createElement('div', CSS.MESSAGE);
@@ -85,6 +89,7 @@ export class AvatarWindow extends Window {
      */
     bindEvents() {
         this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+        this.statsBtn.addEventListener('click', () => windowRegistry.get('stats')?.showMe());
         this.chooseBtn.addEventListener('click', () => this.fileInput.click());
         this.saveBtn.addEventListener('click', () => this.uploadAvatar());
         this.refreshBtn.addEventListener('click', () => this.loadAvatar());

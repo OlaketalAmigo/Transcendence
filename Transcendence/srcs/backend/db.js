@@ -45,6 +45,15 @@ async function runMigrations()
 				IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='games_won') THEN
 					ALTER TABLE users ADD COLUMN games_won INT DEFAULT 0;
 				END IF;
+				IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='tetris_best_score') THEN
+					ALTER TABLE users ADD COLUMN tetris_best_score INT DEFAULT 0;
+				END IF;
+				IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='tetris_wins') THEN
+					ALTER TABLE users ADD COLUMN tetris_wins INT DEFAULT 0;
+				END IF;
+				IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='tetris_games_played') THEN
+					ALTER TABLE users ADD COLUMN tetris_games_played INT DEFAULT 0;
+				END IF;
 			END $$;
 		`);
 		console.log('Migrations completed!');

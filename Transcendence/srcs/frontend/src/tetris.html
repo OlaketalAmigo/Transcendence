@@ -24,6 +24,11 @@
         <button id="btn-join-duel">Rejoindre</button>
         <button id="btn-leave-duel" disabled>Quitter</button>
     </div>
+    <div class="duel-row">
+        <button id="btn-matchmaking">Trouver un adversaire</button>
+        <button id="btn-matchmaking-cancel" disabled>Annuler</button>
+    </div>
+    <div id="matchmaking-status"></div>
     <div id="duel-status">—</div>
 </div>
 
@@ -115,6 +120,36 @@
         </div>
     </div>
 
+</div>
+
+<!-- ── LEADERBOARDS ── -->
+<div id="leaderboard-section">
+    <div class="leaderboard-tabs">
+        <button class="lb-tab lb-tab--active" data-tab="scores">Meilleurs scores</button>
+        <button class="lb-tab" data-tab="wins">Duels gagnés</button>
+    </div>
+
+    <div id="lb-scores" class="lb-content lb-content--active">
+        <table class="lb-table">
+            <thead>
+                <tr><th>#</th><th>Joueur</th><th>Meilleur score</th><th>Parties</th></tr>
+            </thead>
+            <tbody id="lb-scores-body">
+                <tr><td colspan="4">Chargement…</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="lb-wins" class="lb-content">
+        <table class="lb-table">
+            <thead>
+                <tr><th>#</th><th>Joueur</th><th>Victoires</th><th>Parties</th></tr>
+            </thead>
+            <tbody id="lb-wins-body">
+                <tr><td colspan="4">Chargement…</td></tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 
