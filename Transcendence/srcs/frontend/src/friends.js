@@ -1,4 +1,4 @@
-import { Window } from './windows.js';
+import { Window, windowRegistry } from './windows.js';
 import { API, STORAGE_KEYS, CSS } from './config.js';
 import { eventBus, Events } from './events.js';
 
@@ -309,11 +309,16 @@ export class FriendsWindow extends Window {
         const actions = this.createElement('div', CSS.FRIENDS_ACTIONS);
 
         if (type === 'friend') {
+            const statsBtn = this.createElement('button', [CSS.BTN, CSS.BTN_SECONDARY], {
+                text: 'Stats'
+            });
+            statsBtn.addEventListener('click', () => windowRegistry.get('stats')?.showUser(user.username));
+
             const removeBtn = this.createElement('button', [CSS.BTN, CSS.BTN_DANGER], {
                 text: 'Retirer'
             });
             removeBtn.addEventListener('click', () => this.removeFriend(user.id));
-            actions.appendChild(removeBtn);
+            actions.append(statsBtn, removeBtn);
         } else if (type === 'request') {
             const acceptBtn = this.createElement('button', [CSS.BTN, CSS.BTN_SUCCESS], {
                 text: 'Accepter'
@@ -327,11 +332,16 @@ export class FriendsWindow extends Window {
 
             actions.append(acceptBtn, declineBtn);
         } else if (type === 'search') {
+            const statsBtn = this.createElement('button', [CSS.BTN, CSS.BTN_SECONDARY], {
+                text: 'Stats'
+            });
+            statsBtn.addEventListener('click', () => windowRegistry.get('stats')?.showUser(user.username));
+
             const addBtn = this.createElement('button', [CSS.BTN, CSS.BTN_PRIMARY], {
                 text: 'Ajouter'
             });
             addBtn.addEventListener('click', () => this.sendRequest(user.id, addBtn));
-            actions.appendChild(addBtn);
+            actions.append(statsBtn, addBtn);
         }
 
         item.append(avatar, infoContainer, actions);
