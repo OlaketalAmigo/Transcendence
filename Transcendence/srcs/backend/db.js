@@ -56,6 +56,17 @@ async function runMigrations()
 				END IF;
 			END $$;
 		`);
+		// Create tetris_game_history table if not exists
+		await pool.query(`
+			CREATE TABLE IF NOT EXISTS tetris_game_history (
+				id SERIAL PRIMARY KEY,
+				user_id INT REFERENCES users(id) ON DELETE CASCADE,
+				score INT NOT NULL DEFAULT 0,
+				game_type VARCHAR(10) NOT NULL DEFAULT 'solo',
+				result VARCHAR(10) DEFAULT NULL,
+				played_at TIMESTAMP DEFAULT NOW()
+			);
+		`);
 		console.log('Migrations completed!');
 	}
 	catch (err)
@@ -146,6 +157,15 @@ async function createTables()
 				drawer_id INT REFERENCES users(id),
 				started_at TIMESTAMP DEFAULT NOW(),
 				ended_at TIMESTAMP
+			);
+
+			CREATE TABLE IF NOT EXISTS tetris_game_history (
+				id SERIAL PRIMARY KEY,
+				user_id INT REFERENCES users(id) ON DELETE CASCADE,
+				score INT NOT NULL DEFAULT 0,
+				game_type VARCHAR(10) NOT NULL DEFAULT 'solo',
+				result VARCHAR(10) DEFAULT NULL,
+				played_at TIMESTAMP DEFAULT NOW()
 			);
 		`);
 		console.log('Tables created!');

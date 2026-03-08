@@ -127,6 +127,7 @@
     <div class="leaderboard-tabs">
         <button class="lb-tab lb-tab--active" data-tab="scores">Meilleurs scores</button>
         <button class="lb-tab" data-tab="wins">Duels gagnés</button>
+        <button class="lb-tab" data-tab="history">Mes parties</button>
     </div>
 
     <div id="lb-scores" class="lb-content lb-content--active">
@@ -147,6 +148,17 @@
             </thead>
             <tbody id="lb-wins-body">
                 <tr><td colspan="4">Chargement…</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="lb-history" class="lb-content">
+        <table class="lb-table">
+            <thead>
+                <tr><th>#</th><th>Date</th><th>Type</th><th>Score</th><th>Résultat</th></tr>
+            </thead>
+            <tbody id="lb-history-body">
+                <tr><td colspan="5">Chargement…</td></tr>
             </tbody>
         </table>
     </div>

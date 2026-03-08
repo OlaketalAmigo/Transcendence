@@ -202,6 +202,7 @@ const game = new Tetris(
         updateButtons();
         showOverlay('GAME OVER', score);
         loadLeaderboards();
+        loadGameHistory();
     },
     // onBlockPlaced — relay duel
     (grid) => {
@@ -265,6 +266,53 @@ if (btnRestart) {
         updateButtons();
         render();
     });
+}
+
+// ─────────────────────────────────────────────
+// GAME HISTORY
+// ─────────────────────────────────────────────
+
+async function loadGameHistory() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+
+    try {
+        const res = await fetch('/api/stats/tetris/history', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const history = await res.json();
+        renderGameHistory(history);
+    } catch (err) {
+        console.error('Erreur chargement historique:', err);
+    }
+}
+
+function renderGameHistory(history) {
+    const tbody = document.getElementById('lb-history-body');
+    if (!tbody) return;
+    if (!history.length) {
+        tbody.innerHTML = '<tr><td colspan="5">Aucune partie jouée</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = history.map((entry, i) => {
+        const date = new Date(entry.played_at).toLocaleDateString('fr-FR', {
+            day: '2-digit', month: '2-digit', year: '2-digit',
+            hour: '2-digit', minute: '2-digit'
+        });
+        const type = entry.game_type === 'duel' ? 'Duel' : 'Solo';
+        let resultHtml = '—';
+        if (entry.result === 'win')  resultHtml = '<span class="hist-win">Victoire</span>';
+        if (entry.result === 'loss') resultHtml = '<span class="hist-loss">Défaite</span>';
+        return `<tr>
+            <td>${i + 1}</td>
+            <td>${date}</td>
+            <td>${type}</td>
+            <td>${entry.score}</td>
+            <td>${resultHtml}</td>
+        </tr>`;
+    }).join('');
 }
 
 // ─────────────────────────────────────────────
@@ -349,8 +397,10 @@ document.querySelectorAll('.lb-tab').forEach(tab => {
         document.querySelectorAll('.lb-content').forEach(c => c.classList.remove('lb-content--active'));
         tab.classList.add('lb-tab--active');
         document.getElementById(`lb-${tab.dataset.tab}`).classList.add('lb-content--active');
+        if (tab.dataset.tab === 'history') loadGameHistory();
     });
 });
 
 // Chargement initial des leaderboards
 loadLeaderboards();
+loadGameHistory();

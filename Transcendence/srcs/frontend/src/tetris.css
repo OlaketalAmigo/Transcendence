@@ -524,4 +524,13 @@ button:disabled { opacity: 0.3; cursor: not-allowed; }
     width: 30px;
 }
 
+.hist-win {
+    color: var(--accent);
+    font-weight: bold;
+}
+
+.hist-loss {
+    color: var(--accent2);
+}
+
 body { overflow-y: auto; }

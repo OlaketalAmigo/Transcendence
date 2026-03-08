@@ -43,7 +43,7 @@ router.get('/leaderboard', authenticateToken, async (req, res) => {
 	}
 });
 
-// Save tetris score (solo or duel) — updates best score if higher
+// Save tetris score (solo) — updates best score if higher + saves to history
 router.post('/tetris/score', authenticateToken, async (req, res) => {
 	try {
 		const { score } = req.body;
@@ -52,6 +52,7 @@ router.post('/tetris/score', authenticateToken, async (req, res) => {
 		}
 		const bestScore = await playerStatsService.updateTetrisBestScore(req.user.userId, score);
 		await playerStatsService.incrementTetrisGamesPlayed(req.user.userId);
+		await playerStatsService.addTetrisGameHistory(req.user.userId, score, 'solo', null);
 		res.json({ bestScore });
 	} catch (err) {
 		console.error('Error saving tetris score:', err);
@@ -90,6 +91,17 @@ router.get('/tetris/rank/score', authenticateToken, async (req, res) => {
 		res.json({ rank });
 	} catch (err) {
 		console.error('Error getting tetris score rank:', err);
+		res.status(500).json({ error: 'Server error' });
+	}
+});
+
+// Get current user's tetris game history (last 15)
+router.get('/tetris/history', authenticateToken, async (req, res) => {
+	try {
+		const history = await playerStatsService.getTetrisGameHistory(req.user.userId);
+		res.json(history);
+	} catch (err) {
+		console.error('Error getting tetris history:', err);
 		res.status(500).json({ error: 'Server error' });
 	}
 });

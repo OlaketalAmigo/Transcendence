@@ -129,6 +129,38 @@ async function getTetrisDuelWinsLeaderboard(limit = 10) {
 	return result.rows;
 }
 
+// Add a game to tetris history (keep max 15 per user)
+async function addTetrisGameHistory(userId, score, gameType = 'solo', result = null) {
+	await query(
+		`INSERT INTO tetris_game_history (user_id, score, game_type, result) VALUES ($1, $2, $3, $4)`,
+		[userId, score, gameType, result]
+	);
+	// Keep only the 15 most recent entries
+	await query(
+		`DELETE FROM tetris_game_history
+		WHERE id IN (
+			SELECT id FROM tetris_game_history
+			WHERE user_id = $1
+			ORDER BY played_at DESC
+			OFFSET 15
+		)`,
+		[userId]
+	);
+}
+
+// Get the last 15 games for a user
+async function getTetrisGameHistory(userId) {
+	const result = await query(
+		`SELECT id, score, game_type, result, played_at
+		FROM tetris_game_history
+		WHERE user_id = $1
+		ORDER BY played_at DESC
+		LIMIT 15`,
+		[userId]
+	);
+	return result.rows;
+}
+
 // Rank of a user by tetris best score (1 = best)
 async function getTetrisScoreRank(userId) {
 	const result = await query(
@@ -166,5 +198,7 @@ export default {
 	getTetrisBestScoreLeaderboard,
 	getTetrisDuelWinsLeaderboard,
 	getTetrisScoreRank,
-	getTetrisDuelWinsRank
+	getTetrisDuelWinsRank,
+	addTetrisGameHistory,
+	getTetrisGameHistory
 };

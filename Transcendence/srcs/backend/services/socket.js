@@ -721,6 +721,7 @@ function setupSocketIO(io)
 
 		// Relay pur : grid-update → adversaire uniquement
 		socket.on('tetris:grid-update', (data) => {
+			if (data.score !== undefined) socket.tetrisLastScore = data.score;
 			_tetrisRelayToOpponent(socket, 'tetris:grid-update', data);
 		});
 
@@ -779,6 +780,7 @@ function setupSocketIO(io)
 			try {
 				await playerStatsService.updateTetrisBestScore(loserId, data.score || 0);
 				await playerStatsService.incrementTetrisGamesPlayed(loserId);
+				await playerStatsService.addTetrisGameHistory(loserId, data.score || 0, 'duel', 'loss');
 			} catch (err) {
 				console.error('Error saving tetris loser stats:', err);
 			}
@@ -793,6 +795,8 @@ function setupSocketIO(io)
 							try {
 								await playerStatsService.incrementTetrisWins(s.user.userId);
 								await playerStatsService.incrementTetrisGamesPlayed(s.user.userId);
+								const winnerScore = s.tetrisLastScore || 0;
+								await playerStatsService.addTetrisGameHistory(s.user.userId, winnerScore, 'duel', 'win');
 							} catch (err) {
 								console.error('Error saving tetris winner stats:', err);
 							}
