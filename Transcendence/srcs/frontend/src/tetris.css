@@ -49,9 +49,19 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     overflow: hidden;
     animation: flicker 8s infinite;
+}
+
+#scale-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: max-content;
+    position: relative;
+    z-index: 1;
+    /* transform et margin-bottom gérés par JS */
 }
 
 /* Grid lines */
@@ -536,7 +546,7 @@ button:disabled { opacity: 0.3; cursor: not-allowed; }
 
 .lb-tab--active {
     color: var(--accent);
-    background: rgba(0,255,231,0.05);
+    background: rgba(0,255,65,0.05);
     border-bottom: 2px solid var(--accent);
 }
 
@@ -605,4 +615,4 @@ button:disabled { opacity: 0.3; cursor: not-allowed; }
     color: var(--accent2);
 }
 
-body { overflow-y: auto; }
+body { overflow: hidden; }
