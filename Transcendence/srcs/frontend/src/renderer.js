@@ -3,7 +3,7 @@
 // ─────────────────────────────────────────────
 
 const CELL   = 30;
-const COLORS = ['#070712','#a855f7','#f97316','#3b82f6','#06b6d4','#ef4444','#22c55e','#eab308','#555577'];
+const COLORS = ['#000500','#00ff41','#39ff14','#00e676','#76ff03','#b2ff59','#00ffaa','#ccff00','#2d5a2d'];
 
 const ctxMain     = document.getElementById('canvas-main').getContext('2d');
 const ctxNext     = document.getElementById('canvas-next').getContext('2d');
@@ -12,25 +12,32 @@ const ctxOpponent = document.getElementById('canvas-opponent').getContext('2d');
 
 function drawCell(ctx, x, y, colorIndex, size) {
     const p = 1;
-    ctx.fillStyle = COLORS[colorIndex];
+    const color = COLORS[colorIndex];
+    ctx.fillStyle = color;
     ctx.fillRect(x * size + p, y * size + p, size - p * 2, size - p * 2);
-    // Highlight
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    ctx.fillRect(x * size + p, y * size + p, size - p * 2, 3);
-    ctx.fillRect(x * size + p, y * size + p, 3, size - p * 2);
-    // Ombre
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    ctx.fillRect(x * size + p, (y + 1) * size - p - 3, size - p * 2, 3);
-    ctx.fillRect((x + 1) * size - p - 3, y * size + p, 3, size - p * 2);
+    // Glow inner
+    ctx.shadowColor = color;
+    ctx.shadowBlur  = 6;
+    ctx.fillStyle = color;
+    ctx.fillRect(x * size + p + 2, y * size + p + 2, size - p * 2 - 4, size - p * 2 - 4);
+    ctx.shadowBlur = 0;
+    // Highlight top/left
+    ctx.fillStyle = 'rgba(200,255,200,0.2)';
+    ctx.fillRect(x * size + p, y * size + p, size - p * 2, 2);
+    ctx.fillRect(x * size + p, y * size + p, 2, size - p * 2);
+    // Shadow bottom/right
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(x * size + p, (y + 1) * size - p - 2, size - p * 2, 2);
+    ctx.fillRect((x + 1) * size - p - 2, y * size + p, 2, size - p * 2);
 }
 
 function clearCanvas(ctx, w, h) {
-    ctx.fillStyle = '#070712';
+    ctx.fillStyle = '#000500';
     ctx.fillRect(0, 0, w, h);
 }
 
 function drawGridLines(ctx, cols, rows, size) {
-    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.strokeStyle = 'rgba(0,255,65,0.06)';
     ctx.lineWidth   = 1;
     for (let x = 0; x <= cols; x++) {
         ctx.beginPath(); ctx.moveTo(x * size, 0); ctx.lineTo(x * size, rows * size); ctx.stroke();
@@ -60,7 +67,7 @@ function drawGhost(ctx, piece, grid) {
 
     if (ghost.y === piece.getPosition().y) return;
 
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.strokeStyle = 'rgba(0,255,65,0.25)';
     ctx.lineWidth   = 1;
     for (let row = 0; row < shape.length; row++)
         for (let col = 0; col < shape[row].length; col++)

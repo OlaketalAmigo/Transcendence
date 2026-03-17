@@ -9,7 +9,11 @@
 </head>
 <body>
 
-<h1>TETRIS</h1>
+<canvas id="matrix-bg" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.13;"></canvas>
+
+<div id="scale-container">
+
+<h1 data-text="TETRIS">TETRIS<span class="cursor">_</span></h1>
 
 <!-- Bouton home -->
 <div id="btn-home">
@@ -164,6 +168,7 @@
     </div>
 </div>
 
+</div><!-- #scale-container -->
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="pieces.js"></script>
@@ -171,5 +176,58 @@
 <script src="renderer.js"></script>
 <script src="duel.js"></script>
 <script src="ui.js"></script>
+
+<script>
+// ── Responsive scaling ──────────────────────────
+(function() {
+    const container = document.getElementById('scale-container');
+    // Dimensions naturelles du contenu (single-player)
+    const NAT_W = 640;
+    const NAT_H = 1020;
+
+    function resize() {
+        const s = Math.min(
+            window.innerWidth  / NAT_W,
+            window.innerHeight / NAT_H
+        );
+        container.style.transform       = 'scale(' + s + ')';
+        container.style.transformOrigin = 'top center';
+        // Compense l'espace de layout non affecté par transform
+        container.style.marginBottom    = ((s - 1) * NAT_H) + 'px';
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+})();
+</script>
+
+<script>
+// ── Matrix rain ──────────────────────────────────
+(function() {
+    const canvas = document.getElementById('matrix-bg');
+    const ctx = canvas.getContext('2d');
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+    const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF>_{}[]|\\/#@$%^&*01';
+    const fs = 14;
+    let drops = [];
+    function initDrops() { drops = Array(Math.floor(canvas.width / fs)).fill(1); }
+    initDrops();
+    window.addEventListener('resize', initDrops);
+    setInterval(function() {
+        ctx.fillStyle = 'rgba(0,5,0,0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.font = fs + 'px monospace';
+        for (let i = 0; i < drops.length; i++) {
+            const ch = chars[Math.floor(Math.random() * chars.length)];
+            ctx.fillStyle = drops[i] * fs < 50 ? '#aaffaa' : '#00ff41';
+            ctx.fillText(ch, i * fs, drops[i] * fs);
+            if (drops[i] * fs > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        }
+    }, 40);
+})();
+</script>
 </body>
 </html>
