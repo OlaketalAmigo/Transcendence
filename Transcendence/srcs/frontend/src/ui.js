@@ -113,6 +113,7 @@ btnJoinDuel.addEventListener('click', () => {
     const code = inputRoomCode.value.trim().toUpperCase();
     if (!code) return;
     if (duel) { duel.leave(); }
+    if (game.isRunning) { game.stop(); hideOverlay(); render(); updateButtons(); }
     duel = new Duel(socket, game, updateDuelStatus, startLocalGame);
     duel.join(code);
     btnJoinDuel.disabled  = true;
@@ -170,6 +171,7 @@ socket.on('tetris:matched', (data) => {
 
     // Auto-rejoindre la salle générée
     if (duel) { duel.leave(); }
+    if (game.isRunning) { game.stop(); hideOverlay(); render(); updateButtons(); }
     duel = new Duel(socket, game, updateDuelStatus, startLocalGame);
     duel.join(data.roomCode);
     inputRoomCode.value     = data.roomCode;
