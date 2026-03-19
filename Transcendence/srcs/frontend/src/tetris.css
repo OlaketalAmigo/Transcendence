@@ -445,6 +445,37 @@ button:disabled { opacity: 0.3; cursor: not-allowed; }
     letter-spacing: 0.05em;
 }
 
+/* ── Theme color picker ── */
+.theme-btns {
+    display: flex;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.theme-btn {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.theme-btn[data-theme="green"]  { background: #00ff41; }
+.theme-btn[data-theme="red"]    { background: #ff1744; }
+.theme-btn[data-theme="yellow"] { background: #ffd600; }
+.theme-btn[data-theme="blue"]   { background: #00b0ff; }
+
+.theme-btn:hover { transform: scale(1.2); }
+
+.theme-btn.active {
+    border-color: #ffffff;
+    box-shadow: 0 0 8px currentColor;
+    transform: scale(1.15);
+}
+
 #settings-panel input[type="number"] {
     background: var(--bg);
     border: 1px solid var(--border);

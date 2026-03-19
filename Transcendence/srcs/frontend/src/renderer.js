@@ -2,8 +2,54 @@
 // RENDU
 // ─────────────────────────────────────────────
 
-const CELL   = 30;
-const COLORS = ['#000500','#00ff41','#39ff14','#00e676','#76ff03','#b2ff59','#00ffaa','#ccff00','#2d5a2d'];
+const CELL = 30;
+
+const THEMES = {
+    green: {
+        bg: '#000500', panel: '#000d00', border: '#004400',
+        accent: '#00ff41', accent2: '#39ff14', dim: '#1a5c1a', text: '#00cc26',
+        grid: 'rgba(0,255,65,0.06)', ghost: 'rgba(0,255,65,0.25)', highlight: 'rgba(200,255,200,0.2)',
+        colors: ['#000500','#00ff41','#39ff14','#00e676','#76ff03','#b2ff59','#00ffaa','#ccff00','#2d5a2d']
+    },
+    red: {
+        bg: '#050000', panel: '#0d0000', border: '#440000',
+        accent: '#ff1744', accent2: '#ff4569', dim: '#5c1a1a', text: '#cc2626',
+        grid: 'rgba(255,23,68,0.06)', ghost: 'rgba(255,23,68,0.25)', highlight: 'rgba(255,200,200,0.2)',
+        colors: ['#050000','#ff1744','#ff4569','#e53935','#ff6d00','#ff8a65','#ff5252','#ff6e40','#5a2d2d']
+    },
+    yellow: {
+        bg: '#050500', panel: '#0d0d00', border: '#444400',
+        accent: '#ffd600', accent2: '#ffea00', dim: '#5c5c1a', text: '#ccaa00',
+        grid: 'rgba(255,214,0,0.06)', ghost: 'rgba(255,214,0,0.25)', highlight: 'rgba(255,255,200,0.2)',
+        colors: ['#050500','#ffd600','#ffea00','#ffab00','#fff176','#ffe57f','#ffff00','#ffc400','#5a5a2d']
+    },
+    blue: {
+        bg: '#000005', panel: '#00000d', border: '#000044',
+        accent: '#00b0ff', accent2: '#40c4ff', dim: '#1a1a5c', text: '#2626cc',
+        grid: 'rgba(0,176,255,0.06)', ghost: 'rgba(0,176,255,0.25)', highlight: 'rgba(200,200,255,0.2)',
+        colors: ['#000005','#00b0ff','#40c4ff','#0091ea','#448aff','#82b1ff','#00e5ff','#2979ff','#2d2d5a']
+    }
+};
+
+let currentTheme = THEMES.green;
+let COLORS = [...currentTheme.colors];
+
+function setColorTheme(themeName) {
+    currentTheme = THEMES[themeName] || THEMES.green;
+    COLORS = [...currentTheme.colors];
+    const root = document.documentElement;
+    root.style.setProperty('--bg',      currentTheme.bg);
+    root.style.setProperty('--panel',   currentTheme.panel);
+    root.style.setProperty('--border',  currentTheme.border);
+    root.style.setProperty('--accent',  currentTheme.accent);
+    root.style.setProperty('--accent2', currentTheme.accent2);
+    root.style.setProperty('--dim',     currentTheme.dim);
+    root.style.setProperty('--text',    currentTheme.text);
+    localStorage.setItem('tetris-theme', themeName);
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.theme === themeName);
+    });
+}
 
 const ctxMain     = document.getElementById('canvas-main').getContext('2d');
 const ctxNext     = document.getElementById('canvas-next').getContext('2d');
@@ -22,7 +68,7 @@ function drawCell(ctx, x, y, colorIndex, size) {
     ctx.fillRect(x * size + p + 2, y * size + p + 2, size - p * 2 - 4, size - p * 2 - 4);
     ctx.shadowBlur = 0;
     // Highlight top/left
-    ctx.fillStyle = 'rgba(200,255,200,0.2)';
+    ctx.fillStyle = currentTheme.highlight;
     ctx.fillRect(x * size + p, y * size + p, size - p * 2, 2);
     ctx.fillRect(x * size + p, y * size + p, 2, size - p * 2);
     // Shadow bottom/right
@@ -32,12 +78,12 @@ function drawCell(ctx, x, y, colorIndex, size) {
 }
 
 function clearCanvas(ctx, w, h) {
-    ctx.fillStyle = '#000500';
+    ctx.fillStyle = currentTheme.bg;
     ctx.fillRect(0, 0, w, h);
 }
 
 function drawGridLines(ctx, cols, rows, size) {
-    ctx.strokeStyle = 'rgba(0,255,65,0.06)';
+    ctx.strokeStyle = currentTheme.grid;
     ctx.lineWidth   = 1;
     for (let x = 0; x <= cols; x++) {
         ctx.beginPath(); ctx.moveTo(x * size, 0); ctx.lineTo(x * size, rows * size); ctx.stroke();
@@ -67,7 +113,7 @@ function drawGhost(ctx, piece, grid) {
 
     if (ghost.y === piece.getPosition().y) return;
 
-    ctx.strokeStyle = 'rgba(0,255,65,0.25)';
+    ctx.strokeStyle = currentTheme.ghost;
     ctx.lineWidth   = 1;
     for (let row = 0; row < shape.length; row++)
         for (let col = 0; col < shape[row].length; col++)
@@ -131,3 +177,9 @@ function renderOpponent(opponentGrid) {
             if (opponentGrid[y][x] !== 0)
                 drawCell(ctxOpponent, x, y, opponentGrid[y][x], CELL);
 }
+
+// Restore saved theme
+(function() {
+    const saved = localStorage.getItem('tetris-theme');
+    if (saved && THEMES[saved]) setColorTheme(saved);
+})();
