@@ -213,6 +213,10 @@ const game = new Tetris(
     // onLinesCleared — relay duel
     (count, holeCol) => {
         if (duel) duel.onLocalLinesCleared(count, holeCol);
+    },
+    // onShieldChanged — relay duel
+    (event) => {
+        if (duel) duel.onLocalShieldChanged(event);
     }
 );
 

@@ -9,11 +9,12 @@ class Duel {
         this.onStatusChange = onStatusChange;   // (status, opponentName) => void
         this.onStart        = onStart;          // () => void — déclenche le début du jeu local
 
-        this.action_queue   = [];
-        this.opponentGrid   = this._emptyGrid();
-        this.opponentScore  = 0;
-        this.roomCode       = null;
-        this.isReady        = false;
+        this.action_queue        = [];
+        this.opponentGrid        = this._emptyGrid();
+        this.opponentScore       = 0;
+        this.opponentShieldActive = false;
+        this.roomCode            = null;
+        this.isReady             = false;
 
         this._bindSocketEvents();
     }
@@ -60,6 +61,15 @@ class Duel {
         this.endDuel();
     }
 
+    onLocalShieldChanged(event) {
+        if (!this.isReady) return;
+        if (event === 'activated') {
+            this.socket.emit('tetris:shield-activated');
+        } else if (event === 'deactivated') {
+            this.socket.emit('tetris:shield-deactivated');
+        }
+    }
+
     endDuel() {
         this.isReady      = false;
         this.action_queue = [];
@@ -91,6 +101,14 @@ class Duel {
             case 'OPPONENT_GAME_OVER':
                 showOverlay('YOU WIN', action.score);
                 this.endDuel();
+                break;
+
+            case 'OPPONENT_SHIELD_ACTIVATED':
+                this.opponentShieldActive = true;
+                break;
+
+            case 'OPPONENT_SHIELD_DEACTIVATED':
+                this.opponentShieldActive = false;
                 break;
         }
     }
@@ -125,6 +143,14 @@ class Duel {
 
         this.socket.on('tetris:opponent-game-over', (data) => {
             this.action_queue.push({ type: 'OPPONENT_GAME_OVER', score: data.score, validBlock: data.validBlock });
+        });
+
+        this.socket.on('tetris:shield-activated', () => {
+            this.action_queue.push({ type: 'OPPONENT_SHIELD_ACTIVATED' });
+        });
+
+        this.socket.on('tetris:shield-deactivated', () => {
+            this.action_queue.push({ type: 'OPPONENT_SHIELD_DEACTIVATED' });
         });
 
         this.socket.on('tetris:start-duel', () => {

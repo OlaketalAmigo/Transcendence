@@ -139,6 +139,17 @@ function drawMiniPiece(ctx, piece, canvasW, canvasH) {
                 drawCell(ctx, offsetX + col, offsetY + row, color, s);
 }
 
+function _drawShieldOverlay(ctx, w, h, alpha) {
+    ctx.save();
+    ctx.strokeStyle = `rgba(0,212,255,${alpha})`;
+    ctx.lineWidth   = 4;
+    ctx.shadowColor = '#00d4ff';
+    ctx.shadowBlur  = 16;
+    ctx.strokeRect(2, 2, w - 4, h - 4);
+    ctx.shadowBlur  = 0;
+    ctx.restore();
+}
+
 function render() {
     // Grille principale
     clearCanvas(ctxMain, 300, 600);
@@ -161,12 +172,39 @@ function render() {
                     drawCell(ctxMain, x + col, y + row, color, CELL);
     }
 
+    // Shield overlay (bordure cyan pulsée)
+    if (game.shieldActive) {
+        const pulse = 0.6 + 0.4 * Math.sin(Date.now() / 150);
+        _drawShieldOverlay(ctxMain, 300, 600, pulse);
+    }
+
     // Panneaux miniatures
     drawMiniPiece(ctxNext, game.nextPiece,   100, 80);
     drawMiniPiece(ctxHold, game.storedPiece, 100, 80);
 
     // Score
     document.getElementById('score-display').textContent = game.score;
+
+    // Shield status UI
+    const shieldEl  = document.getElementById('shield-status-display');
+    const shieldBar = document.getElementById('shield-bar');
+    if (shieldEl) {
+        if (game.shieldActive) {
+            const secs = Math.ceil(game.shieldActiveMs / 1000);
+            shieldEl.textContent = `ACTIF ${secs}s`;
+            shieldEl.className   = 'score-value shield-active';
+            if (shieldBar) shieldBar.style.width = (game.shieldActiveMs / 3000 * 100) + '%';
+        } else if (game.shieldReady) {
+            shieldEl.textContent = 'PRÊT';
+            shieldEl.className   = 'score-value shield-ready';
+            if (shieldBar) shieldBar.style.width = '100%';
+        } else {
+            const secs = Math.ceil(game.shieldCooldownMs / 1000);
+            shieldEl.textContent = `${secs}s`;
+            shieldEl.className   = 'score-value shield-cooldown';
+            if (shieldBar) shieldBar.style.width = ((1 - game.shieldCooldownMs / 60000) * 100) + '%';
+        }
+    }
 }
 
 function renderOpponent(opponentGrid) {
@@ -176,6 +214,19 @@ function renderOpponent(opponentGrid) {
         for (let x = 0; x < opponentGrid[y].length; x++)
             if (opponentGrid[y][x] !== 0)
                 drawCell(ctxOpponent, x, y, opponentGrid[y][x], CELL);
+
+    // Shield overlay adversaire
+    if (typeof duel !== 'undefined' && duel && duel.opponentShieldActive) {
+        const pulse = 0.6 + 0.4 * Math.sin(Date.now() / 150);
+        _drawShieldOverlay(ctxOpponent, 300, 600, pulse);
+    }
+
+    // Indicateur HTML adversaire
+    const oppShieldEl = document.getElementById('opponent-shield-indicator');
+    if (oppShieldEl) {
+        const active = typeof duel !== 'undefined' && duel && duel.opponentShieldActive;
+        oppShieldEl.style.display = active ? 'block' : 'none';
+    }
 }
 
 // Restore saved theme

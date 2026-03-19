@@ -730,6 +730,16 @@ function setupSocketIO(io)
 			_tetrisRelayToOpponent(socket, 'tetris:lines-cleared', data);
 		});
 
+		// Relay pur : shield-activated → adversaire uniquement
+		socket.on('tetris:shield-activated', () => {
+			_tetrisRelayToOpponent(socket, 'tetris:shield-activated', {});
+		});
+
+		// Relay pur : shield-deactivated → adversaire uniquement
+		socket.on('tetris:shield-deactivated', () => {
+			_tetrisRelayToOpponent(socket, 'tetris:shield-deactivated', {});
+		});
+
 		// start-duel → relayé aux DEUX joueurs de la room (inclut l'émetteur)
 		socket.on('tetris:start-duel', () => {
 			const code = socket.tetrisRoomCode;

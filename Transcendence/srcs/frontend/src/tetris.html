@@ -51,6 +51,12 @@
                         <div class="score-value" id="score-display">0</div>
                     </div>
 
+                    <div class="score-block">
+                        <div class="score-label">Shield <kbd>E</kbd></div>
+                        <div class="score-value shield-ready" id="shield-status-display">PRÊT</div>
+                        <div class="shield-bar-bg"><div class="shield-bar" id="shield-bar"></div></div>
+                    </div>
+
                     <div class="btn-group">
                         <button id="btn-start">Start</button>
                         <button id="btn-pause" disabled>Pause</button>
@@ -106,6 +112,7 @@
                     <div><span>W</span> Rot. droite</div>
                     <div><span>Espace</span> Drop</div>
                     <div><span>C</span> Hold</div>
+                    <div><span>E</span> Shield</div>
                 </div>
             </div>
 
@@ -120,6 +127,7 @@
                 <div class="score-label">Score</div>
                 <div class="score-value" id="opponent-score">—</div>
             </div>
+            <div id="opponent-shield-indicator" style="display:none;color:#00d4ff;font-size:0.75rem;text-align:center;letter-spacing:1px;margin-top:4px;">&#x1F6E1; SHIELD ACTIF</div>
         </div>
 
         <div id="opponent-wrapper">

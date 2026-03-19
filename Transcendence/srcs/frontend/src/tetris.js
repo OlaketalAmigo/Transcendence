@@ -3,11 +3,12 @@
 // ───────────────────────────────────────────
 
 class Tetris {
-    constructor(onRender, onGameOver, onBlockPlaced = null, onLinesCleared = null) {
+    constructor(onRender, onGameOver, onBlockPlaced = null, onLinesCleared = null, onShieldChanged = null) {
         this.onRender       = onRender;
         this.onGameOver     = onGameOver;
         this.onBlockPlaced  = onBlockPlaced;
         this.onLinesCleared = onLinesCleared;
+        this.onShieldChanged = onShieldChanged;
 
         this.grid         = this._createGrid(10, 20);
         this.bufferGrid   = this._createGrid(10, 5);
@@ -27,6 +28,12 @@ class Tetris {
         this.isRunning = false;
         this.isPaused  = false;
         this.canStore  = true;
+
+        // Shield
+        this.shieldActive     = false;
+        this.shieldActiveMs   = 0;
+        this.shieldCooldownMs = 0;
+        this.shieldReady      = true;   // prêt dès le début
 
         this.animationFrameId = null;
         this.lastTime         = 0;
@@ -55,6 +62,10 @@ class Tetris {
         this.timeToDown = this.initialTimeToDown;
         this.storedPiece = null;
         this.canStore    = true;
+        this.shieldActive     = false;
+        this.shieldActiveMs   = 0;
+        this.shieldCooldownMs = 0;
+        this.shieldReady      = true;
         this._spawnNewPiece();
         document.addEventListener('keydown', this._keyHandler);
         this._startGameLoop();
@@ -107,6 +118,8 @@ class Tetris {
             const deltaTime = currentTime - this.lastTime;
             this.lastTime = currentTime;
             this.accumulator += deltaTime;
+
+            this._updateShield(deltaTime);
 
             while (this.isRunning && this.accumulator >= this.timeToDown) {
                 this._tick();
@@ -174,9 +187,40 @@ class Tetris {
                 e.preventDefault();
                 if (!this.isPaused) this._storePiece();
                 break;
+            case 'e': case 'E':
+                e.preventDefault();
+                if (!this.isPaused) this._activateShield();
+                break;
         }
 
         this.onRender();
+    }
+
+    _activateShield() {
+        if (!this.shieldReady || this.shieldActive) return;
+        this.shieldActive   = true;
+        this.shieldActiveMs = 3000;
+        this.shieldReady    = false;
+        if (this.onShieldChanged) this.onShieldChanged('activated');
+    }
+
+    _updateShield(deltaTime) {
+        if (this.shieldActive) {
+            this.shieldActiveMs -= deltaTime;
+            if (this.shieldActiveMs <= 0) {
+                this.shieldActive     = false;
+                this.shieldActiveMs   = 0;
+                this.shieldCooldownMs = 60000;
+                if (this.onShieldChanged) this.onShieldChanged('deactivated');
+            }
+        } else if (!this.shieldReady) {
+            this.shieldCooldownMs -= deltaTime;
+            if (this.shieldCooldownMs <= 0) {
+                this.shieldCooldownMs = 0;
+                this.shieldReady      = true;
+                if (this.onShieldChanged) this.onShieldChanged('ready');
+            }
+        }
     }
 
     _hardDrop() {
@@ -275,8 +319,17 @@ class Tetris {
         const points = [0, 100, 300, 500, 800];
         this.score += points[cleared];
         this.count += points[cleared];
-        if (this.onLinesCleared && cleared > 0)
-            this.onLinesCleared(cleared, this.lastLandingCol);
+        if (cleared > 0) {
+            // Chaque ligne remplie réduit le cooldown du shield de 10s
+            if (!this.shieldActive && !this.shieldReady) {
+                this.shieldCooldownMs = Math.max(0, this.shieldCooldownMs - cleared * 10000);
+                if (this.shieldCooldownMs === 0) {
+                    this.shieldReady = true;
+                    if (this.onShieldChanged) this.onShieldChanged('ready');
+                }
+            }
+            if (this.onLinesCleared) this.onLinesCleared(cleared, this.lastLandingCol);
+        }
     }
 
     _makeHarder() {
@@ -361,6 +414,7 @@ class Tetris {
     }
 
     addGarbageLines(lines) {
+        if (this.shieldActive) return;  // shield bloque les lignes garbage
         if (!this.isRunning || !lines.length) return;
         this.grid.splice(0, lines.length);
         for (const line of lines) this.grid.push([...line]); // ...line pour faire une copie independante
