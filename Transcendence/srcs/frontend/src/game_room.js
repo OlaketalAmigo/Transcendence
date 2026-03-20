@@ -194,7 +194,8 @@ export class GameRoomWindow extends Window {
 			players: [],
 			currentPlayerIndex: 0,
 			guessedLetters: [],
-			scores: {}
+			scores: {},
+			counter: 0
 		};
 
 		this.initDrawing();
@@ -1568,8 +1569,11 @@ export class GameRoomWindow extends Window {
 
 	nextRound() {
 		// Move to next player
-		this.gameState.currentPlayerIndex = (this.gameState.currentPlayerIndex + 1) % this.gameState.players.length;
-		const nextDrawer = this.gameState.players[this.gameState.currentPlayerIndex];
+		this.gameState.counter++;
+		if (this.gameState.counter >= this.gameState.players.length) {
+			this.gameState.counter = 0;
+		}
+		const nextDrawer = this.gameState.players[this.gameState.counter];
 
 		if (this.socket?.connected) {
 			this.socket.emit('game-next-round', { drawer: nextDrawer });
