@@ -1,16 +1,19 @@
 # macOS
 .DS_Store
-srcs/.DS_Store
-*.DS_Store
+.AppleDouble
+.LSOverride
 
 # Environment / secrets
 .env
 .env.*
+.env.local
+.env.production
 
 # Node
 node_modules/
 npm-debug.log*
 yarn-debug.log*
+yarn-error.log*
 
 # Logs
 *.log
@@ -19,10 +22,6 @@ logs/
 # Build output
 dist/
 build/
-
-# Uploads utilisateurs (garder uniquement default.png)
-srcs/backend/avatar/*
-!srcs/backend/avatar/default.png
 
 # IDE
 .vscode/
@@ -33,3 +32,6 @@ srcs/backend/avatar/*
 # Docker volumes / data
 postgres-data/
 data/
+
+# OS
+Thumbs.db

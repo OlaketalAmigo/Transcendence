@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TETRIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="tetris.css">
+</head>
+<body>
+
+<canvas id="matrix-bg" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.13;"></canvas>
+
+<div id="scale-container">
+
+<h1 data-text="TETRIS">TETRIS<span class="cursor">_</span></h1>
+
+<!-- Bouton home -->
+	<a id="btn-home" href="/">Home</a>
+
+<!-- Panneau de connexion duel -->
+<div id="duel-panel">
+    <span class="settings-title">Duel</span>
+    <div class="duel-row">
+        <input id="input-room-code" placeholder="Code de salle" maxlength="8" spellcheck="false">
+        <button id="btn-join-duel">Rejoindre</button>
+        <button id="btn-leave-duel" disabled>Quitter</button>
+    </div>
+    <div class="duel-row">
+        <button id="btn-matchmaking">Trouver un adversaire</button>
+        <button id="btn-matchmaking-cancel" disabled>Annuler</button>
+    </div>
+    <div id="matchmaking-status"></div>
+    <div id="duel-status">—</div>
+</div>
+
+<div id="game-area">
+
+    <!-- ── JOUEUR LOCAL ── -->
+    <div id="local-section">
+        <div id="app">
+
+            <!-- Colonne gauche : Hold + Score + Boutons + Settings -->
+            <div id="left-column">
+                <div class="panel">
+                    <div class="panel-title">Hold</div>
+                    <canvas id="canvas-hold" width="100" height="80"></canvas>
+
+                    <div class="score-block">
+                        <div class="score-label">Score</div>
+                        <div class="score-value" id="score-display">0</div>
+                    </div>
+
+                    <div class="score-block">
+                        <div class="score-label">Shield <kbd>E</kbd></div>
+                        <div class="score-value shield-ready" id="shield-status-display">PRÊT</div>
+                        <div class="shield-bar-bg"><div class="shield-bar" id="shield-bar"></div></div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button id="btn-start">Start</button>
+                        <button id="btn-pause" disabled>Pause</button>
+                        <button id="btn-stop"  disabled>Stop</button>
+                    </div>
+                </div>
+
+                <!-- Panneau de configuration -->
+                <div id="settings-panel">
+                    <div class="settings-title">Paramètres</div>
+                    <div class="settings-row">
+                        <label>Couleur</label>
+                        <div class="theme-btns">
+                            <button class="theme-btn active" data-theme="green"  onclick="setColorTheme('green')"  title="Vert"></button>
+                            <button class="theme-btn"        data-theme="red"    onclick="setColorTheme('red')"    title="Rouge"></button>
+                            <button class="theme-btn"        data-theme="yellow" onclick="setColorTheme('yellow')" title="Jaune"></button>
+                            <button class="theme-btn"        data-theme="blue"   onclick="setColorTheme('blue')"   title="Bleu"></button>
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <label for="input-ttd">Vitesse initiale (ms)</label>
+                        <input type="number" id="input-ttd" min="100" max="3000" step="50" value="1000">
+                    </div>
+                    <div class="settings-row">
+                        <label for="input-hardening">Points avant accélération</label>
+                        <input type="number" id="input-hardening" min="100" max="5000" step="100" value="1000">
+                    </div>
+                    <div class="settings-row">
+                        <label for="input-decrement">Réduction vitesse (ms)</label>
+                        <input type="number" id="input-decrement" min="10" max="500" step="10" value="100">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grille principale -->
+            <div id="main-wrapper">
+                <canvas id="canvas-main" width="300" height="600"></canvas>
+                <div id="overlay">
+                    <div id="overlay-title">GAME OVER</div>
+                    <div id="overlay-score"></div>
+                </div>
+            </div>
+
+            <!-- Panneau droit : Next + Contrôles -->
+            <div class="panel">
+                <div class="panel-title">Next</div>
+                <canvas id="canvas-next" width="100" height="80"></canvas>
+
+                <div class="controls-list">
+                    <div><span>← →</span> Déplacer</div>
+                    <div><span>↓</span> Descendre</div>
+                    <div><span>Q</span> Rot. gauche</div>
+                    <div><span>W</span> Rot. droite</div>
+                    <div><span>Espace</span> Drop</div>
+                    <div><span>C</span> Hold</div>
+                    <div><span>E</span> Shield</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ── JOUEUR ADVERSAIRE ── -->
+    <div id="opponent-section">
+        <div class="panel opponent-info-panel">
+            <div class="panel-title" id="opponent-name">Adversaire</div>
+            <div class="score-block">
+                <div class="score-label">Score</div>
+                <div class="score-value" id="opponent-score">—</div>
+            </div>
+            <div id="opponent-shield-indicator" style="display:none;color:#00d4ff;font-size:0.75rem;text-align:center;letter-spacing:1px;margin-top:4px;">&#x1F6E1; SHIELD ACTIF</div>
+        </div>
+
+        <div id="opponent-wrapper">
+            <canvas id="canvas-opponent" width="300" height="600"></canvas>
+            <div id="overlay-opponent">
+                <div id="overlay-opponent-title"></div>
+                <div id="overlay-opponent-score"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── LEADERBOARDS ── -->
+<div id="leaderboard-section">
+    <div class="leaderboard-tabs">
+        <button class="lb-tab lb-tab--active" data-tab="scores">Meilleurs scores</button>
+        <button class="lb-tab" data-tab="wins">Duels gagnés</button>
+        <button class="lb-tab" data-tab="history">Mes parties</button>
+    </div>
+
+    <div id="lb-scores" class="lb-content lb-content--active">
+        <table class="lb-table">
+            <thead>
+                <tr><th>#</th><th>Joueur</th><th>Meilleur score</th><th>Parties</th></tr>
+            </thead>
+            <tbody id="lb-scores-body">
+                <tr><td colspan="4">Chargement…</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="lb-wins" class="lb-content">
+        <table class="lb-table">
+            <thead>
+                <tr><th>#</th><th>Joueur</th><th>Victoires</th><th>Parties</th></tr>
+            </thead>
+            <tbody id="lb-wins-body">
+                <tr><td colspan="4">Chargement…</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="lb-history" class="lb-content">
+        <table class="lb-table">
+            <thead>
+                <tr><th>#</th><th>Date</th><th>Type</th><th>Score</th><th>Résultat</th></tr>
+            </thead>
+            <tbody id="lb-history-body">
+                <tr><td colspan="5">Chargement…</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</div><!-- #scale-container -->
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="pieces.js"></script>
+<script src="tetris.js"></script>
+<script src="renderer.js"></script>
+<script src="duel.js"></script>
+<script src="ui.js"></script>
+
+<script>
+// ── Responsive scaling ──────────────────────────
+(function() {
+    const container = document.getElementById('scale-container');
+    // Dimensions naturelles du contenu (single-player)
+    const NAT_W = 640;
+    const NAT_H = 1020;
+
+    function resize() {
+        const s = Math.min(
+            window.innerWidth  / NAT_W,
+            window.innerHeight / NAT_H
+        );
+        container.style.transform       = 'scale(' + s + ')';
+        container.style.transformOrigin = 'top center';
+        // Compense l'espace de layout non affecté par transform
+        container.style.marginBottom    = ((s - 1) * NAT_H) + 'px';
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+})();
+</script>
+
+<script>
+// ── Matrix rain ──────────────────────────────────
+(function() {
+    const canvas = document.getElementById('matrix-bg');
+    const ctx = canvas.getContext('2d');
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+    const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF>_{}[]|\\/#@$%^&*01';
+    const fs = 14;
+    let drops = [];
+    function initDrops() { drops = Array(Math.floor(canvas.width / fs)).fill(1); }
+    initDrops();
+    window.addEventListener('resize', initDrops);
+    setInterval(function() {
+        ctx.fillStyle = 'rgba(0,5,0,0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.font = fs + 'px monospace';
+        for (let i = 0; i < drops.length; i++) {
+            const ch = chars[Math.floor(Math.random() * chars.length)];
+            ctx.fillStyle = drops[i] * fs < 50 ? '#aaffaa' : '#00ff41';
+            ctx.fillText(ch, i * fs, drops[i] * fs);
+            if (drops[i] * fs > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        }
+    }, 40);
+})();
+</script>
+</body>
+</html>

@@ -17,6 +17,7 @@ export class LoginWindow extends Window {
         this.buildUI();
         this.bindEvents();
         this.checkIfAlreadyLoggedIn();
+		this.NotficationContainer();
     }
 
     /**
@@ -129,6 +130,7 @@ export class LoginWindow extends Window {
             if (response.ok && data.token) {
                 localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token);
                 this.showMessage('Login successful! Welcome.', 'success');
+				this.showNotification('Login successful', 'green');
 
                 // Emit login event
                 eventBus.emit(Events.USER_LOGGED_IN, { username, token: data.token });
@@ -138,6 +140,7 @@ export class LoginWindow extends Window {
             } else {
                 const errorMsg = data?.message || 'Login failed';
                 this.showMessage(errorMsg, 'error');
+				this.showNotification(errorMsg, 'red');
             }
         } catch (error) {
             console.error('Login error:', error);
@@ -170,10 +173,12 @@ export class LoginWindow extends Window {
 
             if (response.ok) {
                 this.showMessage('Registration successful! You can now sign in.', 'success');
+				this.showNotification('Registration successful', 'green');
                 eventBus.emit(Events.USER_REGISTERED, { username });
             } else {
                 const errorMsg = data?.message || 'Registration failed';
                 this.showMessage(errorMsg, 'error');
+				this.showNotification(errorMsg, 'red');
             }
         } catch (error) {
             console.error('Registration error:', error);
@@ -200,6 +205,7 @@ export class LoginWindow extends Window {
             if (event.data?.token) {
                 localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, event.data.token);
                 this.showMessage('GitHub login successful! Welcome.', 'success');
+				this.showNotification('GitHub login successful', 'green');
 
                 // Emit login event
                 eventBus.emit(Events.USER_LOGGED_IN, {
@@ -214,6 +220,55 @@ export class LoginWindow extends Window {
 
         window.addEventListener('message', handleMessage, { once: true });
     }
+
+	NotficationContainer()
+	{
+		if (document.getElementById('notification-container')) return;
+
+		const container = this.createElement('div');
+		container.id = 'notification-container';
+		Object.assign(container.style, {
+			position: 'fixed',
+			top: '20px',
+			right: '20px',
+			zIndex: 1000,
+			display: 'flex',
+			flexDirection: 'column',
+			gap: '10px'
+		});
+		document.body.appendChild(container);
+	}
+
+	showNotification(message, color) {
+		const container = document.getElementById('notification-container');
+		if (!container) return;
+
+		const notification = document.createElement('div');
+		notification.textContent = message;
+		Object.assign(notification.style, {
+			backgroundColor: color,
+			color: 'white',
+			padding: '10px 20px',
+			borderRadius: '5px',
+			boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+			opacity: '0',
+			transform: 'translateY(-8px)',
+            transition: 'opacity 0.5s ease, transform 0.5s ease'
+		});
+
+		container.appendChild(notification);
+
+		requestAnimationFrame(() => {
+			notification.style.opacity = '1';
+			notification.style.transform = 'translateY(0)';
+		});
+
+		setTimeout(() => {
+			notification.style.opacity = '0';
+			notification.style.transform = 'translateY(-8px)';
+			setTimeout(() => notification.remove(), 500);
+		}, 2200);
+	}
 
     /**
      * Displays a feedback message

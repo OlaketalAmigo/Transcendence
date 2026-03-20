@@ -7,6 +7,8 @@ import { LoginWindow } from './login.js';
 import { GlobalChat } from './global_chat.js';
 import { AvatarWindow } from './avatar.js';
 import { FriendsWindow } from './friends.js';
+import { GameRoomWindow } from './game_room.js';
+import { StatsWindow } from './stats.js';
 
 /**
  * Main application class
@@ -16,7 +18,7 @@ class App {
     constructor() {
         this.initWindows();
         this.initMenu();
-        this.initGame();
+        this.initPage();
         this.initEasterEgg();
     }
 
@@ -24,11 +26,12 @@ class App {
      * Initializes all windows
      */
     initWindows() {
-        // Windows automatically register themselves in the registry
         new LoginWindow();
         new GlobalChat();
         new AvatarWindow();
         new FriendsWindow();
+        new GameRoomWindow();
+        new StatsWindow();
     }
 
     /**
@@ -42,7 +45,6 @@ class App {
             return;
         }
 
-        // Action to window name mapping
         const actionMap = {
             'login': 'login',
             'chat': 'chat',
@@ -66,44 +68,14 @@ class App {
         });
     }
 
-    initGame() {
-        const game = document.querySelector('.game');
-        if (!game) {
-            console.warn('Game not found');
-            return;
-        }
-
-        // Action to window name mapping
-        const actionMap = {
-            'new_game': 'new_game'
-        };
-
-        // Event delegation on the menu
-        game.addEventListener('click', (e) => {
-            const button = e.target.closest('.game__item');
-            if (!button) return;
-
-            const action = button.dataset.action;
-
-            // Actions with associated windows
-            if (actionMap[action]) {
-                windowRegistry.toggle(actionMap[action]);
-                return;
-            }
-
-        });
-    }
-
     initPage() {
         const page = document.querySelector('.page');
         if (!page) {
-            console.warn('Page not found');
             return;
         }
 
-        // Action to window name mapping
         const actionMap = {
-            'new_page': 'new_page'
+            'gameroom': 'gameroom'
         };
 
         // Event delegation on the menu
@@ -125,14 +97,14 @@ class App {
     /**
      * Initializes the easter egg button
      */
-    // initEasterEgg() {
-    //     const easterEgg = document.querySelector('.easter-egg');
-    //     if (easterEgg) {
-    //         easterEgg.addEventListener('click', () => {
-    //             alert('You clicked when we told you not to!');
-    //         });
-    //     }
-    // }
+    initEasterEgg() {
+        const easterEgg = document.querySelector('.easter-egg');
+        if (easterEgg) {
+            easterEgg.addEventListener('click', () => {
+                alert('DONT CLICK!');
+            });
+        }
+    }
 }
 
 // Start the application when DOM is ready

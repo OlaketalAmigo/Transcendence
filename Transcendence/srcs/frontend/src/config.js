@@ -20,6 +20,26 @@ export const API = {
         REQUEST: '/api/friends/request',
         ACCEPT: '/api/friends/accept',
         DECLINE: '/api/friends/decline'
+    },
+    ROOMS: {
+        LIST: '/api/rooms',
+        PLAYING: '/api/rooms/playing',
+        CREATE: '/api/rooms',
+        GET: (id) => `/api/rooms/${id}`,
+        PLAYERS: (id) => `/api/rooms/${id}/players`,
+        JOIN: (id) => `/api/rooms/${id}/join`,
+        LEAVE: (id) => `/api/rooms/${id}/leave`,
+        SPECTATE: (id) => `/api/rooms/${id}/spectate`,
+        LEAVE_SPECTATE: (id) => `/api/rooms/${id}/leave-spectate`,
+        CURRENT: '/api/rooms/current'
+    },
+    STATS: {
+        ME: '/api/stats/me',
+        USER: (username) => `/api/stats/user/${username}`,
+        LEADERBOARD: '/api/stats/leaderboard',
+        TETRIS_SCORE: '/api/stats/tetris/score',
+        TETRIS_LEADERBOARD_SCORE: '/api/stats/tetris/leaderboard/score',
+        TETRIS_LEADERBOARD_WINS: '/api/stats/tetris/leaderboard/wins'
     }
 };
 
@@ -94,7 +114,26 @@ export const CSS = {
     FRIENDS_NAME: 'friends__name',
     FRIENDS_ACTIONS: 'friends__actions',
     FRIENDS_SEARCH: 'friends__search',
-    FRIENDS_EMPTY: 'friends__empty'
+    FRIENDS_EMPTY: 'friends__empty',
+
+    // Game Rooms
+    GAMEROOM: 'gameroom',
+    GAMEROOM_TABS: 'gameroom__tabs',
+    GAMEROOM_TAB: 'gameroom__tab',
+    GAMEROOM_TAB_ACTIVE: 'gameroom__tab--active',
+    GAMEROOM_CONTENT: 'gameroom__content',
+    GAMEROOM_LIST: 'gameroom__list',
+    GAMEROOM_ITEM: 'gameroom__item',
+    GAMEROOM_NAME: 'gameroom__name',
+    GAMEROOM_PLAYERS: 'gameroom__players',
+    GAMEROOM_ACTIONS: 'gameroom__actions',
+    GAMEROOM_CREATE: 'gameroom__create',
+    GAMEROOM_LOBBY: 'gameroom__lobby',
+    GAMEROOM_PLAYER_LIST: 'gameroom__player-list',
+    GAMEROOM_PLAYER: 'gameroom__player',
+    GAMEROOM_PLAYER_AVATAR: 'gameroom__player-avatar',
+    GAMEROOM_PLAYER_NAME: 'gameroom__player-name',
+    GAMEROOM_PLAYER_SCORE: 'gameroom__player-score'
 };
 
 // Colors (for reference, mainly used in CSS)

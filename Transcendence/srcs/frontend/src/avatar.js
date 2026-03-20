@@ -1,4 +1,4 @@
-import { Window } from './windows.js';
+import { Window, windowRegistry } from './windows.js';
 import { API, STORAGE_KEYS, CSS } from './config.js';
 import { eventBus, Events } from './events.js';
 
@@ -16,7 +16,9 @@ export class AvatarWindow extends Window {
 
         this.buildUI();
         this.bindEvents();
-        this.loadAvatar();
+        if (localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)) {
+            this.loadAvatar();
+        }
 
         // Listen for login events
         eventBus.on(Events.USER_LOGGED_IN, () => this.loadAvatar());
@@ -34,6 +36,13 @@ export class AvatarWindow extends Window {
         // Username display
         this.username = this.createElement('div', CSS.AVATAR_USERNAME);
 
+        // Stats display
+        this.statsContainer = this.createElement('div', 'avatar__stats');
+        this.pointsDisplay = this.createElement('div', 'avatar__stat');
+        this.gamesPlayedDisplay = this.createElement('div', 'avatar__stat');
+        this.gamesWonDisplay = this.createElement('div', 'avatar__stat');
+        this.statsContainer.append(this.pointsDisplay, this.gamesPlayedDisplay, this.gamesWonDisplay);
+
         // Hidden file input
         this.fileInput = this.createElement('input', 'avatar__file-input', {
             type: 'file',
@@ -42,6 +51,10 @@ export class AvatarWindow extends Window {
 
         // Controls
         this.controls = this.createElement('div', CSS.AVATAR_CONTROLS);
+
+        this.statsBtn = this.createElement('button', [CSS.BTN, CSS.BTN_PRIMARY], {
+            text: 'Mes statistiques'
+        });
 
         this.chooseBtn = this.createElement('button', [CSS.BTN, CSS.BTN_SECONDARY], {
             text: 'Choose image'
@@ -55,7 +68,7 @@ export class AvatarWindow extends Window {
             text: 'Refresh'
         });
 
-        this.controls.append(this.chooseBtn, this.saveBtn, this.refreshBtn);
+        this.controls.append(this.statsBtn, this.chooseBtn, this.saveBtn, this.refreshBtn);
 
         // Feedback message
         this.message = this.createElement('div', CSS.MESSAGE);
@@ -64,6 +77,7 @@ export class AvatarWindow extends Window {
         this.body.append(
             this.preview,
             this.username,
+            this.statsContainer,
             this.fileInput,
             this.controls,
             this.message
@@ -75,6 +89,7 @@ export class AvatarWindow extends Window {
      */
     bindEvents() {
         this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+        this.statsBtn.addEventListener('click', () => windowRegistry.get('stats')?.showMe());
         this.chooseBtn.addEventListener('click', () => this.fileInput.click());
         this.saveBtn.addEventListener('click', () => this.uploadAvatar());
         this.refreshBtn.addEventListener('click', () => this.loadAvatar());
@@ -148,6 +163,46 @@ export class AvatarWindow extends Window {
         } catch (error) {
             console.error('Error loading avatar:', error);
         }
+
+        // Load stats
+        await this.loadStats();
+    }
+
+    /**
+     * Loads player stats from the server
+     */
+    async loadStats() {
+        const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+        if (!token) return;
+
+        try {
+            const response = await fetch(API.STATS.ME, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                console.warn('Failed to load stats, status:', response.status);
+                return;
+            }
+
+            const data = await response.json();
+            this.updateStatsDisplay(data);
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+    }
+
+    /**
+     * Updates the stats display
+     * @param {object} stats
+     */
+    updateStatsDisplay(stats) {
+        this.pointsDisplay.innerHTML = `<span class="avatar__stat-label">Points:</span> <span class="avatar__stat-value">${stats.total_points || 0}</span>`;
+        this.gamesPlayedDisplay.innerHTML = `<span class="avatar__stat-label">Parties:</span> <span class="avatar__stat-value">${stats.games_played || 0}</span>`;
+        this.gamesWonDisplay.innerHTML = `<span class="avatar__stat-label">Victoires:</span> <span class="avatar__stat-value">${stats.games_won || 0}</span>`;
     }
 
     /**

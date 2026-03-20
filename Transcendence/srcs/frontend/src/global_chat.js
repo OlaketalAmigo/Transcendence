@@ -17,6 +17,8 @@ export class GlobalChat extends Window {
         this.socket = null;
         this.connected = false;
         this.friendIds = new Set();
+        this.currentUserId = null;
+        this.currentUsername = null;
 
         this.buildUI();
         this.bindEvents();
@@ -169,6 +171,19 @@ export class GlobalChat extends Window {
         await this.connect();
     }
 
+    decodeToken(token)
+    {
+        try
+        {
+            const payload = token.split('.')[1];
+            return (JSON.parse(atob(payload)));
+        }
+        catch
+        {
+            return (null);
+        }
+    }
+
     /**
      * Connects to the Socket.IO server
      */
@@ -178,6 +193,13 @@ export class GlobalChat extends Window {
         if (!token) {
             this.addSystemMessage('Error: you must be logged in to use the global chat', 'error');
             return;
+        }
+
+        const tokenData = this.decodeToken(token);
+
+        if (tokenData) {
+            this.currentUserId = tokenData.id || tokenData.userId || tokenData.user_id || tokenData.sub || null;
+            this.currentUsername = tokenData.username || tokenData.name || null;
         }
 
         if (this.socket?.connected) {
@@ -239,6 +261,7 @@ export class GlobalChat extends Window {
         this.socket.on('connect', () => {
             console.log('Socket connected, ID:', this.socket.id);
             this.connected = true;
+            this.output.innerHTML = '';
             this.addSystemMessage('Connected to global chat', 'success');
             eventBus.emit(Events.CHAT_CONNECTED, { socketId: this.socket.id });
         });
@@ -262,15 +285,38 @@ export class GlobalChat extends Window {
 
             // Display recent messages
             data.messages.forEach(msg => {
-                const isFriend = this.friendIds.has(msg.sender_id);
-                this.addChatMessage(msg.username, msg.content, false, isFriend);
+                const isOwn = this.isOwnMessage(msg);
+                const isFriend = !isOwn && this.friendIds.has(msg.sender_id);
+                const displayUsername = isOwn ? 'Me' : msg.username;
+                this.addChatMessage(displayUsername, msg.content, isOwn, isFriend);
             });
         });
 
         this.socket.on('chat-message', (msg) => {
+            const isOwn = this.isOwnMessage(msg);
+            if (isOwn)
+                return;
+
             const isFriend = this.friendIds.has(msg.sender_id);
             this.addChatMessage(msg.username, msg.content, false, isFriend);
             eventBus.emit(Events.CHAT_MESSAGE_RECEIVED, msg);
         });
+    }
+
+    isOwnMessage(msg)
+    {
+        if (this.currentUserId !== null && msg.sender_id !== undefined && msg.sender_id !== null)
+        {
+            if (String(this.currentUserId) === String(msg.sender_id))
+                return (true);
+        }
+
+        if (this.currentUsername && msg.username)
+        {
+            if (this.currentUsername.toLowerCase() === msg.username.toLowerCase())
+                return (true);
+        }
+
+        return (false);
     }
 }
