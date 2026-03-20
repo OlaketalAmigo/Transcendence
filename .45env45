@@ -1,0 +1,10 @@
+POSTGRES_PASSWORD=coucou
+JWT_SECRET=superlongsecretkeyatleast32characterspleasenevercommitthis
+POSTGRES_DB=database
+POSTGRES_HOST=database
+POSTGRES_USER=user
+GITHUB_CLIENT_ID=Ov23li6ovg3fzec5IO5D
+GITHUB_CLIENT_SECRET=0345e959e8f0e9f784061c5c90ee227ddb2ef9ab
+GITHUB_CALLBACK_URL=http://localhost:8080/api/auth/github/callback
+
+pogpog

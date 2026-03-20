@@ -18,8 +18,8 @@
 
     --app-background-image: url("./assets/Frame1.png");
 
-    --color-surface: #f5f52d;
-    --color-surface-light: #eff870;
+    --color-surface: #ffcc00;
+    --color-surface-light: #feffa6;
     --color-text: #000000;
     --color-text-muted: #353535;
 
@@ -118,41 +118,6 @@ body {
 /* ============================================
    TYPOGRAPHY
    ============================================ */
-   
-/* .title {
-    position: absolute;
-    top: 20px;                  
-    left: 50%;
-    transform: translateX(-50%);
-    text-transform: uppercase;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-
-    font-size: var(--font-size-xl);
-    text-align: center;
-    text-shadow: 2px 2px 10px black;
-    z-index: 1;
-    font-family: "Patrick Hand", cursive;
-    color: #ff0055;
-    text-shadow:
-        2px 2px 0 #000,
-        -2px -2px 0 #000,
-        2px -2px 0 #000,
-        -2px 2px 0 #000;
-
-    animation: wobble 2s infinite ease-in-out;
-
-    margin: 0;
-    padding: var(--spacing-md);
-
-    /* Rectangle + rounded corners */
-    /* background-color: rgba(247, 7, 67, 0.6);
-    border: 2px solid rgba(0, 0, 0, 0.6);
-    border-radius: 15px;
-} */
 
 .title {
     position: absolute;
