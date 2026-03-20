@@ -109,9 +109,8 @@ class App {
     }
 
     colorizeUI() {
-    if (!window.location.pathname.includes("game.html")) return;
     
-    const elements = document.querySelectorAll(".menu__item, .game__item, .page__item");
+    const elements = document.querySelectorAll(".title, .menu__item, .game__item, .page__item");
 
     const colorizeText = (el) => {
         const text = el.textContent;
