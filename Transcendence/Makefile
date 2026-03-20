@@ -72,36 +72,9 @@ git3: fclean
 		: > $(GIT_MSG_FILE) && \
 		$(call random_shmol_cat_blink, success!, $(GIT_MSG_FILE) cleared., , ); \
 	}
-# --------------------------------------------------------------------------------- >
-# 																				CLEAN
-clean:
-	@rm -f $(TEST_FOLDER)/a.out
-	@rm -rf log
-	@rm -f www/web_cat/donations/*
-	@rm -f www/tmp/*
-	@rm -f $(CLIENT)
-	@rm -rf $(OBJ_FOLDER)
-	@$(call print_cat, $(CLEAR), $(C_225), $(C_320), $(C_450), $(call pad_word, 10, "Objects"), $(call pad_word, 12, "Exterminated"));
 
-clean_silent:
-	@clear
-	@rm -rf $(NAME)
-	@rm -rf $(OBJ_FOLDER)
-
-fclean: clean
-	@rm -rf $(NAME)
-	@$(call print_cat, $(CLEAR), $(C_120), $(C_300), $(C_210), $(call pad_word, 10, "All⠀clean"), $(call pad_word, 12, "Miaster"));
-
-re: fclean all
-
-.PHONY: all clean fclean re
 
 .SILENT: $(NAME)
-
-# 	monitor stack activiity
-# valgrind --tool=massif --stacks=yes ./your_program
-# lldb: clean all
-# 	@lldb ./$(NAME) $(ARGS)
 
 
 # ╭────────────────────────────────────────────────────────────────────────────────────╮
