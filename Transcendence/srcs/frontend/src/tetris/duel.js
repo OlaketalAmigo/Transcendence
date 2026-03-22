@@ -3,18 +3,20 @@
 // ─────────────────────────────────────────────
 
 class Duel {
-    constructor(socket, tetrisGame, onStatusChange, onStart) {
+    // ui : { showOverlay, hideOverlay, render, renderOpponent, updateButtons }
+    constructor(socket, tetrisGame, onStatusChange, onStart, ui) {
         this.socket         = socket;
         this.tetrisGame     = tetrisGame;
-        this.onStatusChange = onStatusChange;   // (status, opponentName) => void
-        this.onStart        = onStart;          // () => void — déclenche le début du jeu local
+        this.onStatusChange = onStatusChange;
+        this.onStart        = onStart;
+        this.ui             = ui;
 
-        this.action_queue        = [];
-        this.opponentGrid        = this._emptyGrid();
-        this.opponentScore       = 0;
+        this.action_queue         = [];
+        this.opponentGrid         = this._emptyGrid();
+        this.opponentScore        = 0;
         this.opponentShieldActive = false;
-        this.roomCode            = null;
-        this.isReady             = false;
+        this.roomCode             = null;
+        this.isReady              = false;
 
         this._bindSocketEvents();
     }
@@ -34,10 +36,11 @@ class Duel {
     leave() {
         if (!this.roomCode) return;
         this.socket.emit('tetris:leave');
-        this.roomCode  = null;
-        this.isReady   = false;
-        this.opponentGrid = this._emptyGrid();
-        this.opponentScore = 0;
+        this.roomCode             = null;
+        this.isReady              = false;
+        this.opponentGrid         = this._emptyGrid();
+        this.opponentScore        = 0;
+        this.opponentShieldActive = false;
     }
 
     // ─── Hooks appelés par tetris.js ──────────
@@ -49,9 +52,7 @@ class Duel {
 
     onLocalLinesCleared(count, holeCol) {
         if (!this.isReady) return;
-        const garbageLines = [];
-        for (let i = 0; i < count; i++)
-            garbageLines.push(this._buildGarbageLine(holeCol));
+        const garbageLines = Array.from({ length: count }, () => this._buildGarbageLine(holeCol));
         this.socket.emit('tetris:lines-cleared', { count, holeCol, garbageLines });
     }
 
@@ -63,11 +64,8 @@ class Duel {
 
     onLocalShieldChanged(event) {
         if (!this.isReady) return;
-        if (event === 'activated') {
-            this.socket.emit('tetris:shield-activated');
-        } else if (event === 'deactivated') {
-            this.socket.emit('tetris:shield-deactivated');
-        }
+        if (event === 'activated')   this.socket.emit('tetris:shield-activated');
+        else if (event === 'deactivated') this.socket.emit('tetris:shield-deactivated');
     }
 
     endDuel() {
@@ -80,8 +78,7 @@ class Duel {
 
     synchronize_game() {
         while (this.action_queue.length > 0) {
-            const action = this.action_queue.shift();
-            this._processAction(action);
+            this._processAction(this.action_queue.shift());
         }
     }
 
@@ -91,7 +88,7 @@ class Duel {
                 this.opponentGrid  = action.grid;
                 this.opponentScore = action.score;
                 document.getElementById('opponent-score').textContent = action.score;
-                renderOpponent(this.opponentGrid);
+                this.ui.renderOpponent(this.opponentGrid, this.opponentShieldActive);
                 break;
 
             case 'LINES_CLEARED':
@@ -99,7 +96,7 @@ class Duel {
                 break;
 
             case 'OPPONENT_GAME_OVER':
-                showOverlay('YOU WIN', action.score);
+                this.ui.showOverlay('YOU WIN', action.score);
                 this.endDuel();
                 break;
 
@@ -159,22 +156,22 @@ class Duel {
 
         this.socket.on('tetris:pause', () => {
             this.tetrisGame.pause();
-            updateButtons();
-            if (this.tetrisGame.isPaused) showOverlay('PAUSE');
-            else hideOverlay();
+            this.ui.updateButtons();
+            if (this.tetrisGame.isPaused) this.ui.showOverlay('PAUSE');
+            else this.ui.hideOverlay();
         });
 
         this.socket.on('tetris:stop', () => {
             this.tetrisGame.stop();
-            updateButtons();
-            render();
-            showOverlay('STOPPED');
+            this.ui.updateButtons();
+            this.ui.render();
+            this.ui.showOverlay('STOPPED');
         });
 
         this.socket.on('tetris:settings', (data) => {
-            document.getElementById('input-ttd').value        = data.timeToDown;
-            document.getElementById('input-hardening').value  = data.hardening;
-            document.getElementById('input-decrement').value  = data.decrementTTD;
+            document.getElementById('input-ttd').value       = data.timeToDown;
+            document.getElementById('input-hardening').value = data.hardening;
+            document.getElementById('input-decrement').value = data.decrementTTD;
             this.tetrisGame.configure(data);
         });
     }

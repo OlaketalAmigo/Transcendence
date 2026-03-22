@@ -1,6 +1,6 @@
-import { Window } from './windows.js';
-import { API, STORAGE_KEYS, CSS } from './config.js';
-import { eventBus, Events } from './events.js';
+import { Window } from '../core/windows.js';
+import { API, STORAGE_KEYS, CSS } from '../core/config.js';
+import { eventBus, Events } from '../core/events.js';
 
 export class GameRoomWindow extends Window {
 	constructor() {

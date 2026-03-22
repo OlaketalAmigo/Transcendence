@@ -61,17 +61,14 @@ function drawCell(ctx, x, y, colorIndex, size) {
     const color = COLORS[colorIndex];
     ctx.fillStyle = color;
     ctx.fillRect(x * size + p, y * size + p, size - p * 2, size - p * 2);
-    // Glow inner
     ctx.shadowColor = color;
     ctx.shadowBlur  = 6;
     ctx.fillStyle = color;
     ctx.fillRect(x * size + p + 2, y * size + p + 2, size - p * 2 - 4, size - p * 2 - 4);
     ctx.shadowBlur = 0;
-    // Highlight top/left
     ctx.fillStyle = currentTheme.highlight;
     ctx.fillRect(x * size + p, y * size + p, size - p * 2, 2);
     ctx.fillRect(x * size + p, y * size + p, 2, size - p * 2);
-    // Shadow bottom/right
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(x * size + p, (y + 1) * size - p - 2, size - p * 2, 2);
     ctx.fillRect((x + 1) * size - p - 2, y * size + p, 2, size - p * 2);
@@ -150,8 +147,10 @@ function _drawShieldOverlay(ctx, w, h, alpha) {
     ctx.restore();
 }
 
-function render() {
-    // Grille principale
+// ── Rendu joueur local ────────────────────────────────────────────────────────
+// Prend l'objet game explicitement — aucun accès à des globaux externes.
+
+function render(game) {
     clearCanvas(ctxMain, 300, 600);
     drawGridLines(ctxMain, 10, 20, CELL);
 
@@ -160,7 +159,6 @@ function render() {
             if (game.grid[y][x] !== 0)
                 drawCell(ctxMain, x, y, game.grid[y][x], CELL);
 
-    // Ghost + pièce courante
     if (game.currentPiece) {
         drawGhost(ctxMain, game.currentPiece, game.grid);
         const { x, y } = game.currentPiece.getPosition();
@@ -172,20 +170,16 @@ function render() {
                     drawCell(ctxMain, x + col, y + row, color, CELL);
     }
 
-    // Shield overlay (bordure cyan pulsée)
     if (game.shieldActive) {
         const pulse = 0.6 + 0.4 * Math.sin(Date.now() / 150);
         _drawShieldOverlay(ctxMain, 300, 600, pulse);
     }
 
-    // Panneaux miniatures
     drawMiniPiece(ctxNext, game.nextPiece,   100, 80);
     drawMiniPiece(ctxHold, game.storedPiece, 100, 80);
 
-    // Score
     document.getElementById('score-display').textContent = game.score;
 
-    // Shield status UI
     const shieldEl  = document.getElementById('shield-status-display');
     const shieldBar = document.getElementById('shield-bar');
     if (shieldEl) {
@@ -207,29 +201,27 @@ function render() {
     }
 }
 
-function renderOpponent(opponentGrid) {
+// ── Rendu adversaire ─────────────────────────────────────────────────────────
+// Prend grid et shieldActive explicitement — aucun accès à l'objet duel global.
+
+function renderOpponent(grid, shieldActive) {
     clearCanvas(ctxOpponent, 300, 600);
     drawGridLines(ctxOpponent, 10, 20, CELL);
-    for (let y = 0; y < opponentGrid.length; y++)
-        for (let x = 0; x < opponentGrid[y].length; x++)
-            if (opponentGrid[y][x] !== 0)
-                drawCell(ctxOpponent, x, y, opponentGrid[y][x], CELL);
+    for (let y = 0; y < grid.length; y++)
+        for (let x = 0; x < grid[y].length; x++)
+            if (grid[y][x] !== 0)
+                drawCell(ctxOpponent, x, y, grid[y][x], CELL);
 
-    // Shield overlay adversaire
-    if (typeof duel !== 'undefined' && duel && duel.opponentShieldActive) {
+    if (shieldActive) {
         const pulse = 0.6 + 0.4 * Math.sin(Date.now() / 150);
         _drawShieldOverlay(ctxOpponent, 300, 600, pulse);
     }
 
-    // Indicateur HTML adversaire
     const oppShieldEl = document.getElementById('opponent-shield-indicator');
-    if (oppShieldEl) {
-        const active = typeof duel !== 'undefined' && duel && duel.opponentShieldActive;
-        oppShieldEl.style.display = active ? 'block' : 'none';
-    }
+    if (oppShieldEl) oppShieldEl.style.display = shieldActive ? 'block' : 'none';
 }
 
-// Restore saved theme
+// Restaure le thème sauvegardé
 (function() {
     const saved = localStorage.getItem('tetris-theme');
     if (saved && THEMES[saved]) setColorTheme(saved);
