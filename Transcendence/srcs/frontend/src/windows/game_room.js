@@ -840,17 +840,20 @@ export class GameRoomWindow extends Window {
 		const name = this.roomNameInput.value.trim();
 		if (!name) {
 			this.showMessage('Entrez un nom pour le salon', 'error');
+			this.showNotification('Entrez un nom pour le salon', 'red');
 			return;
 		}
 
 		const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 		if (!token) {
 			this.showMessage('Connectez-vous pour creer un salon', 'info');
+			this.showNotification('Connectez-vous pour créer un salon', 'red');
 			return;
 		}
 
 		if (this.currentRoom) {
 			this.showMessage('Vous etes deja dans un salon. Quittez-le d\'abord.', 'error');
+			this.showNotification('Vous êtes déjà dans un salon. Quittez-le d\'abord.', 'red');
 			return;
 		}
 
@@ -864,6 +867,7 @@ export class GameRoomWindow extends Window {
 					this.currentRoom = currentData;
 					this.enterLobby(currentData);
 					this.showMessage('Vous etes deja dans un salon', 'error');
+					this.showNotification('Vous êtes déjà dans un salon. Quittez-le d\'abord.', 'red');
 					return;
 				}
 			}
@@ -884,6 +888,7 @@ export class GameRoomWindow extends Window {
 
 		if (this.roomNameExists(name)) {
 			this.showMessage('Un salon avec ce nom existe deja', 'error');
+			this.showNotification('Un salon avec ce nom existe deja', 'red');
 			return;
 		}
 
@@ -905,6 +910,7 @@ export class GameRoomWindow extends Window {
 			this.showMessage('Salon cree', 'success');
 			eventBus.emit(Events.ROOM_CREATED, data);
 			this.enterLobby(data);
+			this.showNotification(`Vous avez créé le salon "${data.name}"`, 'green');
 		} catch (error) {
 			console.error('Create room error:', error);
 			this.showMessage('Erreur de connexion', 'error');
@@ -1037,6 +1043,7 @@ export class GameRoomWindow extends Window {
 
 		if (this.currentRoom) {
 			this.showMessage('Vous etes deja dans un salon. Quittez-le d\'abord.', 'error');
+			this.showNotification('Vous êtes déjà dans un salon. Quittez-le d\'abord.', 'red');
 			return;
 		}
 
@@ -1050,6 +1057,7 @@ export class GameRoomWindow extends Window {
 					this.currentRoom = currentData;
 					this.enterLobby(currentData);
 					this.showMessage('Vous etes deja dans un salon', 'error');
+					this.showNotification('Vous êtes déjà dans un salon. Quittez-le d\'abord.', 'red');
 					return;
 				}
 			}

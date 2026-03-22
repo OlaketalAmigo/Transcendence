@@ -26,6 +26,17 @@ router.post('/login', async(req, res) =>
 	res.status(result.status).json(result.data);
 });
 
+router.post('/logout', async(req, res) =>
+{
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token)
+    return (res.status(401).json({error: 'Missing token'}));
+
+  const result = await authService.logout(token);
+  res.status(result.status).json(result.data);
+});
+
 router.get('/github', (req, res) => {
   const githubAuthUrl = `https://github.com/login/oauth/authorize?` +
     `client_id=${process.env.GITHUB_CLIENT_ID}&` +

@@ -4,6 +4,7 @@
  */
 import { windowRegistry } from './core/windows.js';
 import { LoginWindow } from './windows/login.js';
+import { LogoutWindow } from './windows/logout.js';
 import { GlobalChat } from './windows/global_chat.js';
 import { AvatarWindow } from './windows/avatar.js';
 import { FriendsWindow } from './windows/friends.js';
@@ -32,6 +33,7 @@ class App {
         new FriendsWindow();
         new GameRoomWindow();
         new StatsWindow();
+        new LogoutWindow();
     }
 
     /**
@@ -49,7 +51,8 @@ class App {
             'login': 'login',
             'chat': 'chat',
             'avatar': 'avatar',
-            'friends': 'friends'
+            'friends': 'friends',
+            'logout': 'logout'
         };
 
         // Event delegation on the menu

@@ -69,6 +69,9 @@ async function deleteAvatar(userId) {
 		if (currentAvatar === null)
 			return ({status: 404, data: {error: 'User not found'}});
 
+		if (currentAvatar === DEFAULT_AVATAR)
+			return ({status: 400, data: {error: 'Cannot delete default avatar'}});
+
 		// Reset the avatar to the default one
 		await setAvatar(DEFAULT_AVATAR, userId);
 

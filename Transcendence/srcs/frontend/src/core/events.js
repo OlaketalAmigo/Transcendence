@@ -82,6 +82,7 @@ export const Events = {
 
     // Avatar
     AVATAR_UPDATED: 'avatar:updated',
+    AVATAR_DELETED: 'avatar:deleted',
 
     // Chat
     CHAT_CONNECTED: 'chat:connected',

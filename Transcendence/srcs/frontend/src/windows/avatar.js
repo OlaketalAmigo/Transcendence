@@ -67,8 +67,12 @@ export class AvatarWindow extends Window {
         this.refreshBtn = this.createElement('button', [CSS.BTN, CSS.BTN_SECONDARY], {
             text: 'Refresh'
         });
+        
+        this.deleteBtn = this.createElement('button', [CSS.BTN, CSS.BTN_SECONDARY], {
+            text: 'Delete avatar'
+        });
 
-        this.controls.append(this.statsBtn, this.chooseBtn, this.saveBtn, this.refreshBtn);
+        this.controls.append(this.statsBtn, this.chooseBtn, this.saveBtn, this.refreshBtn, this.deleteBtn);
 
         // Feedback message
         this.message = this.createElement('div', CSS.MESSAGE);
@@ -93,6 +97,7 @@ export class AvatarWindow extends Window {
         this.chooseBtn.addEventListener('click', () => this.fileInput.click());
         this.saveBtn.addEventListener('click', () => this.uploadAvatar());
         this.refreshBtn.addEventListener('click', () => this.loadAvatar());
+        this.deleteBtn.addEventListener('click', () => this.deleteAvatar());
     }
 
     /**
@@ -212,12 +217,14 @@ export class AvatarWindow extends Window {
         const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
         if (!token) {
             this.showMessage('You must be logged in', 'error');
+            this.showNotification('You must be logged in to change your avatar', 'red');
             return;
         }
 
         const file = this.fileInput.files?.[0];
         if (!file) {
             this.showMessage('Select an image first', 'error');
+            this.showNotification('Please select an image to upload', 'red');
             return;
         }
 
@@ -240,6 +247,7 @@ export class AvatarWindow extends Window {
             if (!response.ok) {
                 const errorMsg = data?.error || data?.message || 'Upload failed';
                 this.showMessage(errorMsg, 'error');
+                this.showNotification('Failed to upload avatar.', 'red');
                 return;
             }
 
@@ -248,11 +256,47 @@ export class AvatarWindow extends Window {
             }
 
             this.showMessage('Avatar saved!', 'success');
+            this.showNotification('Avatar updated successfully!', 'green');
             eventBus.emit(Events.AVATAR_UPDATED, { url: data?.avatar_url });
 
         } catch (error) {
             console.error('Avatar upload error:', error);
             this.showMessage('Upload error', 'error');
+            this.showNotification('Failed to upload avatar.', 'red');
+        }
+    }
+
+    async deleteAvatar() {
+        const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+        if (!token) {
+            this.showMessage('You must be logged in', 'error');
+            this.showNotification('You must be logged in to delete your avatar', 'red');
+            return;
+        }
+
+        try {
+            const response = await fetch(API.AVATAR.DELETE, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                this.showMessage('Failed to delete avatar', 'error');
+                this.showNotification('Failed to delete avatar.', 'red');
+                return;
+            }
+
+            this.preview.src = '';
+            this.showMessage('Avatar deleted!', 'success');
+            this.showNotification('Avatar deleted successfully!', 'green');
+            eventBus.emit(Events.AVATAR_DELETED);
+
+        } catch (error) {
+            console.error('Avatar delete error:', error);
+            this.showMessage('Delete error', 'error');
+            this.showNotification('Failed to delete avatar.', 'red');
         }
     }
 

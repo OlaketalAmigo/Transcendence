@@ -6,12 +6,14 @@
 export const API = {
     AUTH: {
         LOGIN: '/api/auth/login',
+        LOGOUT: '/api/auth/logout',
         REGISTER: '/api/auth/register',
         GITHUB: '/api/auth/github'
     },
     AVATAR: {
         GET: '/api/avatar/me',
-        UPLOAD: '/api/avatar/upload'
+        UPLOAD: '/api/avatar/upload',
+        DELETE: '/api/avatar/delete'
     },
     FRIENDS: {
         LIST: '/api/friends',

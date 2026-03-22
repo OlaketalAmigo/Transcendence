@@ -25,7 +25,7 @@ router.post('/upload', authenticateToken, upload.single('avatar'), async(req, re
 	res.status(result.status).json(result.data);
 });
 
-router.delete('/', authenticateToken, async(req, res) =>
+router.delete('/delete', authenticateToken, async(req, res) =>
 {
 	const result = await avatarService.deleteAvatar(req.user.userId);
 	res.status(result.status).json(result.data);

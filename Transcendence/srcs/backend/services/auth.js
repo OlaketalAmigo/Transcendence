@@ -2,6 +2,30 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import {query} from '../db.js';
 
+async function logout(token)
+{
+	try
+	{
+		if (!token)
+			return ({status: 400, data: {error: 'Missing token'}});
+		try
+		{
+			jwt.verify(token, process.env.JWT_SECRET);
+		}
+		catch
+		{
+			return ({status: 401, data: {error: 'Invalid token'}});
+		}
+
+		return ({status: 200, data: {message: 'Logged out'}});
+	}
+	catch (err)
+	{
+		console.error(err);
+		return ({status: 500, data: {error: 'Server error'}});
+	}
+}
+
 async function login(username, password)
 {
 	try
@@ -60,4 +84,4 @@ async function register(username, password)
 	}
 };
 
-export default {register, login};
+export default {register, login, logout};
