@@ -1,5 +1,5 @@
-import { Window } from './windows.js';
-import { API, STORAGE_KEYS } from './config.js';
+import { Window } from '../core/windows.js';
+import { API, STORAGE_KEYS } from '../core/config.js';
 
 /**
  * Stats window — displays Scribble + Tetris stats for any user

@@ -15,10 +15,9 @@
 
 <h1 data-text="TETRIS">TETRIS<span class="cursor">_</span></h1>
 
-<!-- Bouton home -->
-	<a id="btn-home" href="/">Home</a>
+<a id="btn-home" href="/">Home</a>
 
-<!-- Panneau de connexion duel -->
+<!-- Panneau duel -->
 <div id="duel-panel">
     <span class="settings-title">Duel</span>
     <div class="duel-row">
@@ -40,7 +39,7 @@
     <div id="local-section">
         <div id="app">
 
-            <!-- Colonne gauche : Hold + Score + Boutons + Settings -->
+            <!-- Colonne gauche : Hold + Score + Boutons + Paramètres -->
             <div id="left-column">
                 <div class="panel">
                     <div class="panel-title">Hold</div>
@@ -64,16 +63,16 @@
                     </div>
                 </div>
 
-                <!-- Panneau de configuration -->
+                <!-- Paramètres -->
                 <div id="settings-panel">
                     <div class="settings-title">Paramètres</div>
                     <div class="settings-row">
                         <label>Couleur</label>
                         <div class="theme-btns">
-                            <button class="theme-btn active" data-theme="green"  onclick="setColorTheme('green')"  title="Vert"></button>
-                            <button class="theme-btn"        data-theme="red"    onclick="setColorTheme('red')"    title="Rouge"></button>
-                            <button class="theme-btn"        data-theme="yellow" onclick="setColorTheme('yellow')" title="Jaune"></button>
-                            <button class="theme-btn"        data-theme="blue"   onclick="setColorTheme('blue')"   title="Bleu"></button>
+                            <button class="theme-btn active" data-theme="green"  title="Vert"></button>
+                            <button class="theme-btn"        data-theme="red"    title="Rouge"></button>
+                            <button class="theme-btn"        data-theme="yellow" title="Jaune"></button>
+                            <button class="theme-btn"        data-theme="blue"   title="Bleu"></button>
                         </div>
                     </div>
                     <div class="settings-row">
@@ -151,34 +150,22 @@
 
     <div id="lb-scores" class="lb-content lb-content--active">
         <table class="lb-table">
-            <thead>
-                <tr><th>#</th><th>Joueur</th><th>Meilleur score</th><th>Parties</th></tr>
-            </thead>
-            <tbody id="lb-scores-body">
-                <tr><td colspan="4">Chargement…</td></tr>
-            </tbody>
+            <thead><tr><th>#</th><th>Joueur</th><th>Meilleur score</th><th>Parties</th></tr></thead>
+            <tbody id="lb-scores-body"><tr><td colspan="4">Chargement…</td></tr></tbody>
         </table>
     </div>
 
     <div id="lb-wins" class="lb-content">
         <table class="lb-table">
-            <thead>
-                <tr><th>#</th><th>Joueur</th><th>Victoires</th><th>Parties</th></tr>
-            </thead>
-            <tbody id="lb-wins-body">
-                <tr><td colspan="4">Chargement…</td></tr>
-            </tbody>
+            <thead><tr><th>#</th><th>Joueur</th><th>Victoires</th><th>Parties</th></tr></thead>
+            <tbody id="lb-wins-body"><tr><td colspan="4">Chargement…</td></tr></tbody>
         </table>
     </div>
 
     <div id="lb-history" class="lb-content">
         <table class="lb-table">
-            <thead>
-                <tr><th>#</th><th>Date</th><th>Type</th><th>Score</th><th>Résultat</th></tr>
-            </thead>
-            <tbody id="lb-history-body">
-                <tr><td colspan="5">Chargement…</td></tr>
-            </tbody>
+            <thead><tr><th>#</th><th>Date</th><th>Type</th><th>Score</th><th>Résultat</th></tr></thead>
+            <tbody id="lb-history-body"><tr><td colspan="5">Chargement…</td></tr></tbody>
         </table>
     </div>
 </div>
@@ -190,59 +177,9 @@
 <script src="tetris.js"></script>
 <script src="renderer.js"></script>
 <script src="duel.js"></script>
+<script src="leaderboard.js"></script>
 <script src="ui.js"></script>
+<script src="effects.js"></script>
 
-<script>
-// ── Responsive scaling ──────────────────────────
-(function() {
-    const container = document.getElementById('scale-container');
-    // Dimensions naturelles du contenu (single-player)
-    const NAT_W = 640;
-    const NAT_H = 1020;
-
-    function resize() {
-        const s = Math.min(
-            window.innerWidth  / NAT_W,
-            window.innerHeight / NAT_H
-        );
-        container.style.transform       = 'scale(' + s + ')';
-        container.style.transformOrigin = 'top center';
-        // Compense l'espace de layout non affecté par transform
-        container.style.marginBottom    = ((s - 1) * NAT_H) + 'px';
-    }
-
-    resize();
-    window.addEventListener('resize', resize);
-})();
-</script>
-
-<script>
-// ── Matrix rain ──────────────────────────────────
-(function() {
-    const canvas = document.getElementById('matrix-bg');
-    const ctx = canvas.getContext('2d');
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    resize();
-    window.addEventListener('resize', resize);
-    const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF>_{}[]|\\/#@$%^&*01';
-    const fs = 14;
-    let drops = [];
-    function initDrops() { drops = Array(Math.floor(canvas.width / fs)).fill(1); }
-    initDrops();
-    window.addEventListener('resize', initDrops);
-    setInterval(function() {
-        ctx.fillStyle = 'rgba(0,5,0,0.05)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.font = fs + 'px monospace';
-        for (let i = 0; i < drops.length; i++) {
-            const ch = chars[Math.floor(Math.random() * chars.length)];
-            ctx.fillStyle = drops[i] * fs < 50 ? '#aaffaa' : '#00ff41';
-            ctx.fillText(ch, i * fs, drops[i] * fs);
-            if (drops[i] * fs > canvas.height && Math.random() > 0.975) drops[i] = 0;
-            drops[i]++;
-        }
-    }, 40);
-})();
-</script>
 </body>
 </html>
