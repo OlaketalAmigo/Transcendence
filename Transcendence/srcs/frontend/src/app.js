@@ -137,9 +137,9 @@ class App {
             el.appendChild(span);
         });
     };
-
     elements.forEach(colorizeText);
-}
+    }
+
 }
 
 // Start the application when DOM is ready
