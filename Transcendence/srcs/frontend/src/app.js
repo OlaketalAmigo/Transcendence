@@ -109,7 +109,8 @@ class App {
     }
 
     colorizeUI() {
-    const elements = document.querySelectorAll(".menu__item, .game__item, .page__item");
+    
+    const elements = document.querySelectorAll(".title, .menu__item, .game__item, .page__item");
 
     const colorizeText = (el) => {
         const text = el.textContent;
@@ -136,9 +137,9 @@ class App {
             el.appendChild(span);
         });
     };
-
     elements.forEach(colorizeText);
-}
+    }
+
 }
 
 // Start the application when DOM is ready
