@@ -1,20 +1,11 @@
-body, html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #003366; /* Your monochrome blue background */
-    overflow: hidden; /* Prevents scrollbars if shapes move off-screen */
-}
 
 .shape {
     /* The "Physical" properties */
     position: fixed;
     /* transform: translate(-50%, -50%); Optional: This makes 'left/top' refer to the CENTER of the doodle */
 
-    width: 300px;
-    height: 300px;
-    
+    width: 142px;
+    height: 142px;
 
     /* The "Stenciling" instructions (but no image yet!) */
     -webkit-mask-size: contain;
@@ -26,24 +17,52 @@ body, html {
     background-color: white; 
 }
 
-.doodle-1 {
-    -webkit-mask-image: url('assets/doodle/doodle1.png');
-    mask-image: url('assets/doodle/doodle1.png');
-    /* Set initial position here */
-    left: 50vw;
-    top: 30vw;
+.shape:hover {
+    transform: scale(1.2); /* Grow by 20% when you hover the mouse over it */
+    transition: transform 0.3s ease; /* Make it a smooth grow */
 }
 
-.doodle-2 {
-    -webkit-mask-image: url('assets/doodle/doodle1.png');
-    mask-image: url('assets/doodle/doodle1.png');
-    left: 20vw;
-    top: 70vw;
-}
+/* Individual Doodle Definitions */
+.doodle-1  { -webkit-mask-image: url('assets/doodles/ball.png');      mask-image: url('assets/doodles/ball.png');      left: 10vw; top: 10vh; }
+.doodle-2  { -webkit-mask-image: url('assets/doodles/batman.png');    mask-image: url('assets/doodles/batman.png');    left: 20vw; top: 15vh; }
+.doodle-3  { -webkit-mask-image: url('assets/doodles/building.png');  mask-image: url('assets/doodles/building.png');  left: 30vw; top: 20vh; }
+.doodle-4  { -webkit-mask-image: url('assets/doodles/butterfly.png'); mask-image: url('assets/doodles/butterfly.png'); left: 40vw; top: 25vh; }
+.doodle-5  { -webkit-mask-image: url('assets/doodles/car.png');       mask-image: url('assets/doodles/car.png');       left: 50vw; top: 30vh; }
+.doodle-6  { -webkit-mask-image: url('assets/doodles/cat.png');       mask-image: url('assets/doodles/cat.png');       left: 60vw; top: 35vh; }
+.doodle-7  { -webkit-mask-image: url('assets/doodles/clouds.png');    mask-image: url('assets/doodles/clouds.png');    left: 70vw; top: 40vh; }
+.doodle-8  { -webkit-mask-image: url('assets/doodles/controls.png');  mask-image: url('assets/doodles/controls.png');  left: 80vw; top: 45vh; }
+.doodle-9  { -webkit-mask-image: url('assets/doodles/dead.png');      mask-image: url('assets/doodles/dead.png');      left: 90vw; top: 50vh; }
+.doodle-10 { -webkit-mask-image: url('assets/doodles/diamant.png');   mask-image: url('assets/doodles/diamant.png');   left: 15vw; top: 55vh; }
+.doodle-11 { -webkit-mask-image: url('assets/doodles/dice.png');      mask-image: url('assets/doodles/dice.png');      left: 25vw; top: 60vh; }
+.doodle-12 { -webkit-mask-image: url('assets/doodles/earth.png');     mask-image: url('assets/doodles/earth.png');     left: 35vw; top: 65vh; }
+.doodle-13 { -webkit-mask-image: url('assets/doodles/egypt.png');     mask-image: url('assets/doodles/egypt.png');     left: 45vw; top: 70vh; }
+.doodle-14 { -webkit-mask-image: url('assets/doodles/fire.png');      mask-image: url('assets/doodles/fire.png');      left: 55vw; top: 75vh; }
+.doodle-15 { -webkit-mask-image: url('assets/doodles/fish.png');      mask-image: url('assets/doodles/fish.png');      left: 65vw; top: 80vh; }
+.doodle-16 { -webkit-mask-image: url('assets/doodles/flag.png');      mask-image: url('assets/doodles/flag.png');      left: 75vw; top: 85vh; }
+.doodle-17 { -webkit-mask-image: url('assets/doodles/hearts.png');    mask-image: url('assets/doodles/hearts.png');    left: 85vw; top: 90vh; }
+.doodle-18 { -webkit-mask-image: url('assets/doodles/house.png');     mask-image: url('assets/doodles/house.png');     left: 5vw;  top: 45vh; }
+.doodle-19 { -webkit-mask-image: url('assets/doodles/idol.png');      mask-image: url('assets/doodles/idol.png');      left: 12vw; top: 22vh; }
+.doodle-20 { -webkit-mask-image: url('assets/doodles/lotus.png');     mask-image: url('assets/doodles/lotus.png');     left: 22vw; top: 32vh; }
+.doodle-21 { -webkit-mask-image: url('assets/doodles/mail.png');      mask-image: url('assets/doodles/mail.png');      left: 32vw; top: 42vh; }
+.doodle-22 { -webkit-mask-image: url('assets/doodles/moon.png');      mask-image: url('assets/doodles/moon.png');      left: 42vw; top: 52vh; }
+.doodle-23 { -webkit-mask-image: url('assets/doodles/pokeball.png');  mask-image: url('assets/doodles/pokeball.png');  left: 52vw; top: 62vh; }
+.doodle-24 { -webkit-mask-image: url('assets/doodles/runes.png');     mask-image: url('assets/doodles/runes.png');     left: 62vw; top: 72vh; }
+.doodle-25 { -webkit-mask-image: url('assets/doodles/shield.png');    mask-image: url('assets/doodles/shield.png');    left: 72vw; top: 82vh; }
+.doodle-26 { -webkit-mask-image: url('assets/doodles/shiny.png');     mask-image: url('assets/doodles/shiny.png');     left: 82vw; top: 12vh; }
+.doodle-27 { -webkit-mask-image: url('assets/doodles/snail.png');     mask-image: url('assets/doodles/snail.png');     left: 92vw; top: 22vh; }
+.doodle-28 { -webkit-mask-image: url('assets/doodles/sound.png');     mask-image: url('assets/doodles/sound.png');     left: 18vw; top: 82vh; }
+.doodle-29 { -webkit-mask-image: url('assets/doodles/spiral.png');    mask-image: url('assets/doodles/spiral.png');    left: 28vw; top: 72vh; }
+.doodle-30 { -webkit-mask-image: url('assets/doodles/star.png');      mask-image: url('assets/doodles/star.png');      left: 38vw; top: 62vh; }
+.doodle-31 { -webkit-mask-image: url('assets/doodles/stop.png');      mask-image: url('assets/doodles/stop.png');      left: 48vw; top: 52vh; }
+.doodle-32 { -webkit-mask-image: url('assets/doodles/sun.png');       mask-image: url('assets/doodles/sun.png');       left: 58vw; top: 42vh; }
+.doodle-33 { -webkit-mask-image: url('assets/doodles/tree.png');      mask-image: url('assets/doodles/tree.png');      left: 68vw; top: 32vh; }
+.doodle-34 { -webkit-mask-image: url('assets/doodles/triskel.png');   mask-image: url('assets/doodles/triskel.png');   left: 78vw; top: 22vh; }
+.doodle-35 { -webkit-mask-image: url('assets/doodles/yin_yang.png');  mask-image: url('assets/doodles/yin_yang.png');  left: 88vw; top: 12vh; }
+
 
 /* 3. A quick animation for the color loop */
 .loop-color {
-    animation: colorShift 24s infinite alternate ease-in-out;
+    animation: colorShift 12s infinite alternate ease-in-out;
 }
 @keyframes colorShift {
     /* 0% and 100% are identical to create the "Infinite Circle" effect */

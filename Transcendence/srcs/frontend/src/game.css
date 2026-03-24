@@ -16,8 +16,6 @@
 
     );
 
-    --app-background-image: url("./assets/Frame1.png");
-
     --color-surface: #ffcc00;
     --color-surface-light: #feffa6;
     --color-text: #000000;
@@ -63,11 +61,8 @@
 
 html {
     height: 100%;
-    background-image:
-        var(--app-background-image),    
+    background-image:  
         var(--app-background-base);
-
-    animation: bg-animation 12s steps(1) infinite;
 
     background-size: contain, cover;
     background-position: center, center;
@@ -119,54 +114,13 @@ body {
     100% { transform: translateY(0) rotate(var(--rot)); }
 }
 
-@keyframes bg-animation {
-    0% {
-        background-image: url("./assets/Frame1.png"), var(--app-background-base);
-    }
-    8.33% {
-        background-image: url("./assets/Frame2.png"), var(--app-background-base);
-    }
-    16.66% {
-        background-image: url("./assets/Frame3.png"), var(--app-background-base);
-    }
-    25% {
-        background-image: url("./assets/Frame4.png"), var(--app-background-base);
-    }
-    33.33% {
-        background-image: url("./assets/Frame5.png"), var(--app-background-base);
-    }
-    41.66% {
-        background-image: url("./assets/Frame6.png"), var(--app-background-base);
-    }
-    50% {
-        background-image: url("./assets/Frame7.png"), var(--app-background-base);
-    }
-    58.33% {
-        background-image: url("./assets/Frame8.png"), var(--app-background-base);
-    }
-    66.66% {
-        background-image: url("./assets/Frame9.png"), var(--app-background-base);
-    }
-    75% {
-        background-image: url("./assets/Frame10.png"), var(--app-background-base);
-    }
-    83.33% {
-        background-image: url("./assets/Frame11.png"), var(--app-background-base);
-    }
-    91.66% {
-        background-image: url("./assets/Frame12.png"), var(--app-background-base);
-    }
-    100% {
-        background-image: url("./assets/Frame1.png"), var(--app-background-base);
-    }
-}
-
 /* ============================================
    TYPOGRAPHY
    ============================================ */
 
 .title {
     position: absolute;
+    z-index: 999;
     top: 20px;
     left: 50%;
     translate: -50% 0;

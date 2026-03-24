@@ -36,51 +36,52 @@ function moveRandomly(id) {
 // To make it move every 2 seconds automatically:
 // setInterval(() => moveRandomly('shape1'), 2000);
 // setInterval(() => moveRandomly('shape2'), 2000);
-
-// Store the state of our moving shapes
-const movingShapes = {};
 function startSmoothRandomMove(id, speed = 2) {
     const el = document.getElementById(id);
     if (!el) return;
 
-    // We store position as 0.0 to 1.0 (percentage of screen)
-    // This makes it "Resolution Independent"
+    // 1. Get initial pixel position or pick random if CSS isn't loaded yet
+    const rect = el.getBoundingClientRect();
+    
     const state = {
-        percentX: parseFloat(el.style.left) / 100 || Math.random(),
-        percentY: parseFloat(el.style.top) / 100 || Math.random(),
+        x: rect.left || Math.random() * (window.innerWidth - 142),
+        y: rect.top || Math.random() * (window.innerHeight - 142),
         angle: Math.random() * Math.PI * 2,
         speed: speed 
     };
 
     function update() {
-        // 1. Get current pixel dimensions of the window
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        
-        // 2. Convert speed (pixels) into a "percentage" of this specific screen
-        const vx = (Math.cos(state.angle) * state.speed) / width;
-        const vy = (Math.sin(state.angle) * state.speed) / height;
+        // 2. Refresh screen boundaries every frame
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight;
+        const shapeSize = 142; // Matches your CSS width/height
 
-        state.percentX += vx;
-        state.percentY += vy;
+        // 3. Calculate next step
+        state.x += Math.cos(state.angle) * state.speed;
+        state.y += Math.sin(state.angle) * state.speed;
 
-        // 3. Bounce logic (Keep between 0% and 100%)
-        // We subtract a little (e.g., 0.1) so the 300px shape doesn't go off-edge
-        const bufferX = 300 / width; 
-        const bufferY = 300 / height;
-
-        if (state.percentX < 0 || state.percentX > (1 - bufferX)) {
+        // 4. BOUNCE LOGIC (Corrected)
+        // Horizontal check
+        if (state.x <= 0) {
+            state.x = 0;
             state.angle = Math.PI - state.angle;
-            state.percentX = Math.max(0, Math.min(state.percentX, 1 - bufferX));
-        }
-        if (state.percentY < 0 || state.percentY > (1 - bufferY)) {
-            state.angle = -state.angle;
-            state.percentY = Math.max(0, Math.min(state.percentY, 1 - bufferY));
+        } else if (state.x + shapeSize >= screenW) {
+            state.x = screenW - shapeSize;
+            state.angle = Math.PI - state.angle;
         }
 
-        // 4. Apply as percentages
-        el.style.left = (state.percentX * 100) + "vw";
-        el.style.top = (state.percentY * 100) + "vh";
+        // Vertical check
+        if (state.y <= 0) {
+            state.y = 0;
+            state.angle = -state.angle;
+        } else if (state.y + shapeSize >= screenH) {
+            state.y = screenH - shapeSize;
+            state.angle = -state.angle;
+        }
+
+        // 5. Apply position using pixels for precision
+        el.style.left = state.x + "px";
+        el.style.top = state.y + "px";
 
         requestAnimationFrame(update);
     }
@@ -88,61 +89,23 @@ function startSmoothRandomMove(id, speed = 2) {
     requestAnimationFrame(update);
 }
 
-// function startSmoothRandomMove(id, speed = 2) {
-//     const el = document.getElementById(id);
-//     if (!el) return;
 
-//     // Initial state: Start in the center, pick a random angle
-//     movingShapes[id] = {
-//         x: parseFloat(el.style.left) || 500,
-//         y: parseFloat(el.style.top) || 300,
-//         angle: Math.random() * Math.PI * 2, // Random direction in radians
-//         speed: speed
-//     };
-
-//     function update() {
-//         const state = movingShapes[id];
-
-//         // 1. Calculate new position based on angle and speed
-//         state.x += Math.cos(state.angle) * state.speed;
-//         state.y += Math.sin(state.angle) * state.speed;
-
-//         // 2. "Bounce" logic: Change direction if hitting screen edges
-//         if (state.x < 0 || state.x > window.innerWidth - 300) {
-//             state.angle = Math.PI - state.angle; // Flip horizontal
-//         }
-//         if (state.y < 0 || state.y > window.innerHeight - 300) {
-//             state.angle = -state.angle; // Flip vertical
-//         }
-
-//         // 3. Randomly change direction slightly (the "Wander" effect)
-//         // 1% chance every frame to pivot slightly
-//         if (Math.random() < 0.01) {
-//             state.angle += (Math.random() - 0.5) * 1; 
-//         }
-
-//         // 4. Apply to the element
-//         el.style.left = state.x + "px";
-//         el.style.top = state.y + "px";
-
-//         // Keep the loop going
-//         requestAnimationFrame(update);
-//     }
-
-//     // Start the first "heartbeat"
-//     requestAnimationFrame(update);
-// }
-
-startSmoothRandomMove('shape1', 3); // Moves at speed 3
-startSmoothRandomMove('shape2', 1.5); // Moves slower
-
+// This loop runs 35 times, once for each shape ID
+for (let i = 1; i <= 35; i++) {
+    // Generate a random speed between 1 and 4 for each shape
+    // so they don't all move at the exact same pace
+    const randomSpeed = 1 + Math.random() * 3; 
+    
+    // Call your function using the ID 'shape1', 'shape2', etc.
+    startSmoothRandomMove(`shape${i}`, randomSpeed);
+}
 
 function randomizeAnimationStarts() {
     const shapes = document.querySelectorAll('.loop-color');
     
     shapes.forEach(shape => {
         // Pick a random number between 0 and 10 (since your loop is 10s)
-        const randomDelay = Math.random() * -10; 
+        const randomDelay = Math.random() * - 12; 
         
         // Apply it directly to the element's style
         shape.style.animationDelay = randomDelay + "s";
