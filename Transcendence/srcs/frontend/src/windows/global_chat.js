@@ -222,7 +222,7 @@ export class GlobalChat extends Window {
         const altPort = window.GLOBAL_CHAT_ALT_PORT;
         if (altPort) {
             const host = location.hostname || 'localhost';
-            this.socket = io(`http://${host}:${altPort}`, ioConfig);
+            this.socket = io(`${location.protocol}//${host}:${altPort}`, ioConfig);
         } else {
             this.socket = io(ioConfig);
         }
