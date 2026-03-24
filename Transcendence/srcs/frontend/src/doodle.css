@@ -1,0 +1,68 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #003366; /* Your monochrome blue background */
+    overflow: hidden; /* Prevents scrollbars if shapes move off-screen */
+}
+
+.shape {
+    /* The "Physical" properties */
+    position: fixed;
+    /* transform: translate(-50%, -50%); Optional: This makes 'left/top' refer to the CENTER of the doodle */
+
+    width: 300px;
+    height: 300px;
+    
+
+    /* The "Stenciling" instructions (but no image yet!) */
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    
+    /* The default "Paint" color */
+    background-color: white; 
+}
+
+.doodle-1 {
+    -webkit-mask-image: url('assets/doodle/doodle1.png');
+    mask-image: url('assets/doodle/doodle1.png');
+    /* Set initial position here */
+    left: 50vw;
+    top: 30vw;
+}
+
+.doodle-2 {
+    -webkit-mask-image: url('assets/doodle/doodle1.png');
+    mask-image: url('assets/doodle/doodle1.png');
+    left: 20vw;
+    top: 70vw;
+}
+
+/* 3. A quick animation for the color loop */
+.loop-color {
+    animation: colorShift 24s infinite alternate ease-in-out;
+}
+@keyframes colorShift {
+    /* 0% and 100% are identical to create the "Infinite Circle" effect */
+    0%   { background-color: #3075ff; } /* Royal Blue (Start) */
+    
+    8%   { background-color: #24a1ff; } /* Sky Blue */
+    17%  { background-color: #1ad8ff; } /* Cyan */
+
+    25%  { background-color: #1bffa7; } /* Seafoam Green */
+    33%  { background-color: #1fff4d; } /* Bright Green */
+    42%  { background-color: #8bff32; } /* Lime Green */
+
+    50%  { background-color: #dcff38; } /* Electric Yellow */
+    58%  { background-color: #ffbc29; } /* Golden Yellow */
+    67%  { background-color: #ff8c4a; } /* Coral Orange */
+
+    75%  { background-color: #ff1d1d; } /* Hot Red */
+    83%  { background-color: #ff2bf3; } /* Magenta Pink */
+    92%  { background-color: #ac37ff; } /* Electric Purple */
+
+    100% { background-color: #3075ff; } /* Royal Blue (Seamless Loop) */
+}
