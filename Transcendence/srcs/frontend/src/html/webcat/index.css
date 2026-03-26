@@ -1,0 +1,105 @@
+:root {
+    /* custom CSS variables */
+    --color-dark: #0f172a;
+    --color-light: #f1f5f9;
+    --color-grey-1: #696969;
+    --color-accent: #e11d48;
+	--color-orange: rgb(218, 145, 12);
+
+	--font: 'Times New Roman', serif;
+	--font-size: 20px;
+}
+
+body {
+    background-color: black;
+    color: var( --color-grey-1);
+    font-family: var(--font);
+    font-size: var(--font-size);
+    line-height: 1.5;
+    text-align: center;
+}
+
+/**************************************************/
+.button-3d {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #8e8e8e;
+    background-color: #000000;
+    border: 3px solid #363636;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+    
+    /* 3D illusion */
+    /* box-shadow: 0 6px #004999, 0 6px 0 #004999;  /* deep shadow underneath */
+    transition: background-color 0.3s;
+
+    text-align: center;
+    text-decoration: none;
+}
+
+button-3d:hover {
+    background-color: rgb(202, 135, 10);
+    color: black;
+}
+
+button-3d:press {
+    color: var(--color-orange);
+}
+
+/**************************************************/
+/* INDEX */
+.header-1 {
+    display: flex;
+    justify-content: space-between;
+    text-align: justify;
+    align-items: center;
+    border: 2px solid rgb(218, 145, 12);
+    border-radius: 25px;
+}
+
+.button-play {
+	margin-left: 50px;
+
+}
+
+.button-login {
+	margin-right: 30px;
+}
+/* 
+.popup-chaberu {
+position: fixed;
+left: 75%;
+transform: translateX(-50%);
+padding: 20px;
+z-index: 1000;
+
+display: flex;
+height: 400px;
+width: 250px;
+color: var(--color1);
+font-weight: bold;
+
+font-size: 25px;
+justify-content: center;
+align-items: center;
+text-align: center;
+} */
+
+
+.popup-chaberu {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    background: red;
+    color: white;
+    font-size: 30px;
+    padding: 40px;
+    border-radius: 20px;
+
+    z-index: 9999;
+}

@@ -1,0 +1,22 @@
+.dialog-bubble {
+    display: inline-block;
+    max-width: 70%;
+    padding: 10px 15px;
+    margin: 5px 0;
+    border-radius: 15px;
+    font-family: sans-serif;
+    font-size: 14px;
+    opacity: 0;                /* start hidden for fade-in */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.dialog-bubble.bot {
+    background-color: #e0e0e0;
+    align-self: flex-start;
+}
+
+.dialog-bubble.user {
+    background-color: #4caf50;
+    color: white;
+    align-self: flex-end;
+}
