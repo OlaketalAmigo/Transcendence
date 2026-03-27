@@ -3,3 +3,41 @@
 
 
 }
+
+.header {
+  display: flex;               /* enable flex layout */
+  align-items: center;         /* vertically center items */
+}
+
+#title {
+  flex: 1;                     /* take all available space */
+  text-align: center;          /* optional: center text inside the div */
+}
+
+#button-login {
+  /* stays on the right automatically */
+}
+
+.popup {
+  position: fixed;          /* stays in same place even on scroll */
+  top: 20px;                /* distance from top of viewport */
+  right: 20px;              /* distance from right edge */
+  background-color: #222;   /* dark background */
+  color: #ff0202;              /* text color */
+  padding: 10px 20px;       /* inner spacing */
+  border-radius: 8px;       /* rounded corners */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* soft shadow */
+  z-index: 9999;            /* always on top */
+  font-family: sans-serif;
+  font-size: 14px;
+  pointer-events: auto;     /* clickable if needed */
+}
+
+.box {
+	display: inline-block;
+	color: #558f9f;
+	background-color: #910a25;
+	border: 5px solid black;
+	padding: 5px 7px 9px 11px;
+	margin: 1px 1px 1px 0px;
+}
