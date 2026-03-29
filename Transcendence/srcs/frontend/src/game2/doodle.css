@@ -1,0 +1,87 @@
+
+.shape {
+    /* The "Physical" properties */
+    position: fixed;
+    /* transform: translate(-50%, -50%); Optional: This makes 'left/top' refer to the CENTER of the doodle */
+
+    width: 142px;
+    height: 142px;
+
+    /* The "Stenciling" instructions (but no image yet!) */
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    
+    /* The default "Paint" color */
+    background-color: white; 
+}
+
+.shape:hover {
+    transform: scale(1.2); /* Grow by 20% when you hover the mouse over it */
+    transition: transform 0.3s ease; /* Make it a smooth grow */
+}
+
+/* Individual Doodle Definitions */
+.doodle-0  { -webkit-mask-image: url('doodles/cat.png');       mask-image: url('doodles/cat.png');       left: 60vw; top: 35vh; }
+.doodle-1  { -webkit-mask-image: url('doodles/ball.png');      mask-image: url('doodles/ball.png');      left: 10vw; top: 10vh; }
+.doodle-2  { -webkit-mask-image: url('doodles/batman.png');    mask-image: url('doodles/batman.png');    left: 20vw; top: 15vh; }
+.doodle-3  { -webkit-mask-image: url('doodles/building.png');  mask-image: url('doodles/building.png');  left: 30vw; top: 20vh; }
+.doodle-4  { -webkit-mask-image: url('doodles/butterfly.png'); mask-image: url('doodles/butterfly.png'); left: 40vw; top: 25vh; }
+.doodle-5  { -webkit-mask-image: url('doodles/car.png');       mask-image: url('doodles/car.png');       left: 50vw; top: 30vh; }
+.doodle-6 { -webkit-mask-image: url('doodles/yin_yang.png');  mask-image: url('doodles/yin_yang.png');  left: 88vw; top: 12vh; }
+.doodle-7  { -webkit-mask-image: url('doodles/clouds.png');    mask-image: url('doodles/clouds.png');    left: 70vw; top: 40vh; }
+.doodle-8  { -webkit-mask-image: url('doodles/controls.png');  mask-image: url('doodles/controls.png');  left: 80vw; top: 45vh; }
+.doodle-9  { -webkit-mask-image: url('doodles/dead.png');      mask-image: url('doodles/dead.png');      left: 90vw; top: 50vh; }
+.doodle-10 { -webkit-mask-image: url('doodles/diamant.png');   mask-image: url('doodles/diamant.png');   left: 15vw; top: 55vh; }
+.doodle-11 { -webkit-mask-image: url('doodles/dice.png');      mask-image: url('doodles/dice.png');      left: 25vw; top: 60vh; }
+.doodle-12 { -webkit-mask-image: url('doodles/earth.png');     mask-image: url('doodles/earth.png');     left: 35vw; top: 65vh; }
+.doodle-13 { -webkit-mask-image: url('doodles/egypt.png');     mask-image: url('doodles/egypt.png');     left: 45vw; top: 70vh; }
+.doodle-14 { -webkit-mask-image: url('doodles/fire.png');      mask-image: url('doodles/fire.png');      left: 55vw; top: 75vh; }
+.doodle-15 { -webkit-mask-image: url('doodles/fish.png');      mask-image: url('doodles/fish.png');      left: 65vw; top: 80vh; }
+.doodle-16 { -webkit-mask-image: url('doodles/flag.png');      mask-image: url('doodles/flag.png');      left: 75vw; top: 85vh; }
+.doodle-17 { -webkit-mask-image: url('doodles/hearts.png');    mask-image: url('doodles/hearts.png');    left: 85vw; top: 90vh; }
+.doodle-18 { -webkit-mask-image: url('doodles/house.png');     mask-image: url('doodles/house.png');     left: 5vw;  top: 45vh; }
+.doodle-19 { -webkit-mask-image: url('doodles/idol.png');      mask-image: url('doodles/idol.png');      left: 12vw; top: 22vh; }
+.doodle-20 { -webkit-mask-image: url('doodles/lotus.png');     mask-image: url('doodles/lotus.png');     left: 22vw; top: 32vh; }
+.doodle-21 { -webkit-mask-image: url('doodles/mail.png');      mask-image: url('doodles/mail.png');      left: 32vw; top: 42vh; }
+.doodle-22 { -webkit-mask-image: url('doodles/moon.png');      mask-image: url('doodles/moon.png');      left: 42vw; top: 52vh; }
+.doodle-23 { -webkit-mask-image: url('doodles/pokeball.png');  mask-image: url('doodles/pokeball.png');  left: 52vw; top: 62vh; }
+.doodle-24 { -webkit-mask-image: url('doodles/runes.png');     mask-image: url('doodles/runes.png');     left: 62vw; top: 72vh; }
+.doodle-25 { -webkit-mask-image: url('doodles/shield.png');    mask-image: url('doodles/shield.png');    left: 72vw; top: 82vh; }
+.doodle-26 { -webkit-mask-image: url('doodles/shiny.png');     mask-image: url('doodles/shiny.png');     left: 82vw; top: 12vh; }
+.doodle-27 { -webkit-mask-image: url('doodles/snail.png');     mask-image: url('doodles/snail.png');     left: 92vw; top: 22vh; }
+.doodle-28 { -webkit-mask-image: url('doodles/sound.png');     mask-image: url('doodles/sound.png');     left: 18vw; top: 82vh; }
+.doodle-29 { -webkit-mask-image: url('doodles/spiral.png');    mask-image: url('doodles/spiral.png');    left: 28vw; top: 72vh; }
+.doodle-30 { -webkit-mask-image: url('doodles/star.png');      mask-image: url('doodles/star.png');      left: 38vw; top: 62vh; }
+.doodle-31 { -webkit-mask-image: url('doodles/stop.png');      mask-image: url('doodles/stop.png');      left: 48vw; top: 52vh; }
+.doodle-32 { -webkit-mask-image: url('doodles/sun.png');       mask-image: url('doodles/sun.png');       left: 58vw; top: 42vh; }
+.doodle-33 { -webkit-mask-image: url('doodles/tree.png');      mask-image: url('doodles/tree.png');      left: 68vw; top: 32vh; }
+.doodle-34 { -webkit-mask-image: url('doodles/triskel.png');   mask-image: url('doodles/triskel.png');   left: 78vw; top: 22vh; }
+
+
+/* 3. A quick animation for the color loop */
+.loop-color {
+    animation: colorShift 12s infinite alternate ease-in-out;
+}
+@keyframes colorShift {
+    /* 0% and 100% are identical to create the "Infinite Circle" effect */
+    0%   { background-color: #3075ff; } /* Royal Blue (Start) */
+    
+    8%   { background-color: #24a1ff; } /* Sky Blue */
+    17%  { background-color: #1ad8ff; } /* Cyan */
+
+    25%  { background-color: #1bffa7; } /* Seafoam Green */
+    33%  { background-color: #1fff4d; } /* Bright Green */
+    42%  { background-color: #8bff32; } /* Lime Green */
+
+    50%  { background-color: #dcff38; } /* Electric Yellow */
+    58%  { background-color: #ffbc29; } /* Golden Yellow */
+    67%  { background-color: #ff8c4a; } /* Coral Orange */
+
+    75%  { background-color: #ff1d1d; } /* Hot Red */
+    83%  { background-color: #ff2bf3; } /* Magenta Pink */
+    92%  { background-color: #ac37ff; } /* Electric Purple */
+
+    100% { background-color: #3075ff; } /* Royal Blue (Seamless Loop) */
+}

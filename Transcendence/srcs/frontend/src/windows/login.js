@@ -83,7 +83,8 @@ export class LoginWindow extends Window {
     bindEvents() {
         this.loginBtn.addEventListener('click', () => this.handleLogin());
         this.registerBtn.addEventListener('click', () => this.handleRegister());
-        this.githubBtn.addEventListener('click', () => this.handleGitHubLogin());
+        
+        this.githubBtn.addEventListener('click', () => {console.log(API.AUTH.GITHUB); this.handleGitHubLogin();});
 
         // Login with Enter
         this.passwordInput.addEventListener('keypress', (e) => {
@@ -193,6 +194,8 @@ export class LoginWindow extends Window {
         const height = 700;
         const left = (screen.width - width) / 2;
         const top = (screen.height - height) / 2;
+
+        console.log(API.AUTH.GITHUB);
 
         const popup = window.open(
             API.AUTH.GITHUB,

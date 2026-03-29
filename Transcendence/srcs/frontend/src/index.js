@@ -1,43 +1,68 @@
 
-let a = document.createElement('div');
-document.body.append(a);
+// header creation
+let h = document.getElementById('top-header')
+// document.body.append(h)
+Object.assign(h.style, {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center"
+});
 
-a.textContent = "abc";
-a.style.color = "red";
-a.style.border = "2px solid black";
-a.style.margin = "10px 20px 30px 40px";
-a.style.backgroundColor = "green";
+// top left button
+let el = document.createElement('button')
+h.append(el)
+el.textContent = 'test';
+Object.assign(el.style, {
+	fontSize: '50px'
+})
+el.classList.add('button')
 
-import { Popup } from './webcat/popup.js';
+// middle title
+let title = document.createElement('span')
+h.append(title)
+title.textContent = 'title'
 
-for (let i = 0; i <= 50; i++) {
-
-	let b = document.createElement('span');
-	Object.assign(b, {
-
-	});
-	b.classList.add("box");
-	a.append(b);
-
-	// b.style.color = "blue";
-	b.textContent = "hallow-" + i;
-}
-
-let b = document.getElementById('button-login');
-b.style.display = "flex";
+// right button
+let b = document.createElement('button')
+h.append(b)
+b.textContent = 'login'
+Object.assign(b.style, {
+	fontSize: '50px'
+})
+b.classList.add('button')
 
 
-let c = new Popup("MOUHAHAH");
-document.body.appendChild(c.obj);
+let div2 = document.createElement('div')
+document.body.append(div2)
+let button1 = document.createElement('button')
+div2.append(button1)
+button1.textContent = 'game-lobby'
+button1.addEventListener('click', () => {
+	window.location.href = './game2/game.html';
+})
+let button2 = document.createElement('button')
+div2.append(button2)
+button2.textContent = 'tetris'
+button2.addEventListener('click', () => {
+	window.location.href = './tetris/tetris.html';
+})
+let button3 = document.createElement('button')
+div2.append(button3)
+button3.textContent = 'transcendance'
+button3.addEventListener('click', () => {
+	window.location.href = './trans/index2.html';
+})
+let button4 = document.createElement('button')
+div2.append(button4)
+button4.textContent = 'test'
+button4.addEventListener('click', () => {
+	window.location.href = './test/index.html';
+})
 
-import {Header} from './webcat/header.js';
-let h = new Header;
-document.body.append(h.obj);
 
-// import {LoginWindow} from './windows/login.js';
-// import {LogoutWindow} from './windows/logout.js';
 
-// let l = new LoginWindow;
-// document.body.append(l);
-// l = new LogoutWindow;
-// document.body.append(l);
+
+// 
+let wiskas = document.createElement('img')
+wiskas.src = './webcat/web_cat_img/wiskas-the-third.jpg'
+document.body.append(wiskas)

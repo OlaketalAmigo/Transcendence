@@ -4,6 +4,14 @@ box.style.height = "100px";
 box.style.minWidth = "100px";
 box.style.maxWidth = "500px";
 
+{
+	display: "flex"           // flex | inline-flex | block | inline | none
+	justifyContent: "flex-start"    // flex-start | flex-end | center | space-between | space-around | space-evenly
+	alignItems: "stretch"     // stretch | flex-start | flex-end | center | baseline
+}
+
+
+
 // POSITION
 box.style.position = "absolute";
 box.style.top = "50px";
