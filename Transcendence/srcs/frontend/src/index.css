@@ -43,8 +43,13 @@ body {
 
 .container-1 {
 	display: flex;
+	justify-content: center;
+	align-items: center;
+
 	width: 100%;
 	margin: 5px;
+	position: relative;
+	min-height: 200px;
 }
 
 /* ///////////////////////////////////////////////////////// */
@@ -75,17 +80,55 @@ body {
     color: black;
 }
 
+/* ///////////////////////////////////////////////////////// */
 .button-trans {
+/* SIZE */
 	position: absolute;
 	left: 50%;
 	transform: translateX(-50%);
+
+	width: 500px;
+	height: 200px;
+
+/* TEXT */
+	font-family: "Roboto";
+	font-size: 62px;
+    letter-spacing: -10px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+/* Background */
+	background-image: url("./assets/background.png");
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 150%;
+/* Borders */
+	border-radius: 20px;
+	border-radius: 20px;
+	border: 5px solid transparent; /* keep space for the shadow */
+	background-clip: padding-box;
+	/* metallic effect */
+	box-shadow:
+		0 0 0 5px #c0c0c0 inset,          /* inner shine */
+		0 0 0 2px rgba(255,255,255,0.3) inset; /* subtle highlight */
+	
+/* OTHER */
+	cursor: pointer;
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+
 .button-trans:hover {
-
+  transform: translateX(-50%) scale(1.02);
+  box-shadow:
+    0 0 20px 5px #fff inset,
+    0 0 20px 5px rgba(255,255,255,0.3) inset;
 }
 
+/* ///////////////////////////////////////////////////////// */
 .button-test {
 	margin-right: auto;
+	margin-left: 20px;
 }
 
 /* ///////////////////////////////////////////////////////// */

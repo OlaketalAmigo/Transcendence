@@ -1,0 +1,51 @@
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+}
+
+.link-button {
+
+}
+
+.link-game {
+
+}
+
+.link-tetris {
+
+}
+
+.link-wiscat {
+
+}
+
+.container-gamelinks {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.game-button {
+  position: absolute;   /* allow movement */
+  padding: 15px 30px;
+  font-size: 20px;
+  font-family: "Roboto";
+  border-radius: 15px;
+  border: 4px solid #c0c0c0; 
+  background-color: #111;
+  color: white;
+  cursor: pointer;
+
+  /* metallic shine effect */
+  box-shadow: inset 0 0 8px rgba(255,255,255,0.4), 0 0 5px rgba(255,255,255,0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.game-button:hover {
+  transform: scale(1.1);
+  box-shadow: inset 0 0 12px rgba(255,255,255,0.5), 0 0 8px rgba(255,255,255,0.3);
+}
