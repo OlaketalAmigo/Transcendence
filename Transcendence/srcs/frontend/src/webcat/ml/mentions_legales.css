@@ -1,0 +1,45 @@
+.h1 {
+	font-size: 30px;
+}
+
+.disclaimer {
+	font-weight: bold;
+}
+
+:root {
+	--color1: rgb(190, 63, 40);
+	--color2: rgb(211, 187, 53);
+}
+
+.popup-murderKitten {
+	position: fixed;
+	left: 75%;
+	transform: translateX(-50%);
+	padding: 20px;
+	z-index: 1000;
+
+	background-color: var(--color2);
+	border: 5px solid var(--color1);
+	border-radius: 15px;
+	border-width: 10px;
+
+	display: flex;
+	height: 300px;
+	width: 500px;
+	color: var(--color1);
+	font-weight: bold;
+
+	cursor: pointer;
+	font-size: 25px;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+}
+
+a {
+    text-decoration: none;
+    color: #5c5c5c;
+}
+a:hover {
+    color: rgb(218, 145, 12);
+}

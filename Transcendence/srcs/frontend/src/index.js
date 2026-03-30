@@ -1,37 +1,6 @@
+import { updateElement } from "./test/tools.js";
 
-// header creation
-let h = document.getElementById('top-header')
-// document.body.append(h)
-Object.assign(h.style, {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center"
-});
-
-// top left button
-let el = document.createElement('button')
-h.append(el)
-el.textContent = 'test';
-Object.assign(el.style, {
-	fontSize: '50px'
-})
-el.classList.add('button')
-
-// middle title
-let title = document.createElement('span')
-h.append(title)
-title.textContent = 'title'
-
-// right button
-let b = document.createElement('button')
-h.append(b)
-b.textContent = 'login'
-Object.assign(b.style, {
-	fontSize: '50px'
-})
-b.classList.add('button')
-
-
+// //////////////////////////////////////////]
 let div2 = document.createElement('div')
 document.body.append(div2)
 let button1 = document.createElement('button')
@@ -58,11 +27,5 @@ button4.textContent = 'test'
 button4.addEventListener('click', () => {
 	window.location.href = './test/index.html';
 })
-
-
-
-
-// 
-let wiskas = document.createElement('img')
-wiskas.src = './webcat/web_cat_img/wiskas-the-third.jpg'
-document.body.append(wiskas)
+let img = document.getElementById('wiskas');
+img.before(div2)

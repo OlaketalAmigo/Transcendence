@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hello Page</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 4rem;
+      color: white;
+      animation: float 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes float {
+      from { transform: translateY(0); }
+      to { transform: translateY(-20px); }
+    }
+  </style>
+</head>
+<body>
+  <h1 id="helloText">Hello</h1>
+
+  <script>
+    const colors = ["#ff4b5c", "#56cfe1", "#80ed99", "#ffd166"];
+    const text = document.getElementById("helloText");
+
+    setInterval(() => {
+      const randomColor = colors[Math.floor(Math.random() * colors.length)];
+      text.style.color = randomColor;
+    }, 500);
+  </script>
+</body>
+</html>
