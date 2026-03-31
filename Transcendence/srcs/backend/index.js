@@ -1,5 +1,6 @@
 import express from 'express';
-import http from 'http';
+import https from 'https';
+import fs from 'fs';
 import cors from 'cors';
 import {Server} from 'socket.io';
 import authRouter from './routes/auth.js';
@@ -13,7 +14,11 @@ import setupSocketIO from './services/socket.js';
 import avatarService from './services/avatar.js';
 
 const app = express();
-const server = http.createServer(app);
+const httpsOptions = {
+	key: fs.readFileSync('/etc/backend/.ssl/key.pem'),
+	cert: fs.readFileSync('/etc/backend/.ssl/cert.pem')
+};
+const server = https.createServer(httpsOptions, app);
 const io = new Server(server,
 {
 	cors:
