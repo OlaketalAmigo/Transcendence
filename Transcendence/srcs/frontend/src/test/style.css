@@ -23,6 +23,7 @@ body {
   /* justify-content: center; */
   /* align-items: center; */
   height: 100vh;
+  position: relative;
 }
 
 .container {
@@ -91,7 +92,7 @@ body {
 }
 
 /*//////////////////////////////////////////////////////////*/
-.side-bar {
+.login-wrapper {
   display: flex;
   flex-direction: column;
   gap: 7px;
@@ -112,5 +113,26 @@ body {
   border: 5px solid blue;
   height: 35px;
   min-width: 50px;
+
+}
+/*//////////////////////////////////////////////////////////*/
+/* LOGIN */
+
+.login-button {
+  width: 150px;
+  height: 150px;
+  background-color: #fb7185;
+  padding: 1em;
+  font-weight: 700;
+  color: var(--clr-light);
+  text-align: center;
+  border: 10px solid var(--clr-accent);
+  border-radius: 10px;
+
+  margin-left: -50px
+
+}
+
+.login-element {
 
 }

@@ -10,7 +10,7 @@ let b = updateElement({
         alignItems: 'center'
     }
 });
-new Sidebar(b);
+new Sidebar();
 // new LoginSidebar();
 
 

@@ -1,59 +1,72 @@
 import { updateElement } from "./tools.js";
 
+import { windowRegistry } from '../core/windows.js';
+import { LoginWindow } from '../windows/login.js';
+import { LogoutWindow } from '../windows/logout.js';
+import { GlobalChat } from '../windows/global_chat.js';
+import { AvatarWindow } from '../windows/avatar.js';
+import { FriendsWindow } from '../windows/friends.js';
+import { GameRoomWindow } from '../windows/game_room.js';
+import { StatsWindow } from '../windows/stats.js';
+
 export class Sidebar {
 
+/* CONSTURCTOR */
     constructor(parent = document.body) {
         this.parent = parent;
         this.stateopen = 'closed';
         // this.state = this.checkIfLoggedIn() ? "loggedOut" : "loggedIn";
 
         this.obj = updateElement({
-            parent: parent
+            parent: parent,
+        	id: `login-wrapper`,
+            classList: [ 'login-wrapper' ],
         })
         this.createAllButtons();
-        // this.render(this.state, this.stateopen);
+
+		this.handleClickOutside = (event) => {
+			if (this.stateopen === 'open' && !this.obj.contains(event.target)) {
+				this.toggle();
+			}
+		};
     }
 
-    checkIfLoggedIn() {
-        return true;
-    }
-
-    render(stateopen) {
-        this.obj.textContent = '';
-        if (this.stateopen === 'open') {
-            // Show the menu buttons
-            this.menu_buttons.forEach(btn => this.obj.appendChild(btn));
-        } else {
-            // Show only main login button
-            this.obj.appendChild(this.main_button);
-        }
-    }
-
+/* toogle menu open / closed */
     toggle() {
-
         this.stateopen = (this.stateopen === 'open') ? 'closed' : 'open';
-        console.log(this.stateopen)
-        this.render(this.stateopen);
+        console.log(this.stateopen);
+		if (this.stateopen === 'open') {
+			this.main_button.style.display = 'none';
+			this.menu_buttons.forEach(b => b.style.display = 'block');
+			// ensure only ONE listener exists
+			document.removeEventListener('click', this.handleClickOutside);
+			document.addEventListener('click', this.handleClickOutside);
+
+		}
+		else {
+			this.menu_buttons.forEach(b => b.style.display = 'none');
+			this.main_button.style.display = 'block';
+			document.removeEventListener('click', this.handleClickOutside);
+		}
     }
 
-    handleClickOutside = (event) => {
-        if (this.stateopen === 'open' && !this.obj.contains(event.target)) {
-            this.toggle(); // close the menu
-        }
-    }
-
+/* create all element, append to div */
     createAllButtons() {
+	//	not-logged closed button
         this.main_button = updateElement({
+        	id: `button-main`,
             parent: this.obj,
-            textContent: 'button',
-            classList: [ 'loggin-button' ],
+            textContent: 'LOGIN',
+            classList: [ 'login-button' ],
         })
-        this.main_button.addEventListener('click', () => {
+		this.obj.append(this.main_button);
+        this.main_button.addEventListener('click', (e) => {
+			e.stopPropagation();
             this.toggle();
         })
-
-
-        const items = ['friends', 'chat', 'rooms', 'settings', 'logout'];
+	
+	// menu buttons
+        const items = ['friends', 'chat', 'rooms', 'settings', 'log','logout'];
         this.menu_buttons = [];
 
         items.forEach(name => {
@@ -61,11 +74,20 @@ export class Sidebar {
                 id: `button-${name}`,
                 parent: this.obj,
                 textContent: name,
-                classList: ['item'],
+                classList: ['login-button'],
                 additionalStyles: { display: 'none'}
             })
             this.menu_buttons.push(this[name]);
+			this.obj.append(this[name]);
         })
+		this.loginWindow = new LoginWindow();
+		this.obj.append(this.loginWindow.form);
+		this.loginWindow.form.style.display = 'none';
+        this['log'].addEventListener('click', () => {
+			this.menu_buttons.forEach(b => b.style.display = 'none');
+            this.loginWindow.form.style.display = 'block';
+        })
+	// menu elements
     }
 
 }
