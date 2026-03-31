@@ -202,6 +202,15 @@ function setupSocketIO(io)
 			if (socket.gameRoomId) {
 				const roomId = socket.gameRoomId;
 				const dbRoomId = socket.gameRoomDbId;
+				const userId = socket.user.userId;
+
+				if (dbRoomId && userId) {
+					try {
+						await gameRoomService.leaveRoom(dbRoomId, userId);
+					} catch (err) {
+						console.error('Error removing player from room on socket leave:', err.message);
+					}
+				}
 
 				socket.to(roomId).emit('game-player-left', {
 					username: socket.user.username,
@@ -867,6 +876,14 @@ function setupSocketIO(io)
 				}
 				else
 				{
+					if (dbRoomId && socket.user.userId) {
+						try {
+							await gameRoomService.leaveRoom(dbRoomId, socket.user.userId);
+						} catch (err) {
+							console.error('Error removing disconnected player from room:', err.message);
+						}
+					}
+
 					// Regular player disconnect
 					socket.to(roomId).emit('game-player-left', {
 						username: socket.user.username,

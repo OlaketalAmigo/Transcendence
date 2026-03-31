@@ -78,10 +78,6 @@ class App {
             return;
         }
 
-        const actionMap = {
-            'gameroom': 'gameroom'
-        };
-
         // Event delegation on the menu
         page.addEventListener('click', (e) => {
             const button = e.target.closest('.page__item');
@@ -89,9 +85,14 @@ class App {
 
             const action = button.dataset.action;
 
-            // Actions with associated windows
-            if (actionMap[action]) {
-                windowRegistry.toggle(actionMap[action]);
+            if (action === 'gameroom') {
+                const gameRoomWindow = windowRegistry.get('gameroom');
+                windowRegistry.toggle('gameroom');
+				gameRoomWindow.loadRooms();
+
+                if (gameRoomWindow?.currentTab === 'browse') {
+                    gameRoomWindow.loadRooms();
+                }
                 return;
             }
 

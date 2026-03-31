@@ -195,7 +195,8 @@ export class GameRoomWindow extends Window {
 			currentPlayerIndex: 0,
 			guessedLetters: [],
 			scores: {},
-			counter: 0
+			counter: 0,
+			counterRound: 0
 		};
 
 		this.initDrawing();
@@ -375,10 +376,11 @@ export class GameRoomWindow extends Window {
 
 		this.socket.on('game-player-left', (data) => {
 			this.showMessage(`${data.username} a quitté le salon`, 'info');
+			console.log(`${data.username} left the room`);
 
 			if (this.gameState.isPlaying)
 			{
-				if (this.gameState.players)
+				if (Array.isArray(this.gameState.players))
 					this.gameState.players = this.gameState.players.filter(p => p !== data.username);
 			}
 
@@ -494,7 +496,7 @@ export class GameRoomWindow extends Window {
 			// If spectating, return to spectator list
 			if (this.isSpectating) {
 				this.resetGameUI();
-				this.currentRoom = null;
+				// this.currentRoom = null;
 				this.isSpectating = false;
 				this.switchTab('spectator');
 				this.showMessage('La partie est terminée', 'info');
@@ -752,8 +754,7 @@ export class GameRoomWindow extends Window {
 				return;
 			}
 
-			this.roomsList = data || [];
-			this.renderRoomsList(this.roomsList);
+			this.renderRoomsList(data || []);
 		} catch (error) {
 			console.error('Load rooms error:', error);
 			this.showMessage('Erreur de connexion', 'error');
@@ -1102,7 +1103,9 @@ export class GameRoomWindow extends Window {
 	}
 
 	async loadLobby() {
+		console.log('Loading lobby for room:', this.currentRoom);
 		if (!this.currentRoom) return;
+		console.log('Managed to load lobby, current room:', this.currentRoom);
 
 		this.gameState.scores = {};
 
@@ -1518,7 +1521,7 @@ export class GameRoomWindow extends Window {
 		const pointsText = points !== 0 ? ` (${points > 0 ? '+' : ''}${points} pts)` : '';
 
 		if (success) {
-			item.textContent = `${username}: "${guess}" - Bonne ${typeText}!${pointsText}`;
+			item.textContent = `${username}: "${guess}" - Bon ${typeText}!${pointsText}`;
 		} else {
 			item.textContent = `${username}: "${guess}" - Mauvais ${typeText}${pointsText}`;
 		}
@@ -1568,7 +1571,10 @@ export class GameRoomWindow extends Window {
 		this.wordDisplay.textContent = word.split('').join(' ');
 
 		// Auto next round after delay
+		this.gameState.counterRound++;
 		setTimeout(() => {
+			if (this.gameState.counterRound >= (this.gameState.players.length * 4))
+				this.endGame();
 			if (this.gameState.isPlaying) {
 				this.nextRound();
 			}

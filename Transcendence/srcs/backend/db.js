@@ -127,7 +127,7 @@ async function createTables()
 				status VARCHAR(20) DEFAULT 'waiting',
 				max_players INT DEFAULT 8,
 				current_round INT DEFAULT 0,
-				max_rounds INT DEFAULT 3,
+				max_rounds INT DEFAULT 5,
 				round_duration INT DEFAULT 90,
 				created_at TIMESTAMP DEFAULT NOW(),
 				started_at TIMESTAMP,
