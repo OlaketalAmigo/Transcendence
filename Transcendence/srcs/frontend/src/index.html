@@ -1,54 +1,50 @@
-<!DOCTYPE html>
-<head>
-	<link rel="stylesheet" href="./index.css" />
-	<script type="module" src="./index.js"></script>
-</head>
-<body>
+<!doctype html>
+<html lang="fr">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Transcendence</title>
+		<link rel="stylesheet" href="index.css" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet" />
+	</head>
+	<body>
+		<h1 class="title">Transcendence</h1>
 
-	<div id="header-1" class="container-1" 
-		style="">
-		<div id="button-test" class="button-1 button-test multicolor" onclick="window.location.href = 'test/index.html';">TEST</div>
-		<div id="button-trans" class="button-trans multicolor">TRANSCENDENCE</div>
-	</div>
+		<nav class="menu" aria-label="Menu principal">
+			<button class="menu__item" data-action="login" aria-label="Login">Login</button>
+			<button class="menu__item" data-action="chat" aria-label="Global chat">Global chat</button>
+			<button class="menu__item" data-action="avatar" aria-label="Avatar">Avatar</button>
+			<button class="menu__item" data-action="friends" aria-label="Amis">Amis</button>
+			<button class="menu__item" data-action="logout" aria-label="Logout">Logout</button>
+		</nav>
 
-	<img id="wiskas" style="margin: auto; display: block;" src="webcat/web_cat_img/wiskas-the-third.jpg">
+		<nav class="game" aria-label="Game">
+			<button class="game__item" data-action="new_game" aria-label="Skkrrribl.io"
+			onclick="window.location.href='./game/game.html'">Skkrrribl.io</button>
+			<button class="game__item" data-action="tetris" aria-label="Tetris"
+			onclick="window.location.href='./tetris/tetris.html'">Tetris</button>
+			<button class="game__item" data-action="Wiskas" aria-label="Wiscat"
+			onclick="window.location.href='./wiscat/wiskas.html'">Wiscat</button>
+		</nav>
+		
+		<script type="module" src="./app.js"></script>
+		<script type="module" src="./script.js"></script>
 
-	<section style="display: flex;
-			justify-content: center;
-			width: 1000px;
-			margin: 0 auto;">
-		<p>I, am wiskas-the-third,
-			We are the  cat company, we  dont need to present our self for you already know
-			who we are, we created the internet, and we are still managing it now<br>
-			We at CAT are the admin, creator, and workers of the internet
-			Everytime a  human goes to sleep, a cat start its shift, 1 billion pair of whiskers that are always here for you
-			Why? because we are philantropists, dont question it. Our goals are beyond your understanding
-			the internet was created by us, for us, and you should be glad we allow you to use it.
-		</p>
-	</section>
+		<footer>
+    <div class="footer_grid">
+        <img class="ico_footer" src="./assets/facebook_logo.png">
+        <img class="ico_footer" src="./assets/insta_logo.png">
+        <img class="ico_footer" src="./assets/twitter_logo.png">
 
-	<section style="display: flex;">
-		<button style="margin-right: 50px;" class="button-1 multicolor" onclick="window.location.href = 'webcat/biblio.html';">
-			Latest News</button><br>
-		<button style="margin-left: 50px;" class="button-1 multicolor" onclick="window.location.href = 'webcat/staff/staff.html';">
-			meet the staff</button><br>
-	</section>
+        <a href="https://www.facebook.com/">MIAOUBOOK</a>
+        <a href="https://www.instagram.com/">INSTAMIAOU</a>
+        <a href="https://twitter.com/">BLUE-SNACK</a>
+    </div>
 
-	<footer>
-		<br><br><br>
-		<div class="footer_div" style="margin-top: 100px;">
-			<img class="ico_footer" src="webcat/web_cat_img/facebook_logo.png">
-			<img class="ico_footer" src="webcat/web_cat_img/insta_logo.png">
-			<img class="ico_footer" src="webcat/web_cat_img/twitter_logo.png">
-		</div>
-		<div class="footer_div" style="margin-bottom: 50px;">
-			<a href="https://www.facebook.com/">MIAOUBOOK</a>
-			<a href="https://www.instagram.com/">INSTAMIA</a>
-			<a href="https://twitter.com/">BLUE-SNACK</a>
-		</div>
-		<a href="./webcat/ml/mentions_legales.html">- LEGAL NOTICES -<br>(boring stuff, really, dont go look into this, i mean we are obligated to include it, but it will bore you, like, really)
-		<br>Dont do it! every seconds you spend in this next page, a kitten dies. so dont</a>
-	</footer>
+    <a href="./mentions_legales.html" class="legal">LEGAL NOTICES</a>
+</footer>
 
-</body>
-</html>
+	</body>
+	</html>
