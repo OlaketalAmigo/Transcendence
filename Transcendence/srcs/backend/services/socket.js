@@ -30,6 +30,63 @@ async function broadcastRoomsList(io) {
 	}
 }
 
+function startRoomTimer(io, roomId, seconds)
+{
+	const gameState = gameRooms.get(roomId);
+	if (!gameState) return;
+
+	if (gameState.timerInterval)
+		clearInterval(gameState.timerInterval);
+
+	gameState.timerSeconds = seconds;
+
+	gameState.timerInterval = setInterval(() => {
+		gameState.timerSeconds--;
+
+		if (gameState.timerSeconds < 0)
+			gameState.timerSeconds = 0;
+
+		if (gameState.timerSeconds <= 0)
+		{
+			io.to(roomId).emit('game-timer-sync', {
+				remaining: 0
+			});
+			clearInterval(gameState.timerInterval);
+			gameState.timerInterval = null;
+			io.to(roomId).emit('game-timer-ended', { message: 'Temps écoulé !' });
+
+			gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
+			const nextDrawer = gameState.players[gameState.currentPlayerIndex];
+			gameState.drawer = nextDrawer;
+			
+
+			gameState.currentWord = '';
+			gameState.revealedLetters = [];
+			gameState.revealedWord = [];
+			gameState.guessedLetters = [];
+			gameState.wrongGuesses = 0;
+
+			io.to(roomId).emit('game-new-round', {
+				drawer: nextDrawer
+			});
+		}
+		else
+		{
+			io.to(roomId).emit('game-timer-sync', {
+				remaining: gameState.timerSeconds
+			});
+		}
+	}, 1000);
+}
+
+function stopRoomTimer(roomId)
+{
+	const gameState = gameRooms.get(roomId);
+	if (!gameState || !gameState.timerInterval) return;
+	clearInterval(gameState.timerInterval);
+	gameState.timerInterval = null;
+}
+
 // Check if a playing game has only 1 player left and auto-stop it
 async function checkAndStopSinglePlayerGame(io, roomId, dbRoomId) {
 	if (!dbRoomId) return;
@@ -43,6 +100,7 @@ async function checkAndStopSinglePlayerGame(io, roomId, dbRoomId) {
 		const players = await gameRoomService.getRoomPlayers(dbRoomId);
 		if (players.length <= 1) {
 			console.log(`Room ${dbRoomId} has only ${players.length} player(s) left, ending game`);
+			stopRoomTimer(roomId);
 			
 			// Update room status to 'ended'
 			await gameRoomService.updateRoomStatus(dbRoomId, 'waiting');
@@ -192,7 +250,9 @@ function setupSocketIO(io)
 					revealedLetters: gameState.revealedLetters,
 					revealedWord: gameState.revealedWord || [],
 					guessedLetters: gameState.guessedLetters,
-					players: gameState.players
+					players: gameState.players,
+					scores: gameState.scores || {},
+					timer: gameState.timerSeconds || 0
 				});
 			}
 		});
@@ -277,7 +337,8 @@ function setupSocketIO(io)
 						revealedWord: gameState.revealedWord || [],
 						guessedLetters: gameState.guessedLetters,
 						players: gameState.players,
-						scores: gameState.scores || {}
+						scores: gameState.scores || {},
+						timer: gameState.timerSeconds || 0
 					});
 				}
 			} catch (err) {
@@ -399,6 +460,7 @@ function setupSocketIO(io)
 			const gameState = gameRooms.get(roomId);
 			if (!gameState) return;
 
+			startRoomTimer(io, roomId, 60);
 			gameState.currentWord = data.word.toLowerCase();
 			gameState.revealedLetters = new Array(data.word.length).fill(false);
 			gameState.revealedWord = new Array(data.word.length).fill('_');
@@ -561,6 +623,8 @@ function setupSocketIO(io)
 				// Update round start scores for next round
 				gameState.roundStartScores = { ...gameState.scores };
 
+				stopRoomTimer(roomId);
+
 				io.to(roomId).emit('game-word-found', {
 					word: gameState.currentWord,
 					winner: username,
@@ -622,6 +686,7 @@ function setupSocketIO(io)
 					// If the drawer left and there are still enough players, choose a new drawer
 					if (wasDrawer && gameState.players.length >= 1)
 					{
+						stopRoomTimer(roomId);
 						// Pick the next player as the new drawer
 						gameState.currentPlayerIndex = gameState.currentPlayerIndex % gameState.players.length;
 						const newDrawer = gameState.players[gameState.currentPlayerIndex];
@@ -641,6 +706,7 @@ function setupSocketIO(io)
 							reason: 'drawer_left',
 							message: `${username} (dessinateur) a quitté, ${newDrawer} devient le nouveau dessinateur`
 						});
+						startRoomTimer(io, roomId, 60);
 					}
 				}
 
@@ -661,6 +727,7 @@ function setupSocketIO(io)
 		socket.on('game-end', async () => {
 			const roomId = socket.gameRoomId;
 			if (!roomId) return;
+			stopRoomTimer(roomId);
 
 			// Update room status to 'waiting' in database
 			const dbRoomId = socket.gameRoomDbId;

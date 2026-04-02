@@ -34,6 +34,7 @@ export class GameRoomWindow extends Window {
 		});
 
 		this.updateTabsAccess();
+		this.loadCurrentTab();
 
 		// Verifier si l'utilisateur est deja dans un salon au chargement
 		const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
@@ -119,7 +120,8 @@ export class GameRoomWindow extends Window {
 		this.gameInfo = this.createElement('div', 'gameroom__game-info');
 		this.currentDrawerInfo = this.createElement('div', 'gameroom__drawer-info', { text: '' });
 		this.scoresDisplay = this.createElement('div', 'gameroom__scores-display');
-		this.gameInfo.append(this.currentDrawerInfo, this.scoresDisplay);
+		this.timerDisplay = this.createElement('div', 'gameroom__timer-display');
+		this.gameInfo.append(this.currentDrawerInfo, this.scoresDisplay, this.timerDisplay);
 
 		// Affichage du mot caché
 		this.wordDisplay = this.createElement('div', 'gameroom__word-display');
@@ -196,7 +198,8 @@ export class GameRoomWindow extends Window {
 			guessedLetters: [],
 			scores: {},
 			counter: 0,
-			counterRound: 0
+			counterRound: 0,
+			timer: 0
 		};
 
 		this.initDrawing();
@@ -521,6 +524,8 @@ export class GameRoomWindow extends Window {
 				this.gameState.revealedWord = data.revealedWord || new Array(data.wordLength).fill('_');
 				this.gameState.players = data.players;
 				this.gameState.scores = data.scores || {};
+				this.gameState.timer = data.timer || 0;
+				this.updateTimerUI();
 
 				this.showGameUI();
 				this.updateWordDisplay();
@@ -610,6 +615,15 @@ export class GameRoomWindow extends Window {
 			// Setup UI for new round with new drawer
 			this.setupRound();
 		});
+
+		this.socket.on('game-timer-sync', (data) => {
+			this.gameState.timer = data.remaining;
+			this.updateTimerUI();
+		});
+
+		this.socket.on('game-timer-ended', (data) => {
+			this.showMessage(data.message || 'Temps écoulé !', 'info');
+		})
 	}
 
 	disconnectGameSocket() {
@@ -1244,6 +1258,12 @@ export class GameRoomWindow extends Window {
 		}, 5000);
 	}
 
+	updateTimerUI()
+	{
+		if (this.timerDisplay)
+			this.timerDisplay.textContent = `Temps restant : ${this.gameState.timer}s`;
+	}
+
 	// ============================================
 	// LOGIQUE DU JEU
 	// ============================================
@@ -1298,6 +1318,9 @@ export class GameRoomWindow extends Window {
 		this.isSpectating = false;
 
 		this.gameState.scores = {};
+		this.gameState.counter = 0;
+		this.gameState.counterRound = 0;
+		this.gameState.timer = 0;
    		this.gameState.players = [];
    		this.gameState.currentPlayerIndex = 0;
     	this.gameState.guessedLetters = [];
