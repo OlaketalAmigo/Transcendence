@@ -2,14 +2,14 @@
  * Application entry point
  * Initializes windows and handles menu interactions
  */
-import { windowRegistry } from '../core/windows.js';
-import { LoginWindow } from '../windows/login.js';
-import { LogoutWindow } from '../windows/logout.js';
-import { GlobalChat } from '../windows/global_chat.js';
-import { AvatarWindow } from '../windows/avatar.js';
-import { FriendsWindow } from '../windows/friends.js';
-import { GameRoomWindow } from '../windows/game_room.js';
-import { StatsWindow } from '../windows/stats.js';
+import { windowRegistry } from './core/windows.js';
+import { LoginWindow } from './windows/login.js';
+import { LogoutWindow } from './windows/logout.js';
+import { GlobalChat } from './windows/global_chat.js';
+import { AvatarWindow } from './windows/avatar.js';
+import { FriendsWindow } from './windows/friends.js';
+import { GameRoomWindow } from './windows/game_room.js';
+import { StatsWindow } from './windows/stats.js';
 
 /**
  * Main application class

@@ -1,26 +1,25 @@
 :root {
-    --color-primary: #0066cc;
-    --color-primary-hover: #0052a3;
+    --color-primary: #ffc75e;
+    --color-primary-hover: #ffc75e;
     --color-success: #3cff01;
-    --color-success-dark: #28a745;
+    --color-success-dark: #ffc75e;
     --color-error: #ff4d4d;
-    --color-warning: #ffc107;
-    --color-github: #24292e;
+    --color-warning: #ffc75e;
+    --color-github: #ffc75e;
 
-    --color-bg: #000;
+    --color-bg: #ffe5b5;
 
     --app-background-base: radial-gradient(
         circle at top,
-        #1b2735,
-        #090a0f
+        #3fc9ff,
+        #21fcc5
+
     );
 
-    /* --app-background-image: url("./assets/background.png"); */
-
-    --color-surface: #222;
-    --color-surface-light: #333;
-    --color-text: #fff;
-    --color-text-muted: #aaa;
+    --color-surface: #ffcc00;
+    --color-surface-light: #feffa6;
+    --color-text: #000000;
+    --color-text-muted: #353535;
 
     --font-size-base: 10px;
     --font-size-sm: 1.2rem;
@@ -62,19 +61,22 @@
 
 html {
     height: 100%;
-    background-image:
+    background-image:  
         var(--app-background-base);
+
+    background-size: contain, cover;
+    background-position: center, center;
+    background-repeat: no-repeat, no-repeat;
+        
 
     background-size:
         contain,
         cover;
 
     background-position:
-        center,
         center;
 
     background-repeat:
-        no-repeat,
         no-repeat;
 }
 
@@ -94,101 +96,68 @@ body {
 
 
 /* ============================================
+    ANIMATIONS
+   ============================================ */
+
+@keyframes wobble {
+    0%   { transform: translate(0%, 0) rotate(0deg); }
+    25%  { transform: translate(-5%, -1px) rotate(-0.5deg); }
+    50%  { transform: translate(0%, 1px) rotate(0.5deg); }
+    75%  { transform: translate(+5%, -1px) rotate(0.5deg); }
+    100% { transform: translate(0%, 0) rotate(0deg); }
+}
+
+@keyframes bounce {
+    0% { transform: translateY(0) rotate(var(--rot)); }
+    33% { transform: translateY(-6px) rotate(var(--rot)); }
+    66% { transform: translateY(-8px) rotate(var(--rot)); }
+    100% { transform: translateY(0) rotate(var(--rot)); }
+}
+
+/* ============================================
    TYPOGRAPHY
    ============================================ */
+
 .title {
     position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    font-size: var(--font-size-xl);
-    text-align: center;
-    text-shadow: 2px 2px 10px black;
     z-index: 1;
-    font-family: "Cinzel Decorative", cursive;
-    color: var(--color-success);
-    margin: 0;
-    padding: var(--spacing-md);
+    top: 20px;
+    left: 50%;
+    translate: -50% 0;
+    background: #ffcc00;
+    color: #000;
+
+    border: 4px solid #feffa6;
+    border-radius: 18px;
+
+    padding: 0.6rem 1.2rem;
+
+    animation: wobble 2s infinite ease-in-out;
 }
 
-/* ============================================
-   MENU
-   ============================================ */
+.title span {
+    display: inline-block;
+    transform-origin: center;
+    font-size: 4rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
 
-.menu {
-    position: fixed;
-    top: 0;
-    left: 50px;
-    padding: 0;
-    margin: 0;
-    z-index: var(--z-menu);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
+    animation: bounce 1.2s infinite alternate;
+    animation-timing-function: ease-in-out;
 }
 
-.menu__item {
-    background: var(--color-surface);
-    color: var(--color-text);
-    border: 1px solid var(--color-surface-light);
-    padding: var(--spacing-sm) var(--spacing-md);
-    font-size: var(--font-size-md);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    text-align: left;
-}
+.title span:nth-child(1) { --rot: -5deg; color: #ff4d4d; }
+.title span:nth-child(2) { --rot:  3deg; color: #5beb67; }
+.title span:nth-child(3) { --rot: -3deg; color: #ca8dfc; }
+.title span:nth-child(4) { --rot:  2deg; color: #6698f5; }
+.title span:nth-child(5) { --rot: -4deg; color: #ff66cc; }
 
-.menu__item:hover {
-    background: var(--color-surface-light);
-    font-size: var(--font-size-lg);
-}
+.title span:nth-child(2) { animation-delay: 0.2s; }
+.title span:nth-child(3) { animation-delay: 0.4s; }
+.title span:nth-child(4) { animation-delay: 0.6s; }
+.title span:nth-child(5) { animation-delay: 0.8s; }
 
-.menu__item--active {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-}
-
-/* ============================================
-   GAME
-   ============================================ */
-
-.game {
-    position: fixed;
-    top: 0;
-    right: 50px;
-    padding: 0;
-    margin: 0;
-    z-index: var(--z-menu);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-}
-
-.game__item {
-    background: var(--color-surface);
-    color: var(--color-text);
-    border: 1px solid var(--color-surface-light);
-    padding: var(--spacing-sm) var(--spacing-md);
-    font-size: var(--font-size-md);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    text-align: right;
-}
-
-.game__item:hover {
-    background: var(--color-surface-light);
-    font-size: var(--font-size-lg);
-}
-
-.game__item--active {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-}
+.title span { will-change: transform; }
 
 /* ============================================
    PAGES
@@ -208,14 +177,17 @@ body {
 }
 
 .page__item {
+
+    border-radius: var(--radius-lg);
     background: var(--color-surface);
     color: var(--color-text);
     border: 1px solid var(--color-surface-light);
+    border-color: #fda725;
     padding: var(--spacing-sm) var(--spacing-md);
     font-size: var(--font-size-md);
     cursor: pointer;
     transition: all var(--transition-fast);
-    text-align: right;
+    text-align: center;
 }
 
 .page__item:hover {
@@ -229,9 +201,87 @@ body {
 }
 
 /* ============================================
-   BUTTONS
+   MENU
    ============================================ */
 
+.menu {
+    position: fixed;
+    top: var(--spacing-lg);
+    left: 50px;
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+
+    z-index: var(--z-menu);
+}
+
+.menu__item {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-surface-light);
+    border-radius: var(--radius-lg);
+    border-color: #fda725;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: center;
+}
+
+.menu__item:hover {
+    background: var(--color-surface-light);
+    font-size: var(--font-size-lg);
+}
+
+.menu__item--active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+/* ============================================
+   GAME
+   ============================================ */
+
+
+.game {
+    position: fixed;
+    top: var(--spacing-lg);
+    right: 50px;
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+
+    z-index: var(--z-menu);
+}
+
+.game__item {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-surface-light);
+    border-radius: var(--radius-lg);
+    border-color: #fda725;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: center;
+}
+
+.game__item:hover {
+    background: var(--color-surface-light);
+    font-size: var(--font-size-lg);
+}
+
+.game__item--active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -256,7 +306,7 @@ body {
 }
 
 .btn--primary {
-    background: var(--color-primary);
+    background: var(--color-surface);
     color: var(--color-text);
 }
 
@@ -265,7 +315,7 @@ body {
 }
 
 .btn--secondary {
-    background: var(--color-surface-light);
+    background: var(--color-surface);
     color: var(--color-text);
 }
 
@@ -328,13 +378,15 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     background: var(--color-bg);
-    border: 2px ridge var(--color-text);
     color: var(--color-text);
     z-index: var(--z-window);
     display: none;
     flex-direction: column;
     min-width: 280px;
     box-shadow: var(--shadow-lg);
+    border-radius: 5px;
+    border-color: #aa1f1f;
+    border: 6px solid #faac37;
 }
 
 .window--visible {
@@ -395,7 +447,8 @@ body {
 .message {
     font-size: var(--font-size-sm);
     padding: var(--spacing-xs);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-lg);
+    border-color: #000;
 }
 
 .message--success {
@@ -415,6 +468,11 @@ body {
    ============================================ */
 .login {
     width: 320px;
+    border-radius: 5px;
+    border-color: #aa1f1f;
+    border: 6px solid #faac37;
+    background: #ffffff;
+    color: #000;
 }
 
 .login__form {
@@ -533,7 +591,7 @@ body {
     border-radius: var(--radius-full);
     border: 3px solid var(--color-text);
     box-shadow: var(--shadow-md);
-    background: var(--color-surface);
+    background: var(--color-surface-light);
     align-self: center;
 }
 
@@ -557,28 +615,74 @@ body {
 }
 
 /* ============================================
-   EASTER EGG BUTTON
+   STATS WINDOW
    ============================================ */
-/* .easter-egg {
-    position: absolute;
-    top: 20%;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1;
-    background: var(--color-surface);
-    color: var(--color-text);
-    border: 1px solid var(--color-surface-light);
-    padding: var(--spacing-sm) var(--spacing-md);
-    cursor: pointer;
-    font-size: var(--font-size-md);
-    border-radius: var(--radius-md);
-    transition: all var(--transition-fast);
+.stats-window {
+    width: 320px;
 }
 
-.easter-egg:hover {
-    background: var(--color-error);
-    border-color: var(--color-error);
-} */
+.stats__avatar {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: var(--radius-full);
+    border: 2px solid var(--color-text);
+    align-self: center;
+    display: block;
+    margin: 0 auto var(--spacing-xs);
+}
+
+.stats__username {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    text-align: center;
+    color: #000;
+    margin-bottom: var(--spacing-md);
+}
+
+.stats__section {
+    margin-bottom: var(--spacing-md);
+}
+
+.stats__section-title {
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-primary);
+    border-bottom: 1px solid var(--color-surface-light);
+    padding-bottom: var(--spacing-xs);
+    margin-bottom: var(--spacing-xs);
+}
+
+.stats__section-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stats__row {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-size-sm);
+    padding: 3px 0;
+}
+
+.stats__label {
+    color: #333;
+}
+
+.stats__value {
+    font-weight: 600;
+    color: #000;
+}
+
+.stats__loading {
+    font-size: var(--font-size-sm);
+    color: #333;
+    text-align: center;
+    padding: var(--spacing-sm) 0;
+}
 
 /* ============================================
    UTILITIES
@@ -626,7 +730,7 @@ body {
     flex: 1;
     padding: var(--spacing-sm);
     background: var(--color-surface);
-    border: 1px solid var(--color-surface-light);
+    border: 1px solid var(--color-surface);
     color: var(--color-text);
     cursor: pointer;
     font-size: var(--font-size-sm);
@@ -709,9 +813,10 @@ body {
 /* ============================================
    GAME ROOM WINDOW
    ============================================ */
+
 .gameroom-window {
-    width: 600px;
-    height: 800px;
+    width: 800px;
+    height: 900px;
 }
 
 .gameroom__tabs {
@@ -1019,3 +1124,4 @@ body {
 .gameroom__game-buttons .btn {
     flex: 1;
 }
+
