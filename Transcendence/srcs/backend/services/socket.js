@@ -140,6 +140,47 @@ async function saveRoundPoints(currentScores, roundStartScores) {
 	}
 }
 
+function handlePlayerDeparture(io, roomId, username) {
+	const gameState = gameRooms.get(roomId);
+	if (!gameState || !gameState.isPlaying) return;
+	if (!Array.isArray(gameState.players)) return;
+
+	const leavingIndex = gameState.players.indexOf(username);
+	if (leavingIndex === -1) return;
+
+	const wasDrawer = gameState.drawer === username;
+
+	gameState.players = gameState.players.filter(p => p !== username);
+	if (gameState.scores) {
+		delete gameState.scores[username];
+	}
+
+	if (gameState.currentPlayerIndex >= leavingIndex) {
+		gameState.currentPlayerIndex = Math.max(0, gameState.currentPlayerIndex - 1);
+	}
+	if (gameState.currentPlayerIndex >= gameState.players.length) {
+		gameState.currentPlayerIndex = 0;
+	}
+
+	if (wasDrawer && gameState.players.length > 0) {
+		stopRoomTimer(roomId);
+		const newDrawer = gameState.players[gameState.currentPlayerIndex];
+		gameState.drawer = newDrawer;
+		gameState.currentWord = '';
+		gameState.revealedLetters = [];
+		gameState.revealedWord = [];
+		gameState.guessedLetters = [];
+		gameState.wrongGuesses = 0;
+
+		io.to(roomId).emit('game-drawer-changed', {
+			newDrawer: newDrawer,
+			reason: 'drawer_left',
+			message: `${username} (dessinateur) a quitte, ${newDrawer} devient le nouveau dessinateur`
+		});
+		startRoomTimer(io, roomId, 60);
+	}
+}
+
 function setupSocketIO(io)
 {
 	ioInstance = io;
@@ -276,6 +317,7 @@ function setupSocketIO(io)
 					username: socket.user.username,
 					userId: socket.user.userId
 				});
+				handlePlayerDeparture(io, roomId, socket.user.username);
 				socket.leave(roomId);
 				console.log(`${socket.user.username} left ${roomId}`);
 
@@ -574,7 +616,7 @@ function setupSocketIO(io)
 
 				// Points: 10 per letter found, -5 for wrong guess
 				if (success) {
-					points = lettersFound * 10;
+					points = lettersFound * 5;
 					gameState.scores[username] += points;
 				} else {
 					points = -5;
@@ -673,42 +715,7 @@ function setupSocketIO(io)
 					message: `${username} a quitté la partie`
 				});
 
-				const gameState = gameRooms.get(roomId);
-				if (gameState)
-				{
-					const wasDrawer = gameState.drawer === username;
-					
-					gameState.players = gameState.players.filter(p => p !== username);
-					delete gameState.scores[username];
-
-					io.to(roomId).emit('scores-updated', gameState.scores);
-
-					// If the drawer left and there are still enough players, choose a new drawer
-					if (wasDrawer && gameState.players.length >= 1)
-					{
-						stopRoomTimer(roomId);
-						// Pick the next player as the new drawer
-						gameState.currentPlayerIndex = gameState.currentPlayerIndex % gameState.players.length;
-						const newDrawer = gameState.players[gameState.currentPlayerIndex];
-						gameState.drawer = newDrawer;
-						
-						// Reset the word state for the new round
-						gameState.currentWord = '';
-						gameState.revealedLetters = [];
-						gameState.revealedWord = [];
-						gameState.guessedLetters = [];
-						gameState.wrongGuesses = 0;
-
-						console.log(`Drawer ${username} left, new drawer is ${newDrawer}`);
-
-						io.to(roomId).emit('game-drawer-changed', {
-							newDrawer: newDrawer,
-							reason: 'drawer_left',
-							message: `${username} (dessinateur) a quitté, ${newDrawer} devient le nouveau dessinateur`
-						});
-						startRoomTimer(io, roomId, 60);
-					}
-				}
+				handlePlayerDeparture(io, roomId, username);
 
 				await checkAndStopSinglePlayerGame(io, roomId, dbRoomId);
 
@@ -956,6 +963,7 @@ function setupSocketIO(io)
 						username: socket.user.username,
 						userId: socket.user.userId
 					});
+					handlePlayerDeparture(io, roomId, socket.user.username);
 
 					// Get updated player list and broadcast
 					if (dbRoomId) {
