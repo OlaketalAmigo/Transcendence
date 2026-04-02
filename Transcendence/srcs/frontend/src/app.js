@@ -3,6 +3,8 @@
  * Initializes windows and handles menu interactions
  */
 import { windowRegistry } from './core/windows.js';
+import { API, STORAGE_KEYS } from './core/config.js';
+import { eventBus, Events } from './core/events.js';
 import { LoginWindow } from './windows/login.js';
 import { LogoutWindow } from './windows/logout.js';
 import { GlobalChat } from './windows/global_chat.js';
@@ -17,11 +19,57 @@ import { StatsWindow } from './windows/stats.js';
  */
 class App {
     constructor() {
+        this.invalidateStaleToken();
         this.initWindows();
         this.initMenu();
         this.initPage();
         this.initEasterEgg();
         this.colorizeUI();
+    }
+
+    async invalidateStaleToken() {
+        const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+        if (!token) return;
+
+        if (this.isJwtExpired(token)) {
+            localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+            eventBus.emit(Events.USER_LOGGED_OUT);
+            return;
+        }
+
+        try {
+            const response = await fetch(API.STATS.ME, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.status === 401) {
+                localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+                eventBus.emit(Events.USER_LOGGED_OUT);
+				setTimeout(() => window.location.reload(), 500);
+            }
+        } catch (error) {
+            console.warn('Token validation skipped:', error);
+        }
+    }
+
+    isJwtExpired(token) {
+        try {
+            const payload = this.decodeJwtPayload(token);
+            if (!payload || !payload.exp) return false;
+            const now = Math.floor(Date.now() / 1000);
+            return payload.exp <= now;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    decodeJwtPayload(token) {
+        const parts = token.split('.');
+        if (parts.length < 2) return null;
+
+        const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+        const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+        return JSON.parse(atob(padded));
     }
 
     /**
