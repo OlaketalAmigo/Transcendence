@@ -5,45 +5,24 @@
   <title>Wiskas</title>
   <link rel="stylesheet" href="wiskas.css" />
   <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(135deg, #6a11cb, #2575fc);
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-    }
 
-    h1 {
-      font-size: 4rem;
-      color: white;
-      animation: float 2s ease-in-out infinite alternate;
-    }
 
-    @keyframes float {
-      from { transform: translateY(0); }
-      to { transform: translateY(-20px); }
-    }
   </style>
 </head>
 <body>
-  <h1 id="helloText">METS TON CHAT ICI</h1>
+  <h1 id="helloText"></h1>
 
   <nav class="game" aria-label="Game">
-			<button class="game__item" data-action="Home page" aria-label="Home Page"
+			<button class="box multicolor" data-action="Home page" aria-label="Home Page"
 			onclick="window.location.href='../index.html'">Home Page</button>
-		</nav>
+	</nav>
 
-  <script>
-    const colors = ["#ff4b5c", "#56cfe1", "#80ed99", "#ffd166"];
-    const text = document.getElementById("helloText");
+  <nav class="login" aria-label="Game">
+			<button class="box multicolor" aria-label="Home Page"  id="login-button">Login</button>
+	</nav>
 
-    setInterval(() => {
-      const randomColor = colors[Math.floor(Math.random() * colors.length)];
-      text.style.color = randomColor;
-    }, 500);
-  </script>
+  <div id="login"></div>
+
+  <script type="module" src="./wiskas.js"></script>
 </body>
 </html>

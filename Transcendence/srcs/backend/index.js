@@ -12,6 +12,7 @@ import playerStatsRouter from './routes/player_stats.js';
 import {waitForDb, createTables, runMigrations, ensureOauthClient} from './db.js';
 import setupSocketIO from './services/socket.js';
 import avatarService from './services/avatar.js';
+import intraRouter from './routes/intra.js';
 
 const app = express();
 const httpsOptions = {
@@ -53,6 +54,7 @@ async function startServer()
 	app.use('/api/avatar', avatarRouter);
 	app.use('/api/friends', friendsRouter);
 	app.use('/api/stats', playerStatsRouter);
+	app.use('/api/intra', intraRouter);
 	app.get('/api', (req, res) => res.send('Backend running'));
 
 	server.listen(3001, () =>
