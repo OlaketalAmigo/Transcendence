@@ -616,7 +616,7 @@ function setupSocketIO(io)
 
 				// Points: 10 per letter found, -5 for wrong guess
 				if (success) {
-					points = lettersFound * 10;
+					points = lettersFound * 5;
 					gameState.scores[username] += points;
 				} else {
 					points = -5;
